@@ -13,6 +13,11 @@
 		844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FB30824C6D0030F13D /* ChatStore.swift */; };
 		844C68FE30824C9C0030F13D /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FD30824C9C0030F13D /* Secrets.swift */; };
 		844C690030824E740030F13D /* StdOutLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FF30824E740030F13D /* StdOutLogger.swift */; };
+		F16A000230824E740030F13D /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000130824E740030F13D /* AuthView.swift */; };
+		F16A000430824E740030F13D /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000330824E740030F13D /* ChatListView.swift */; };
+		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
+		F16A000830824E740030F13D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000730824E740030F13D /* Components.swift */; };
+		F16A001030824E740030F13D /* MessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000930824E740030F13D /* MessageFormatter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +27,11 @@
 		844C68FD30824C9C0030F13D /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		844C68FF30824E740030F13D /* StdOutLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StdOutLogger.swift; sourceTree = "<group>"; };
 		84808575308210CA00D269FE /* Fignyagram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fignyagram.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
+		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		F16A000730824E740030F13D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		F16A000930824E740030F13D /* MessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +66,10 @@
 		844C68F530824AB50030F13D /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				F16A000730824E740030F13D /* Components.swift */,
+				F16A000530824E740030F13D /* ChatView.swift */,
+				F16A000330824E740030F13D /* ChatListView.swift */,
+				F16A000130824E740030F13D /* AuthView.swift */,
 				844C68F630824B530030F13D /* Models */,
 				844C68EC3082430C0030F13D /* ContentView.swift */,
 			);
@@ -65,6 +79,7 @@
 		844C68F630824B530030F13D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				F16A000930824E740030F13D /* MessageFormatter.swift */,
 				84808577308210CA00D269FE /* Fignyagram */,
 				844C68FB30824C6D0030F13D /* ChatStore.swift */,
 			);
@@ -165,6 +180,11 @@
 				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,
 				844C68F830824BE30030F13D /* TelegramClient.swift in Sources */,
 				844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */,
+				F16A001030824E740030F13D /* MessageFormatter.swift in Sources */,
+				F16A000830824E740030F13D /* Components.swift in Sources */,
+				F16A000630824E740030F13D /* ChatView.swift in Sources */,
+				F16A000430824E740030F13D /* ChatListView.swift in Sources */,
+				F16A000230824E740030F13D /* AuthView.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
