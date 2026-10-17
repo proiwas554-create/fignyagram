@@ -30,7 +30,7 @@ enum ImageCache {
         return image
     }
 
-    static func image(minithumbnail: Minithumbnail?) -> UIImage? {
+    static func image(minithumbnail: TDLibKit.Minithumbnail?) -> UIImage? {
         guard let data = minithumbnail?.data else { return nil }
         return UIImage(data: data)
     }
@@ -100,7 +100,7 @@ extension View {
 struct AvatarView: View {
     let id: Int64
     let title: String
-    let photo: ChatPhotoInfo?
+    let photo: TDLibKit.ChatPhotoInfo?
     var size: CGFloat = 52
 
     @ObservedObject private var store = ChatStore.shared

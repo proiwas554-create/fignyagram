@@ -10,7 +10,7 @@ import TDLibKit
 
 // MARK: - Shared helpers
 
-private func thumbnailImage(_ thumbnail: Thumbnail?, minithumbnail: Minithumbnail?, store: ChatStore) -> (UIImage, Bool)? {
+private func thumbnailImage(_ thumbnail: TDLibKit.Thumbnail?, minithumbnail: TDLibKit.Minithumbnail?, store: ChatStore) -> (UIImage, Bool)? {
     if let thumbnail, let path = store.localPath(thumbnail.file), let image = ImageCache.image(atPath: path, maxPixel: 480) {
         return (image, false)
     }
@@ -37,11 +37,11 @@ enum ViewerItem: Identifiable {
 // MARK: - Photo
 
 struct PhotoView: View {
-    let photo: Photo
+    let photo: TDLibKit.Photo
     @ObservedObject private var store = ChatStore.shared
     @State private var viewer: ViewerItem?
 
-    private var size: PhotoSize? {
+    private var size: TDLibKit.PhotoSize? {
         let sorted = photo.sizes.sorted { $0.width < $1.width }
         return sorted.last { $0.width <= 1280 } ?? sorted.first
     }
@@ -76,7 +76,7 @@ struct PhotoView: View {
 // MARK: - Video
 
 struct VideoView: View {
-    let video: Video
+    let video: TDLibKit.Video
     @ObservedObject private var store = ChatStore.shared
     @State private var viewer: ViewerItem?
 
@@ -123,27 +123,27 @@ struct VideoView: View {
 // MARK: - GIF
 
 struct AnimationView: View {
-    let animation: Animation
+    let gif: TDLibKit.Animation
     @ObservedObject private var store = ChatStore.shared
     @State private var looping: LoopingPlayer?
 
     private static let autoDownloadLimit: Int64 = 3 * 1024 * 1024
 
     var body: some View {
-        let frame = mediaFrame(width: animation.width, height: animation.height)
-        let path = store.localPath(animation.animation)
+        let frame = mediaFrame(width: gif.width, height: gif.height)
+        let path = store.localPath(gif.animation)
         ZStack {
             if let looping {
                 PlayerLayerView(player: looping.player)
-            } else if let path, animation.mimeType == "image/gif", let image = ImageCache.image(atPath: path, maxPixel: 480) {
+            } else if let path, gif.mimeType == "image/gif", let image = ImageCache.image(atPath: path, maxPixel: 480) {
                 Image(uiImage: image).resizable().scaledToFill()
-            } else if let (image, blurred) = thumbnailImage(animation.thumbnail, minithumbnail: animation.minithumbnail, store: store) {
+            } else if let (image, blurred) = thumbnailImage(gif.thumbnail, minithumbnail: gif.minithumbnail, store: store) {
                 Image(uiImage: image).resizable().scaledToFill().blur(radius: blurred ? 6 : 0)
             } else {
                 Color.gray.opacity(0.2)
             }
             if path == nil {
-                if let progress = store.progress(animation.animation) {
+                if let progress = store.progress(gif.animation) {
                     ProgressRing(progress: progress)
                 } else {
                     Text("GIF").font(.caption.bold()).foregroundColor(.white)
@@ -154,11 +154,11 @@ struct AnimationView: View {
         .frame(width: frame.width, height: frame.height)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .contentShape(Rectangle())
-        .onTapGesture { TelegramClient.shared.download(animation.animation, priority: 32) }
+        .onTapGesture { TelegramClient.shared.download(gif.animation, priority: 32) }
         .onAppear {
-            if let t = animation.thumbnail { TelegramClient.shared.download(t.file, priority: 8) }
-            if animation.animation.size <= Self.autoDownloadLimit {
-                TelegramClient.shared.download(animation.animation, priority: 4)
+            if let t = gif.thumbnail { TelegramClient.shared.download(t.file, priority: 8) }
+            if gif.animation.size <= Self.autoDownloadLimit {
+                TelegramClient.shared.download(gif.animation, priority: 4)
             }
             startIfReady(path)
         }
@@ -170,7 +170,7 @@ struct AnimationView: View {
     }
 
     private func startIfReady(_ path: String?) {
-        guard looping == nil, let path, animation.mimeType != "image/gif" else { return }
+        guard looping == nil, let path, gif.mimeType != "image/gif" else { return }
         let player = LoopingPlayer(url: URL(fileURLWithPath: path))
         player.player.play()
         looping = player
@@ -180,7 +180,7 @@ struct AnimationView: View {
 // MARK: - Sticker
 
 struct StickerView: View {
-    let sticker: Sticker
+    let sticker: TDLibKit.Sticker
     @ObservedObject private var store = ChatStore.shared
 
     var body: some View {
@@ -210,7 +210,7 @@ struct StickerView: View {
 // MARK: - Voice note and music
 
 struct VoiceNoteView: View {
-    let note: VoiceNote
+    let note: TDLibKit.VoiceNote
     let isOutgoing: Bool
 
     var body: some View {
@@ -222,7 +222,7 @@ struct VoiceNoteView: View {
 }
 
 struct AudioFileView: View {
-    let audio: Audio
+    let audio: TDLibKit.Audio
     let isOutgoing: Bool
 
     var body: some View {
@@ -239,7 +239,7 @@ struct AudioFileView: View {
 }
 
 private struct AudioRow<Middle: View>: View {
-    let file: File
+    let file: TDLibKit.File
     let isOutgoing: Bool
     let duration: Int
     @ViewBuilder let middle: (Double) -> Middle
@@ -313,7 +313,7 @@ private struct Waveform_View: View {
 // MARK: - Round video message
 
 struct VideoNoteView: View {
-    let note: VideoNote
+    let note: TDLibKit.VideoNote
     @ObservedObject private var store = ChatStore.shared
     @State private var player: AVPlayer?
     @State private var isPlaying = false
@@ -391,7 +391,7 @@ struct VideoNoteView: View {
 // MARK: - Document
 
 struct DocumentView: View {
-    let document: Document
+    let document: TDLibKit.Document
     let isOutgoing: Bool
     @ObservedObject private var store = ChatStore.shared
     @State private var previewURL: URL?

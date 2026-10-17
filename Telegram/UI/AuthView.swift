@@ -100,7 +100,7 @@ struct AuthView: View {
         }
     }
 
-    private func codeForm(_ info: AuthenticationCodeInfo) -> some View {
+    private func codeForm(_ info: TDLibKit.AuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
             Text("Введите код").font(.headline)
             Text("\(Self.codeDestination(info.type)) на номер \(info.phoneNumber)")
@@ -145,7 +145,7 @@ struct AuthView: View {
         }
     }
 
-    private func emailCodeForm(_ info: EmailAddressAuthenticationCodeInfo) -> some View {
+    private func emailCodeForm(_ info: TDLibKit.EmailAddressAuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
             Text("Код из письма").font(.headline)
             Text("Отправлен на \(info.emailAddressPattern)")
@@ -215,7 +215,7 @@ struct AuthView: View {
         }
     }
 
-    static func codeDestination(_ type: AuthenticationCodeType) -> String {
+    static func codeDestination(_ type: TDLibKit.AuthenticationCodeType) -> String {
         switch type {
         case .authenticationCodeTypeTelegramMessage: return "Код отправлен в приложение Telegram"
         case .authenticationCodeTypeSms, .authenticationCodeTypeSmsWord, .authenticationCodeTypeSmsPhrase: return "Код отправлен по SMS"

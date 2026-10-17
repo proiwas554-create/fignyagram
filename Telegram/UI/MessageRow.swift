@@ -4,7 +4,7 @@ import Combine
 import TDLibKit
 
 struct MessageRow: View {
-    let message: Message
+    let message: TDLibKit.Message
     let showSender: Bool
     let isRead: Bool
     var onReply: () -> Void = {}
@@ -195,7 +195,7 @@ struct MessageRow: View {
 
 /// Media part of a message.
 struct MessageContentView: View {
-    let message: Message
+    let message: TDLibKit.Message
 
     var body: some View {
         switch message.content {
@@ -204,7 +204,7 @@ struct MessageContentView: View {
         case .messageVideo(let v):
             VideoView(video: v.video)
         case .messageAnimation(let a):
-            AnimationView(animation: a.animation)
+            AnimationView(gif: a.animation)
         case .messageSticker(let s):
             StickerView(sticker: s.sticker)
         case .messageAnimatedEmoji(let e):
@@ -229,18 +229,18 @@ struct MessageContentView: View {
 
 enum MessageAction {
     case reply, copy, edit, forward
-    case react(ReactionType)
+    case react(TDLibKit.ReactionType)
     case delete(forAll: Bool)
 }
 
 /// Long-press menu: reactions plus the actions TDLib allows for this message.
 struct MessageActionsSheet: View {
-    let message: Message
+    let message: TDLibKit.Message
     let onAction: (MessageAction) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var reactions: [ReactionType] = []
-    @State private var properties: MessageProperties?
+    @State private var reactions: [TDLibKit.ReactionType] = []
+    @State private var properties: TDLibKit.MessageProperties?
     @State private var loaded = false
 
     var body: some View {

@@ -15,17 +15,17 @@ struct ChatView: View {
     @State private var olderAnchorId: Int64?
     @State private var scrollTarget: Int64?
 
-    @State private var replyTo: Message?
-    @State private var editing: Message?
-    @State private var actionMessage: Message?
-    @State private var forwardMessage: Message?
+    @State private var replyTo: TDLibKit.Message?
+    @State private var editing: TDLibKit.Message?
+    @State private var actionMessage: TDLibKit.Message?
+    @State private var forwardMessage: TDLibKit.Message?
     @State private var showPhotoPicker = false
     @State private var showDocumentPicker = false
     @State private var showVideoNoteRecorder = false
     @State private var preparingMedia = 0
 
     private var chat: ChatItem? { store.chats[chatId] }
-    private var messages: [Message] { store.messages[chatId] ?? [] }
+    private var messages: [TDLibKit.Message] { store.messages[chatId] ?? [] }
     private var isLoading: Bool { store.loadingChats.contains(chatId) }
 
     var body: some View {
@@ -185,7 +185,7 @@ struct ChatView: View {
         }
     }
 
-    private var bannerMessage: Message? { editing ?? replyTo }
+    private var bannerMessage: TDLibKit.Message? { editing ?? replyTo }
 
     private var inputBar: some View {
         HStack(alignment: .bottom, spacing: 8) {
@@ -278,7 +278,7 @@ struct ChatView: View {
         return replyTo?.id
     }
 
-    private func startReply(_ message: Message) {
+    private func startReply(_ message: TDLibKit.Message) {
         editing = nil
         replyTo = message
     }
@@ -291,7 +291,7 @@ struct ChatView: View {
         }
     }
 
-    private func handle(_ action: MessageAction, for message: Message) {
+    private func handle(_ action: MessageAction, for message: TDLibKit.Message) {
         switch action {
         case .reply:
             startReply(message)
@@ -380,6 +380,6 @@ struct ChatView: View {
 
 /// Wraps a message for `.sheet(item:)`.
 struct Identified: Identifiable {
-    let message: Message
+    let message: TDLibKit.Message
     var id: Int64 { message.id }
 }
