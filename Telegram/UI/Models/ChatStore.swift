@@ -78,6 +78,9 @@ final class ChatStore: ObservableObject {
     /// Messages outside of the loaded history (e.g. replied-to messages).
     @Published private(set) var detachedMessages: [MessageKey: Message] = [:]
     @Published private(set) var users: [Int64: User] = [:]
+    /// My membership status in supergroups/channels and basic groups.
+    @Published private(set) var supergroupStatuses: [Int64: ChatMemberStatus] = [:]
+    @Published private(set) var basicGroupStatuses: [Int64: ChatMemberStatus] = [:]
     @Published private(set) var userStatuses: [Int64: UserStatus] = [:]
     /// chatId → who is doing what right now ("typing", "recording voice"...).
     @Published private(set) var chatActions: [Int64: [MessageSender: ChatAction]] = [:]
@@ -96,6 +99,8 @@ final class ChatStore: ObservableObject {
         messages = [:]
         detachedMessages = [:]
         users = [:]
+        supergroupStatuses = [:]
+        basicGroupStatuses = [:]
         userStatuses = [:]
         chatActions = [:]
         files = [:]
@@ -238,6 +243,46 @@ final class ChatStore: ObservableObject {
     func setUser(_ user: User) {
         users[user.id] = user
         userStatuses[user.id] = user.status
+    }
+
+    func setSupergroupStatus(id: Int64, status: ChatMemberStatus) {
+        supergroupStatuses[id] = status
+    }
+
+    func setBasicGroupStatus(id: Int64, status: ChatMemberStatus) {
+        basicGroupStatuses[id] = status
+    }
+
+    /// Whether I can post in the chat: owners/admins with posting rights in channels,
+    /// non-restricted members in groups, everyone in private chats.
+    func canWrite(chatId: Int64) -> Bool {
+        guard let chat = chats[chatId] else { return false }
+        switch chat.type {
+        case .chatTypePrivate, .chatTypeSecret:
+            return true
+        case .chatTypeBasicGroup(let g):
+            return Self.canWrite(status: basicGroupStatuses[g.basicGroupId], isChannel: false, permissions: chat.permissions)
+        case .chatTypeSupergroup(let s):
+            return Self.canWrite(status: supergroupStatuses[s.supergroupId], isChannel: s.isChannel, permissions: chat.permissions)
+        }
+    }
+
+    private static func canWrite(status: ChatMemberStatus?, isChannel: Bool, permissions: ChatPermissions) -> Bool {
+        switch status {
+        case .chatMemberStatusCreator:
+            return true
+        case .chatMemberStatusAdministrator(let admin):
+            return !isChannel || admin.rights.canPostMessages
+        case .chatMemberStatusMember:
+            return !isChannel && permissions.canSendBasicMessages
+        case .chatMemberStatusRestricted(let r):
+            return !isChannel && r.isMember && r.permissions.canSendBasicMessages
+        case .chatMemberStatusLeft, .chatMemberStatusBanned:
+            return false
+        case nil:
+            // Status not known yet: allow in groups, TDLib will report an error if posting is forbidden.
+            return !isChannel
+        }
     }
 
     func setUserStatus(userId: Int64, status: UserStatus) {

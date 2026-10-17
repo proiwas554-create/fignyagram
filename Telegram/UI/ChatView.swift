@@ -35,9 +35,14 @@ struct ChatView: View {
                     .padding(.vertical, 4)
                     .onTapGesture { client.errorMessage = nil }
             }
-            if chat?.isChannel != true {
+            if store.canWrite(chatId: chatId) {
                 Divider()
                 inputArea
+            } else if chat?.isChannel == true {
+                Divider()
+                Text("Публиковать в этом канале могут только администраторы")
+                    .font(.footnote).foregroundColor(.secondary)
+                    .padding(10)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

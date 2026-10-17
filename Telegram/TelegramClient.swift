@@ -193,6 +193,10 @@ final class TelegramClient: ObservableObject {
         case .updateUser(let u):
             store.setUser(u.user)
             if u.user.id == me?.id { me = u.user }
+        case .updateSupergroup(let u):
+            store.setSupergroupStatus(id: u.supergroup.id, status: u.supergroup.status)
+        case .updateBasicGroup(let u):
+            store.setBasicGroupStatus(id: u.basicGroup.id, status: u.basicGroup.status)
         case .updateUserStatus(let u):
             store.setUserStatus(userId: u.userId, status: u.status)
         case .updateFile(let u):

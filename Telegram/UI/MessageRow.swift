@@ -102,7 +102,6 @@ struct MessageRow: View {
             MessageContentView(message: message)
             if let caption = MessageFormatter.caption(of: message.content), !caption.text.isEmpty {
                 Text(MessageFormatter.attributed(caption))
-                    .textSelection(.enabled)
             }
             reactions
             footer
