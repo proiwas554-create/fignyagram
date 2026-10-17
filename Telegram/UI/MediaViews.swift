@@ -1,6 +1,8 @@
 import SwiftUI
 import UIKit
 import AVKit
+import AVFoundation
+import Combine
 import PhotosUI
 import QuickLook
 import UniformTypeIdentifiers
@@ -496,7 +498,7 @@ struct MediaViewer: View {
             Button { dismiss() } label: {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 30))
-                    .foregroundStyle(.white, .black.opacity(0.5))
+                    .foregroundStyle(Color.white, Color.black.opacity(0.5))
             }
             .padding()
         }
@@ -585,7 +587,7 @@ struct VideoNoteRecorderView: View {
     @State private var isReady = false
     @State private var isRecording = false
     @State private var isProcessing = false
-    @State private var startDate = Date()
+    @State private var startDate = Foundation.Date()
     @State private var elapsed: Double = 0
     private let ticker = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
 
@@ -635,7 +637,7 @@ struct VideoNoteRecorderView: View {
         }
         .padding(.vertical)
         .background(Color.black.ignoresSafeArea())
-        .onReceive(ticker) { _ in if isRecording { elapsed = Date().timeIntervalSince(startDate) } }
+        .onReceive(ticker) { _ in if isRecording { elapsed = Foundation.Date().timeIntervalSince(startDate) } }
         .task {
             guard await VideoNoteCamera.requestAccess() else {
                 TelegramClient.shared.errorMessage = "Нет доступа к камере или микрофону. Разрешите его в Настройках."
@@ -655,7 +657,7 @@ struct VideoNoteRecorderView: View {
 
     private func start() {
         AudioPlayback.shared.stop()
-        startDate = Date()
+        startDate = Foundation.Date()
         elapsed = 0
         isRecording = true
         camera.startRecording { url in

@@ -216,7 +216,7 @@ nonisolated extension OggOpus {
     }
 
     private static func check(_ status: OSStatus) throws {
-        if status != noErr { throw ConversionError.audioFile(status) }
+        if status != 0 { throw ConversionError.audioFile(status) }
     }
 
     /// Re-wraps an Ogg/Opus file into CAF so AVAudioPlayer can play it.
