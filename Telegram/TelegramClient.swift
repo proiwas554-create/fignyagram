@@ -38,6 +38,8 @@ final class TelegramClient: ObservableObject {
 
     private var openedChatId: Int64?
     private var requestedDownloads: Set<Int> = []
+    private var requestedMessages: Set<MessageKey> = []
+    private var lastTypingSent: [Int64: Foundation.Date] = [:]
 
     // MARK: - Lifecycle
 
@@ -158,6 +160,14 @@ final class TelegramClient: ObservableObject {
             store.updateChat(u.chatId) { $0.lastReadOutboxMessageId = u.lastReadOutboxMessageId }
         case .updateChatIsMarkedAsUnread(let u):
             store.updateChat(u.chatId) { $0.isMarkedAsUnread = u.isMarkedAsUnread }
+        case .updateChatPermissions(let u):
+            store.updateChat(u.chatId) { $0.permissions = u.permissions }
+        case .updateChatAvailableReactions(let u):
+            store.updateChat(u.chatId) { $0.availableReactions = u.availableReactions }
+        case .updateChatAction(let u):
+            if u.senderId != me.map({ .messageSenderUser(MessageSenderUser(userId: $0.id)) }) {
+                store.setChatAction(chatId: u.chatId, sender: u.senderId, action: u.action)
+            }
 
         case .updateNewMessage(let u):
             store.addMessage(u.message)
@@ -173,6 +183,8 @@ final class TelegramClient: ObservableObject {
             refreshMessage(chatId: u.chatId, messageId: u.messageId)
         case .updateMessageEdited(let u):
             refreshMessage(chatId: u.chatId, messageId: u.messageId)
+        case .updateMessageInteractionInfo(let u):
+            refreshMessage(chatId: u.chatId, messageId: u.messageId)
         case .updateDeleteMessages(let u):
             if u.isPermanent {
                 store.removeMessages(chatId: u.chatId, ids: u.messageIds)
@@ -181,6 +193,8 @@ final class TelegramClient: ObservableObject {
         case .updateUser(let u):
             store.setUser(u.user)
             if u.user.id == me?.id { me = u.user }
+        case .updateUserStatus(let u):
+            store.setUserStatus(userId: u.userId, status: u.status)
         case .updateFile(let u):
             store.updateFile(u.file)
 
@@ -223,6 +237,8 @@ final class TelegramClient: ObservableObject {
             me = nil
             openedChatId = nil
             requestedDownloads = []
+            requestedMessages = []
+            lastTypingSent = [:]
             allChatsLoaded = false
             isLoadingChats = false
             store.reset()
@@ -240,6 +256,20 @@ final class TelegramClient: ObservableObject {
             }
         }
         loadMoreChats()
+        Self.cleanOutgoingDirectory()
+        Task {
+            // Keeps the TDLib cache small: drops files unused for 3 days and caps the total at 300 MB.
+            _ = try? await client.optimizeStorage(
+                chatIds: [], chatLimit: 100, count: -1, excludeChatIds: [], fileTypes: [],
+                immunityDelay: -1, returnDeletedFileStatistics: false, size: 300 * 1024 * 1024, ttl: 3 * 24 * 3600
+            )
+        }
+    }
+
+    /// Tells Telegram whether the app is in the foreground; TDLib keeps fewer connections when offline.
+    func setOnline(_ online: Bool) {
+        guard let client, isAuthorized else { return }
+        Task { _ = try? await client.setOption(name: "online", value: .optionValueBoolean(OptionValueBoolean(value: online))) }
     }
 
     // MARK: - Authorization
@@ -385,7 +415,7 @@ final class TelegramClient: ObservableObject {
     }
 
     private func refreshMessage(chatId: Int64, messageId: Int64) {
-        guard let client, store.isHistoryLoaded(chatId) else { return }
+        guard let client, store.isHistoryLoaded(chatId) || store.message(chatId: chatId, id: messageId) != nil else { return }
         Task {
             if let message = try? await client.getMessage(chatId: chatId, messageId: messageId) {
                 self.store.replaceMessage(chatId: chatId, oldId: messageId, with: message)
@@ -405,23 +435,201 @@ final class TelegramClient: ObservableObject {
         }
     }
 
-    func sendMessage(chatId: Int64, text: String) {
+    // MARK: - Sending
+
+    func send(_ content: InputMessageContent, to chatId: Int64, replyTo: Int64? = nil) {
         guard let client else { return }
-        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty else { return }
+        let reply = replyTo.map {
+            InputMessageReplyTo.inputMessageReplyToMessage(
+                InputMessageReplyToMessage(checklistTaskId: 0, messageId: $0, pollOptionId: "", quote: nil)
+            )
+        }
+        lastTypingSent[chatId] = nil
         Task {
             do {
                 _ = try await client.sendMessage(
-                    chatId: chatId,
-                    inputMessageContent: .inputMessageText(
-                        InputMessageText(clearDraft: true, linkPreviewOptions: nil, text: FormattedText(entities: [], text: text))
-                    ),
-                    options: nil, replyMarkup: nil, replyTo: nil, topicId: nil
+                    chatId: chatId, inputMessageContent: content,
+                    options: nil, replyMarkup: nil, replyTo: reply, topicId: nil
                 )
             } catch {
                 self.errorMessage = Self.describe(error)
             }
         }
+    }
+
+    static func formatted(_ text: String) -> FormattedText {
+        FormattedText(entities: [], text: text.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    private static func captionText(_ text: String) -> FormattedText? {
+        let caption = formatted(text)
+        return caption.text.isEmpty ? nil : caption
+    }
+
+    private static func local(_ url: URL) -> InputFile {
+        .inputFileLocal(InputFileLocal(path: url.path))
+    }
+
+    func sendText(_ text: String, to chatId: Int64, replyTo: Int64? = nil) {
+        let formatted = Self.formatted(text)
+        guard !formatted.text.isEmpty else { return }
+        send(.inputMessageText(InputMessageText(clearDraft: true, linkPreviewOptions: nil, text: formatted)), to: chatId, replyTo: replyTo)
+    }
+
+    func sendPhoto(_ url: URL, width: Int, height: Int, caption: String, to chatId: Int64, replyTo: Int64?) {
+        let photo = InputPhoto(addedStickerFileIds: [], height: height, photo: Self.local(url), thumbnail: nil, video: nil, width: width)
+        send(.inputMessagePhoto(InputMessagePhoto(
+            caption: Self.captionText(caption), hasSpoiler: false, photo: photo,
+            selfDestructType: nil, showCaptionAboveMedia: false
+        )), to: chatId, replyTo: replyTo)
+    }
+
+    func sendVideo(_ url: URL, width: Int, height: Int, duration: Int, caption: String, to chatId: Int64, replyTo: Int64?) {
+        let video = InputVideo(
+            addedStickerFileIds: [], cover: nil, duration: duration, height: height, startTimestamp: 0,
+            supportsStreaming: true, thumbnail: nil, video: Self.local(url), width: width
+        )
+        send(.inputMessageVideo(InputMessageVideo(
+            caption: Self.captionText(caption), hasSpoiler: false, selfDestructType: nil,
+            showCaptionAboveMedia: false, video: video
+        )), to: chatId, replyTo: replyTo)
+    }
+
+    func sendDocument(_ url: URL, caption: String, to chatId: Int64, replyTo: Int64?) {
+        let document = InputDocument(disableContentTypeDetection: false, document: Self.local(url), thumbnail: nil)
+        send(.inputMessageDocument(InputMessageDocument(caption: Self.captionText(caption), document: document)), to: chatId, replyTo: replyTo)
+    }
+
+    func sendVoiceNote(_ url: URL, duration: Int, waveform: Data, to chatId: Int64, replyTo: Int64?) {
+        let voice = InputVoiceNote(duration: duration, voiceNote: Self.local(url), waveform: waveform)
+        send(.inputMessageVoiceNote(InputMessageVoiceNote(caption: nil, selfDestructType: nil, voiceNote: voice)), to: chatId, replyTo: replyTo)
+    }
+
+    func sendVideoNote(_ url: URL, duration: Int, length: Int, to chatId: Int64, replyTo: Int64?) {
+        let note = InputVideoNote(duration: duration, length: length, thumbnail: nil, videoNote: Self.local(url))
+        send(.inputMessageVideoNote(InputMessageVideoNote(selfDestructType: nil, videoNote: note)), to: chatId, replyTo: replyTo)
+    }
+
+    /// Directory for files prepared for upload; TDLib reads them until the upload completes.
+    nonisolated static var outgoingDirectory: URL {
+        let url = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("outgoing", isDirectory: true)
+        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+        return url
+    }
+
+    nonisolated static func makeOutgoingURL(extension ext: String) -> URL {
+        outgoingDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension(ext)
+    }
+
+    private static func cleanOutgoingDirectory() {
+        let fm = FileManager.default
+        let dayAgo = Foundation.Date().addingTimeInterval(-24 * 3600)
+        guard let files = try? fm.contentsOfDirectory(at: outgoingDirectory, includingPropertiesForKeys: [.contentModificationDateKey]) else { return }
+        for file in files {
+            let date = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
+            if date < dayAgo { try? fm.removeItem(at: file) }
+        }
+    }
+
+    // MARK: - Message actions
+
+    func editMessage(_ message: Message, text: String) {
+        guard let client else { return }
+        let formatted = Self.formatted(text)
+        Task {
+            do {
+                if case .messageText = message.content {
+                    guard !formatted.text.isEmpty else { return }
+                    _ = try await client.editMessageText(
+                        chatId: message.chatId,
+                        inputMessageContent: .inputMessageText(InputMessageText(clearDraft: true, linkPreviewOptions: nil, text: formatted)),
+                        messageId: message.id, replyMarkup: nil
+                    )
+                } else {
+                    _ = try await client.editMessageCaption(
+                        caption: formatted, chatId: message.chatId, messageId: message.id,
+                        replyMarkup: nil, showCaptionAboveMedia: false
+                    )
+                }
+            } catch {
+                self.errorMessage = Self.describe(error)
+            }
+        }
+    }
+
+    func deleteMessages(chatId: Int64, ids: [Int64], forAll: Bool) {
+        perform { try await $0.deleteMessages(chatId: chatId, messageIds: ids, revoke: forAll) }
+    }
+
+    func forward(_ message: Message, to chatId: Int64) {
+        perform {
+            _ = try await $0.forwardMessages(
+                chatId: chatId, fromChatId: message.chatId, messageIds: [message.id],
+                options: nil, removeCaption: false, sendCopy: false, topicId: nil
+            )
+        }
+    }
+
+    func properties(of message: Message) async -> MessageProperties? {
+        try? await client?.getMessageProperties(chatId: message.chatId, messageId: message.id)
+    }
+
+    func availableReactions(for message: Message) async -> [ReactionType] {
+        guard let result = try? await client?.getMessageAvailableReactions(chatId: message.chatId, messageId: message.id, rowSize: 8) else {
+            return []
+        }
+        let isPremium = me?.isPremium ?? false
+        var seen = Set<ReactionType>()
+        return (result.topReactions + result.recentReactions + result.popularReactions)
+            .filter { isPremium || !$0.needsPremium }
+            .map(\.type)
+            .filter { seen.insert($0).inserted }
+    }
+
+    func toggleReaction(_ type: ReactionType, on message: Message) {
+        guard let client else { return }
+        let chosen = message.interactionInfo?.reactions?.reactions.contains { $0.type == type && $0.isChosen } ?? false
+        Task {
+            do {
+                if chosen {
+                    _ = try await client.removeMessageReaction(chatId: message.chatId, messageId: message.id, reactionType: type)
+                } else {
+                    _ = try await client.addMessageReaction(
+                        chatId: message.chatId, isBig: false, messageId: message.id,
+                        reactionType: type, updateRecentReactions: true
+                    )
+                }
+            } catch {
+                self.errorMessage = Self.describe(error)
+            }
+        }
+    }
+
+    /// Loads a replied-to message that is not part of the loaded history.
+    func loadMessage(chatId: Int64, id: Int64) {
+        guard let client, store.message(chatId: chatId, id: id) == nil else { return }
+        let key = MessageKey(chatId: chatId, id: id)
+        guard !requestedMessages.contains(key) else { return }
+        requestedMessages.insert(key)
+        Task {
+            if let message = try? await client.getMessage(chatId: chatId, messageId: id) {
+                self.store.storeDetached(message)
+            }
+        }
+    }
+
+    /// Sends "typing…" (or another action) at most once every 4 seconds per chat.
+    func sendChatAction(_ action: ChatAction, chatId: Int64) {
+        guard let client else { return }
+        let now = Foundation.Date()
+        if case .chatActionCancel = action {
+            lastTypingSent[chatId] = nil
+        } else if let last = lastTypingSent[chatId], now.timeIntervalSince(last) < 4 {
+            return
+        } else {
+            lastTypingSent[chatId] = now
+        }
+        Task { _ = try? await client.sendChatAction(action: action, businessConnectionId: nil, chatId: chatId, topicId: nil) }
     }
 
     // MARK: - Files

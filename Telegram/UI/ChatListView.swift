@@ -94,7 +94,11 @@ struct ChatRow: View {
                     }
                 }
                 HStack(alignment: .top) {
-                    Text(preview).font(.subheadline).foregroundColor(.secondary).lineLimit(2)
+                    if let action = store.actionText(chatId: chat.id) {
+                        Text(action).font(.subheadline).foregroundColor(.accentColor).lineLimit(1)
+                    } else {
+                        Text(preview).font(.subheadline).foregroundColor(.secondary).lineLimit(2)
+                    }
                     Spacer()
                     if chat.unreadCount > 0 || chat.isMarkedAsUnread {
                         Text(chat.unreadCount > 0 ? "\(chat.unreadCount)" : " ")
@@ -119,5 +123,47 @@ struct ChatRow: View {
         if message.isOutgoing && !chat.isChannel { return "Вы: \(text)" }
         if chat.isGroup { return "\(store.senderName(message.senderId)): \(text)" }
         return text
+    }
+}
+
+/// Chat selection for forwarding.
+struct ChatPickerView: View {
+    let title: String
+    let onPick: (Int64) -> Void
+
+    @ObservedObject private var store = ChatStore.shared
+    @Environment(\.dismiss) private var dismiss
+    @State private var search = ""
+
+    private var chatIds: [Int64] {
+        let query = search.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return store.mainChatIds }
+        return store.mainChatIds.filter { store.chats[$0]?.title.localizedCaseInsensitiveContains(query) == true }
+    }
+
+    var body: some View {
+        NavigationView {
+            List(chatIds, id: \.self) { chatId in
+                if let chat = store.chats[chatId] {
+                    Button {
+                        onPick(chatId)
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 12) {
+                            AvatarView(id: chat.id, title: chat.title, photo: chat.photo, size: 40)
+                            Text(chat.title).foregroundColor(.primary).lineLimit(1)
+                        }
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .searchable(text: $search, prompt: "Поиск")
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
+            }
+        }
+        .navigationViewStyle(.stack)
     }
 }

@@ -124,6 +124,37 @@ enum MessageFormatter {
         return result
     }
 
+    static func actionVerb(_ action: ChatAction) -> String {
+        switch action {
+        case .chatActionRecordingVoiceNote: return "записывает голосовое…"
+        case .chatActionUploadingVoiceNote: return "отправляет голосовое…"
+        case .chatActionRecordingVideoNote: return "записывает видеосообщение…"
+        case .chatActionUploadingVideoNote: return "отправляет видеосообщение…"
+        case .chatActionUploadingPhoto: return "отправляет фото…"
+        case .chatActionRecordingVideo, .chatActionUploadingVideo: return "отправляет видео…"
+        case .chatActionUploadingDocument: return "отправляет файл…"
+        case .chatActionChoosingSticker: return "выбирает стикер…"
+        default: return "печатает…"
+        }
+    }
+
+    static func reactionLabel(_ type: ReactionType) -> String {
+        switch type {
+        case .reactionTypeEmoji(let e): return e.emoji
+        case .reactionTypeCustomEmoji: return "✨"
+        case .reactionTypePaid: return "⭐️"
+        }
+    }
+
+    static func duration(_ seconds: Int) -> String {
+        let seconds = max(seconds, 0)
+        return String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    static func fileSize(_ bytes: Int64) -> String {
+        ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+
     static func time(_ unixTime: Int) -> String {
         let date = Date(timeIntervalSince1970: TimeInterval(unixTime))
         return timeFormatter.string(from: date)

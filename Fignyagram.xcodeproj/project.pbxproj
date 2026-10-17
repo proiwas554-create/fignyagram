@@ -18,6 +18,10 @@
 		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
 		F16A000830824E740030F13D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000730824E740030F13D /* Components.swift */; };
 		F16A001030824E740030F13D /* MessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000930824E740030F13D /* MessageFormatter.swift */; };
+		F16B000230824E740030F13D /* OggOpus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000130824E740030F13D /* OggOpus.swift */; };
+		F16B000430824E740030F13D /* MediaSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000330824E740030F13D /* MediaSupport.swift */; };
+		F16B000630824E740030F13D /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000530824E740030F13D /* MediaViews.swift */; };
+		F16B000830824E740030F13D /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000730824E740030F13D /* MessageRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +36,10 @@
 		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		F16A000730824E740030F13D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		F16A000930824E740030F13D /* MessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatter.swift; sourceTree = "<group>"; };
+		F16B000130824E740030F13D /* OggOpus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OggOpus.swift; sourceTree = "<group>"; };
+		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
+		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
+		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -66,6 +74,8 @@
 		844C68F530824AB50030F13D /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				F16B000730824E740030F13D /* MessageRow.swift */,
+				F16B000530824E740030F13D /* MediaViews.swift */,
 				F16A000730824E740030F13D /* Components.swift */,
 				F16A000530824E740030F13D /* ChatView.swift */,
 				F16A000330824E740030F13D /* ChatListView.swift */,
@@ -79,6 +89,8 @@
 		844C68F630824B530030F13D /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				F16B000330824E740030F13D /* MediaSupport.swift */,
+				F16B000130824E740030F13D /* OggOpus.swift */,
 				F16A000930824E740030F13D /* MessageFormatter.swift */,
 				84808577308210CA00D269FE /* Fignyagram */,
 				844C68FB30824C6D0030F13D /* ChatStore.swift */,
@@ -180,6 +192,10 @@
 				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,
 				844C68F830824BE30030F13D /* TelegramClient.swift in Sources */,
 				844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */,
+				F16B000830824E740030F13D /* MessageRow.swift in Sources */,
+				F16B000630824E740030F13D /* MediaViews.swift in Sources */,
+				F16B000430824E740030F13D /* MediaSupport.swift in Sources */,
+				F16B000230824E740030F13D /* OggOpus.swift in Sources */,
 				F16A001030824E740030F13D /* MessageFormatter.swift in Sources */,
 				F16A000830824E740030F13D /* Components.swift in Sources */,
 				F16A000630824E740030F13D /* ChatView.swift in Sources */,
@@ -321,6 +337,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -348,6 +366,10 @@
 		84808582308210CB00D269FE /* Release configuration for PBXNativeTarget "Fignyagram" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEAD_CODE_STRIPPING = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
@@ -357,6 +379,8 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
