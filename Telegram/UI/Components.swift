@@ -6,33 +6,166 @@ import AVFoundation
 import TDLibKit
 
 /// Memory-bounded image cache. Images are decoded already downsampled to the size they are shown at.
-enum ImageCache {
+/// `nonisolated` so decoding can run off the main thread without blocking scrolling.
+nonisolated enum ImageCache {
     private static let cache: NSCache<NSString, UIImage> = {
         let cache = NSCache<NSString, UIImage>()
-        cache.totalCostLimit = 48 * 1024 * 1024
+        cache.totalCostLimit = 64 * 1024 * 1024
+        cache.countLimit = 400
+        return cache
+    }()
+
+    /// Dedicated queue with a small concurrency limit: decoding never blocks main
+    /// and waiting work does not occupy GCD threads like a semaphore would.
+    private static let decodeQueue: OperationQueue = {
+        let queue = OperationQueue()
+        queue.name = "ImageCache.decode"
+        queue.qualityOfService = .userInitiated
+        queue.maxConcurrentOperationCount = 2
+        return queue
+    }()
+
+    /// Minithumbnails are tiny, but decoding them on every body evaluation is wasteful.
+    private static let miniCache: NSCache<NSData, UIImage> = {
+        let cache = NSCache<NSData, UIImage>()
+        cache.countLimit = 500
         return cache
     }()
 
     static func image(atPath path: String, maxPixel: CGFloat = 1280) -> UIImage? {
-        let key = "\(path)#\(Int(maxPixel))" as NSString
+        let effectiveMax = effectiveMaxPixel(maxPixel)
+        let key = "\(path)#\(Int(effectiveMax))" as NSString
         if let cached = cache.object(forKey: key) { return cached }
-        let url = URL(fileURLWithPath: path) as CFURL
-        guard let source = CGImageSourceCreateWithURL(url, [kCGImageSourceShouldCache: false] as CFDictionary) else { return nil }
-        let options = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceShouldCacheImmediately: true,
-            kCGImageSourceThumbnailMaxPixelSize: maxPixel,
-        ] as CFDictionary
-        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
-        let image = UIImage(cgImage: cgImage)
-        cache.setObject(image, forKey: key, cost: cgImage.bytesPerRow * cgImage.height)
-        return image
+        return autoreleasepool {
+            let url = URL(fileURLWithPath: path) as CFURL
+            guard let source = CGImageSourceCreateWithURL(url, [kCGImageSourceShouldCache: false] as CFDictionary) else { return nil }
+            let options = [
+                kCGImageSourceCreateThumbnailFromImageAlways: true,
+                kCGImageSourceCreateThumbnailWithTransform: true,
+                kCGImageSourceShouldCacheImmediately: true,
+                kCGImageSourceThumbnailMaxPixelSize: effectiveMax,
+            ] as CFDictionary
+            guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
+            let image = UIImage(cgImage: cgImage)
+            cache.setObject(image, forKey: key, cost: cgImage.bytesPerRow * cgImage.height)
+            return image
+        }
+    }
+
+    private static var hardwareMaxPixel: CGFloat = 0
+
+    static func applyHardwareTuning(maxPixel: CGFloat, cacheMB: Int, concurrency: Int, qos: QualityOfService) {
+        hardwareMaxPixel = maxPixel
+        cache.totalCostLimit = cacheMB * 1024 * 1024
+        cache.countLimit = concurrency == 1 ? 200 : 400
+        decodeQueue.maxConcurrentOperationCount = concurrency
+        decodeQueue.qualityOfService = qos
+    }
+
+    private static func effectiveMaxPixel(_ requested: CGFloat) -> CGFloat {
+        if UserDefaults.standard.bool(forKey: "ultraOptimizationEnabled") {
+            return min(requested, 200)
+        }
+        if hardwareMaxPixel > 0 {
+            return min(requested, hardwareMaxPixel)
+        }
+        if !UserDefaults.standard.bool(forKey: "maximumPerformanceMode"),
+           DevicePerformance.isLowMemory {
+            return min(requested, 900)
+        }
+        guard UserDefaults.standard.bool(forKey: "maximumPerformanceMode") else { return requested }
+        let raw = UserDefaults.standard.string(forKey: "performanceModeLevel") ?? ""
+        let level = PerformanceLevel(rawValue: raw) ?? .balanced
+        return min(requested, level.maxPixel)
+    }
+
+    static func setPerformanceMode(_ enabled: Bool, level: PerformanceLevel) {
+        if enabled {
+            cache.totalCostLimit = level.cacheLimit
+            cache.countLimit = level == .maximum ? 150 : 300
+            miniCache.countLimit = level == .maximum ? 150 : 350
+            decodeQueue.maxConcurrentOperationCount = level.decodeConcurrency
+        } else {
+            cache.totalCostLimit = 64 * 1024 * 1024
+            cache.countLimit = 400
+            miniCache.countLimit = 500
+            decodeQueue.maxConcurrentOperationCount = 2
+        }
+        clear()
+    }
+
+    /// Decodes an image on a background queue; the result is still cached for later rows.
+    static func imageAsync(atPath path: String, maxPixel: CGFloat = 1280) async -> UIImage? {
+        let effectiveMax = effectiveMaxPixel(maxPixel)
+        let key = "\(path)#\(Int(effectiveMax))" as NSString
+        if let cached = cache.object(forKey: key) { return cached }
+        let token = DecodeCancellationToken()
+        return await withTaskCancellationHandler {
+            await withCheckedContinuation { continuation in
+                decodeQueue.addOperation {
+                    guard !token.isCancelled else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    continuation.resume(returning: image(atPath: path, maxPixel: effectiveMax))
+                }
+            }
+        } onCancel: {
+            token.cancel()
+        }
+    }
+
+    /// Drops decoded images on memory pressure; they are re-decoded on demand.
+    static func configureForDevice() {
+        guard DevicePerformance.isLowMemory else { return }
+        cache.totalCostLimit = DevicePerformance.isVeryLowMemory ? 24 * 1024 * 1024 : 32 * 1024 * 1024
+        cache.countLimit = 250
+        miniCache.countLimit = 300
+    }
+
+    static func setUltraMode(_ enabled: Bool) {
+        if enabled {
+            cache.totalCostLimit = 8 * 1024 * 1024
+            cache.countLimit = 60
+            miniCache.countLimit = 80
+            decodeQueue.maxConcurrentOperationCount = 1
+            clear()
+        }
+    }
+
+    static func setDecodeConcurrency(_ value: Int) {
+        decodeQueue.maxConcurrentOperationCount = max(1, min(value, 4))
+    }
+
+    /// Old devices (A10 and below): one decode lane, small cache, utility QoS.
+    static func applyLegacyDeviceTuning() {
+        decodeQueue.maxConcurrentOperationCount = 1
+        decodeQueue.qualityOfService = .utility
+        cache.totalCostLimit = 24 * 1024 * 1024
+        cache.countLimit = 200
+        miniCache.countLimit = 250
+    }
+
+    static func clear() {
+        cache.removeAllObjects()
+        miniCache.removeAllObjects()
+    }
+
+    /// Aggressive GC for backgrounding: cancel pending decodes and drop all
+    /// decoded images. Files on disk are kept; images are re-decoded on demand.
+    static func flushForBackground() {
+        decodeQueue.cancelAllOperations()
+        cache.removeAllObjects()
+        miniCache.removeAllObjects()
     }
 
     static func image(minithumbnail: TDLibKit.Minithumbnail?) -> UIImage? {
-        guard let data = minithumbnail?.data else { return nil }
-        return UIImage(data: data)
+        guard let data = minithumbnail?.data, !data.isEmpty else { return nil }
+        let key = data as NSData
+        if let cached = miniCache.object(forKey: key) { return cached }
+        guard let image = UIImage(data: data) else { return nil }
+        miniCache.setObject(image, forKey: key)
+        return image
     }
 }
 
@@ -103,13 +236,15 @@ struct AvatarView: View {
     let photo: TDLibKit.ChatPhotoInfo?
     var size: CGFloat = 52
 
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
+    @State private var image: UIImage?
+    @State private var downloadTask: Task<Void, Never>?
 
     private static let colors: [Color] = [.red, .orange, .purple, .green, .teal, .blue, .pink]
 
     var body: some View {
         Group {
-            if let photo, let path = store.localPath(photo.small), let image = ImageCache.image(atPath: path, maxPixel: 160) {
+            if let image {
                 Image(uiImage: image).resizable().scaledToFill()
             } else if let image = ImageCache.image(minithumbnail: photo?.minithumbnail) {
                 Image(uiImage: image).resizable().scaledToFill().blur(radius: 2)
@@ -128,8 +263,35 @@ struct AvatarView: View {
         }
         .frame(width: size, height: size)
         .clipShape(Circle())
-        .onAppear {
-            if let photo { TelegramClient.shared.download(photo.small, priority: 1) }
+        .task(id: localPhotoPath) {
+            guard let path = localPhotoPath else {
+                image = nil
+                return
+            }
+            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: 160)
+            guard !Task.isCancelled else { return }
+            image = decoded
+        }
+        .onAppear(perform: scheduleDownload)
+        .onDisappear {
+            downloadTask?.cancel()
+            downloadTask = nil
+        }
+    }
+
+    private var localPhotoPath: String? {
+        guard let photo else { return nil }
+        return files.localPath(photo.small)
+    }
+
+    /// Avoids starting avatar downloads for rows that only flash by during a fast scroll.
+    private func scheduleDownload() {
+        guard let photo, localPhotoPath == nil else { return }
+        downloadTask?.cancel()
+        downloadTask = Task {
+            try? await Task.sleep(nanoseconds: 180_000_000)
+            guard !Task.isCancelled else { return }
+            TelegramClient.shared.download(photo.small, priority: 1)
         }
     }
 
@@ -154,13 +316,74 @@ enum QRCode {
 struct ErrorBanner: View {
     let message: String?
 
+    @State private var dismissTask: Task<Void, Never>?
+
     var body: some View {
         if let message {
             Text(message)
-                .font(.footnote)
+                .font(.appFootnote)
                 .foregroundColor(.red)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
+                .onAppear { scheduleDismiss(message) }
+                .onChange(of: message) { newValue in scheduleDismiss(newValue) }
+                .onDisappear { dismissTask?.cancel() }
+        }
+    }
+
+    private func scheduleDismiss(_ text: String) {
+        dismissTask?.cancel()
+        guard !text.isEmpty else { return }
+        dismissTask = Task {
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                if TelegramClient.shared.errorMessage == text {
+                    TelegramClient.shared.errorMessage = nil
+                }
+            }
+        }
+    }
+}
+
+
+/// Cancellation flag shared with a queued image decode.
+private final class DecodeCancellationToken: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancelled = false
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return cancelled
+    }
+
+    func cancel() {
+        lock.lock()
+        cancelled = true
+        lock.unlock()
+    }
+}
+
+
+/// Dismisses the keyboard from anywhere.
+func dismissKeyboard() {
+    UIApplication.shared.sendAction(
+        #selector(UIResponder.resignFirstResponder),
+        to: nil, from: nil, for: nil
+    )
+}
+
+
+/// Applies text selection only when the user enabled it in Settings.
+struct SelectableTextModifier: ViewModifier {
+    @AppStorage("textSelectionEnabled") private var enabled = true
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.textSelection(.enabled)
+        } else {
+            content
         }
     }
 }

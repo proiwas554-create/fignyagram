@@ -1,63 +1,213 @@
 import SwiftUI
+import Combine
+import UIKit
 import TDLibKit
 
+/// Main chat list. Uses a plain stable row (no presentation cache) — that cache
+/// caused a main-thread freeze, so rows read directly from ChatStore.
 struct ChatListView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var aliases = LocalAliases.shared
+    @ObservedObject private var visitHistory = ChatVisitHistory.shared
+    @ObservedObject private var ultra = UltraMode.shared
+    @ObservedObject private var classic = ClassicDesignMode.shared
+    @ObservedObject private var globalSearch = GlobalSearchPreferences.shared
+    @ObservedObject private var player = MusicPlayer.shared
+    @ObservedObject private var limits = DisplayLimits.shared
+    @ObservedObject private var searchHistory = SearchHistory.shared
+    @ObservedObject private var proxy = BuiltInProxyManager.shared
 
     @State private var search = ""
+    @FocusState private var searchFocused: Bool
     @State private var confirmLogout = false
+    @State private var showSettings = false
+    @State private var showProxy = false
+    @State private var showVisitHistory = false
+    @State private var showSearchHistory = false
+    @State private var showProfile = false
+    @State private var showNewChat = false
+    @State private var createKind: CreateChatKind?
+    @State private var showAccounts = false
+    @State private var showClassicProfileMenu = false
+    @State private var openTarget: ChatTarget?
+    @State private var searchResults: [TDLibKit.Message] = []
+    @State private var contactResults: [TDLibKit.User] = []
+    @State private var channelResults: [Int64] = []
+    @State private var searching = false
+    @State private var searchTask: Task<Void, Never>?
+    @State private var extraChats = 0
+
+    private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    private static let settingsSearchItems: [(String, [String])] = [
+        ("Прокси", ["прокси", "proxy", "сеть"]),
+        ("Настройки", ["настройки", "settings"]),
+        ("Уведомления", ["уведомления", "notification"]),
+        ("Память и кэш", ["кэш", "память", "очистка", "cache"]),
+        ("Оптимизация", ["оптимизация", "батарея", "энергия"]),
+        ("Приватность", ["приватность", "невидимка"]),
+        ("Лимиты отображения", ["лимиты", "limits"]),
+        ("Для разработчиков", ["разработчик", "debug", "терминал"])
+    ]
+
+    private var matchedSettings: [String] {
+        guard !query.isEmpty else { return [] }
+        let normalized = SearchMatcher.normalized(query)
+        return Self.settingsSearchItems.compactMap { item in
+            item.1.contains { SearchMatcher.matches($0, query: normalized) } ? item.0 : nil
+        }
+    }
+
+    private var savedChatId: Int64? {
+        store.chats.first { $0.value.privateUserId == client.me?.id }?.key
+    }
+
+    private var orderedChatIds: [Int64] {
+        let mainSet = Set(store.mainChatIds)
+        let local = store.localPinnedChatIds.filter { mainSet.contains($0) }
+        let localSet = Set(local)
+        var result: [Int64] = []
+        if let last = store.lastOpenedChatId, mainSet.contains(last) { result.append(last) }
+        result += local.filter { $0 != store.lastOpenedChatId }
+        result += store.mainChatIds.filter { !localSet.contains($0) && $0 != store.lastOpenedChatId }
+        if let savedChatId, store.chats[savedChatId] != nil {
+            result.removeAll { $0 == savedChatId }
+            result.insert(savedChatId, at: 0)
+        }
+        return result
+    }
 
     private var chatIds: [Int64] {
-        let query = search.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return store.mainChatIds }
-        return store.mainChatIds.filter { store.chats[$0]?.title.localizedCaseInsensitiveContains(query) == true }
+        let base = orderedChatIds
+        guard !query.isEmpty else { return base }
+        return base.filter {
+            guard let chat = store.chats[$0] else { return false }
+            return SearchMatcher.matches(displayTitle(chat), query: query)
+        }
+    }
+
+    private var displayedChatIds: [Int64] {
+        let limit = max(1, limits.effectiveRenderedChats + extraChats)
+        return Array(chatIds.prefix(limit))
+    }
+
+    private func displayTitle(_ chat: ChatItem) -> String {
+        aliases.chatAlias(chat.id) ?? chat.title
+    }
+
+    private func isPinned(_ chat: ChatItem) -> Bool {
+        chat.id == savedChatId || chat.isPinned || store.isLocallyPinned(chat.id)
+    }
+
+    private func togglePin(_ chat: ChatItem) {
+        if chat.id == savedChatId { return }
+        client.setPinned(chatId: chat.id, isPinned: !isPinned(chat))
     }
 
     var body: some View {
         NavigationView {
-            List {
-                ForEach(chatIds, id: \.self) { chatId in
-                    if let chat = store.chats[chatId] {
-                        NavigationLink(destination: ChatView(chatId: chatId)) {
-                            ChatRow(chat: chat)
-                        }
-                        .onAppear {
-                            if chatId == store.mainChatIds.last { client.loadMoreChats() }
+            let visibleIds = displayedChatIds
+            VStack(spacing: 0) {
+                if classic.isEnabled { classicHeader }
+                List {
+                    if player.current != nil { GlobalPlayerBar() }
+                    if query.isEmpty && classic.isEnabled && searchFocused && !searchHistory.items.isEmpty {
+                        Section("Недавние запросы") {
+                            ForEach(searchHistory.items, id: \.self) { item in
+                                Button {
+                                    search = item
+                                    searchFocused = true
+                                } label: {
+                                    Label(item, systemImage: "clock.arrow.circlepath")
+                                }
+                            }
                         }
                     }
-                }
-                if client.isLoadingChats {
-                    HStack { Spacer(); ProgressView(); Spacer() }
-                }
-            }
-            .listStyle(.plain)
-            .searchable(text: $search, prompt: "Поиск чатов")
-            .overlay {
-                if store.mainChatIds.isEmpty && !client.isLoadingChats {
-                    VStack(spacing: 12) {
-                        Text("🦋").font(.system(size: 60)).opacity(0.6)
-                        Text("Чатов пока нет").foregroundColor(.secondary)
+                    if !query.isEmpty && !matchedSettings.isEmpty {
+                        Section("Настройки") {
+                            ForEach(matchedSettings, id: \.self) { name in
+                                Button {
+                                    switch name {
+                                    case "Прокси": showProxy = true
+                                    default: showSettings = true
+                                    }
+                                } label: {
+                                    Label(name, systemImage: "gearshape")
+                                }
+                            }
+                        }
+                    }
+                    if !query.isEmpty && (globalSearch.isEnabled || !contactResults.isEmpty) {
+                        searchSection
+                    }
+                    ForEach(visibleIds, id: \.self) { chatId in
+                        if let chat = store.chats[chatId] {
+                            chatRow(chat)
+                        }
+                    }
+                    if client.isLoadingChats {
+                        HStack { Spacer(); ProgressView(); Spacer() }
+                    }
+                    if chatIds.count > visibleIds.count {
+                        Text("Показать ещё \(min(max(10, limits.effectiveRenderedChats), chatIds.count - visibleIds.count))")
+                            .font(.appFootnote)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                extraChats += max(10, limits.effectiveRenderedChats)
+                            }
+                            .glassPanel(cornerRadius: 14)
+                            .listRowSeparator(.hidden)
                     }
                 }
+                .listStyle(.plain)
             }
+            .searchable(text: $search, prompt: "Поиск чатов, каналов, контактов")
+            .navigationBarHidden(classic.isEnabled)
             .navigationTitle("Fignyagram")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Menu {
-                        if let me = client.me {
-                            Text([me.firstName, me.lastName].filter { !$0.isEmpty }.joined(separator: " "))
-                            if !me.phoneNumber.isEmpty { Text("+\(me.phoneNumber)") }
+                if !classic.isEnabled {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button { showSearchHistory = true } label: {
+                            Image(systemName: "clock.arrow.circlepath")
                         }
-                        Button(role: .destructive) {
-                            confirmLogout = true
-                        } label: {
-                            Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        HStack(spacing: 16) {
+                            composeMenu
+                            profileMenu
                         }
-                    } label: {
-                        Image(systemName: "person.crop.circle")
                     }
                 }
+            }
+
+            .onChange(of: search) { _ in scheduleSearch() }
+            .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showProfile) { ProfileSettingsView() }
+            .sheet(isPresented: $showAccounts) { AccountsView() }
+            .sheet(item: $createKind) { kind in
+                CreateChatView(kind: kind) { chatId in
+                    openTarget = ChatTarget(chatId: chatId, messageId: nil)
+                }
+            }
+            .sheet(isPresented: $showNewChat) {
+                ChatPickerView(title: "Новое сообщение") { chatId in
+                    openTarget = ChatTarget(chatId: chatId, messageId: nil)
+                }
+            }
+            .sheet(isPresented: $showProxy) { ProxySettingsView() }
+            .sheet(isPresented: $showVisitHistory) { visitHistoryView }
+            .sheet(isPresented: $showSearchHistory) {
+                SearchHistoryView { item in
+                    search = item
+                    searchFocused = true
+                }
+            }
+            .sheet(isPresented: $showClassicProfileMenu) {
+                ClassicProfileMenuView(onSettings: { showSettings = true }, onLogout: { confirmLogout = true })
             }
             .confirmationDialog("Выйти из аккаунта?", isPresented: $confirmLogout, titleVisibility: .visible) {
                 Button("Выйти", role: .destructive) { client.logOut() }
@@ -66,88 +216,494 @@ struct ChatListView: View {
                 ErrorBanner(message: client.errorMessage)
                     .onTapGesture { client.errorMessage = nil }
             }
+            .background(openChatLink)
+            .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
+            .onDisappear { dismissKeyboard() }
+            .onChange(of: openTarget) { target in
+                if target == nil { ChatPresentationState.shared.reset() }
+            }
+            .onAppear { ChatPresentationState.shared.reset() }
+            .onChange(of: chatIds) { ids in
+                if let last = ids.last, last == store.mainChatIds.last { client.loadMoreChats() }
+            }
         }
         .navigationViewStyle(.stack)
     }
+
+    // MARK: - Rows
+
+    @ViewBuilder
+    private func chatRow(_ chat: ChatItem) -> some View {
+        Button {
+            openTarget = ChatTarget(chatId: chat.id, messageId: nil)
+        } label: {
+            ChatRow(
+                chat: displayedChat(chat),
+                actionText: store.actionText(chatId: chat.id),
+                senderName: chat.isGroup ? store.senderName(chat.lastMessage?.senderId ?? .messageSenderUser(MessageSenderUser(userId: 0))) : "",
+                isPinned: isPinned(chat),
+                hidesLastMessage: chat.lastMessage.map { store.isSenderBlocked($0.senderId) } ?? false,
+                isRecent: !ultra.isEnabled && visitHistory.visits.prefix(3).contains { $0.chatId == chat.id },
+                isSaved: chat.id == savedChatId,
+                isLastOpened: chat.id == store.lastOpenedChatId,
+                presence: presence(for: chat),
+                fallbackPreview: historyPreview(chatId: chat.id)
+            )
+            .equatable()
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+            if chat.id != savedChatId {
+                Button { togglePin(chat) } label: {
+                    Label(isPinned(chat) ? "Открепить" : "Закрепить", systemImage: "pin.fill")
+                }
+                .tint(.orange)
+            }
+        }
+        .contextMenu {
+            if chat.id == store.lastOpenedChatId {
+                Button { showVisitHistory = true } label: {
+                    Label("История заходов", systemImage: "clock.arrow.circlepath")
+                }
+            }
+            Button { togglePin(chat) } label: {
+                Label(isPinned(chat) ? "Открепить от верха" : "Закрепить сверху", systemImage: "pin")
+            }
+            if chat.privateUserId != nil || chat.isGroup || chat.isChannel {
+                Button { client.copyUsername(for: chat) } label: {
+                    Label("Скопировать юзернейм", systemImage: "at")
+                }
+            }
+            if let userId = chat.privateUserId, let user = store.users[userId], !user.phoneNumber.isEmpty {
+                Button { client.call(phoneNumber: user.phoneNumber) } label: {
+                    Label("Позвонить", systemImage: "phone")
+                }
+            }
+            if let userId = chat.privateUserId {
+                Button {
+                    client.setUserBlocked(userId: userId, isBlocked: !store.isUserBlocked(userId))
+                } label: {
+                    Label(store.isUserBlocked(userId) ? "Разблокировать" : "Заблокировать", systemImage: "hand.raised")
+                }
+            }
+        }
+    }
+
+    private func displayedChat(_ chat: ChatItem) -> ChatItem {
+        guard let alias = aliases.chatAlias(chat.id) else { return chat }
+        var copy = chat
+        copy.title = alias
+        return copy
+    }
+
+    // MARK: - Search
+
+    @ViewBuilder
+    private var searchSection: some View {
+        if !contactResults.isEmpty {
+            Section("Контакты") {
+                ForEach(contactResults) { user in
+                    Button {
+                        Task { await openContact(user) }
+                    } label: {
+                        HStack(spacing: 10) {
+                            AvatarView(id: user.id, title: [user.firstName, user.lastName].joined(separator: " "), photo: nil, size: 36)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text([user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " "))
+                                if !user.phoneNumber.isEmpty {
+                                    Text("+\(user.phoneNumber)").font(.appCaption).foregroundColor(.secondary)
+                                }
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.appCaption).foregroundColor(.secondary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        if !channelResults.isEmpty {
+            Section("Каналы") {
+                ForEach(channelResults, id: \.self) { chatId in
+                    if let chat = store.chats[chatId] {
+                        Button { openTarget = ChatTarget(chatId: chatId, messageId: nil) } label: {
+                            HStack(spacing: 10) {
+                                AvatarView(id: chat.id, title: chat.title, photo: chat.photo, size: 36)
+                                Text(chat.title).lineLimit(1)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if !searchResults.isEmpty {
+            Section("Сообщения") {
+                ForEach(searchResults, id: \.id) { message in
+                    Button {
+                        openTarget = ChatTarget(chatId: message.chatId, messageId: message.id)
+                    } label: {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(store.chats[message.chatId]?.title ?? "Чат")
+                                .font(.appCaption.bold())
+                                .foregroundColor(.accentColor)
+                            Text(MessageFormatter.preview(message.content)).lineLimit(2)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func openContact(_ user: TDLibKit.User) async {
+        do {
+            let chatId = try await client.openChat(userId: user.id)
+            openTarget = ChatTarget(chatId: chatId, messageId: nil)
+        } catch {
+            // Fallback: some accounts can only be opened through a public username.
+            if let username = user.usernames?.activeUsernames.first,
+               let chatId = try? await client.openChat(username: username) {
+                openTarget = ChatTarget(chatId: chatId, messageId: nil)
+            } else {
+                client.errorMessage = TelegramClient.describe(error)
+            }
+        }
+    }
+
+    private func scheduleSearch() {
+        searchTask?.cancel()
+        let text = query
+        guard !text.isEmpty, globalSearch.isEnabled else {
+            searchResults = []; contactResults = []; channelResults = []
+            return
+        }
+        searchTask = Task {
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+            searching = true
+            defer { searching = false }
+            var contacts = (try? await client.searchContacts(text)) ?? []
+            // Phone lookup by first/last 4 digits, even if Telegram's contact
+            // search didn't return the person yet.
+            let digits = text.filter { $0.isNumber }
+            if digits.count >= 3 {
+                let local = store.users.values.filter { user in
+                    let phone = user.phoneNumber.filter { $0.isNumber }
+                    guard !phone.isEmpty else { return false }
+                    return phone.hasPrefix(digits) || phone.hasSuffix(digits) || phone.contains(digits)
+                }
+                for user in local where !contacts.contains(where: { $0.id == user.id }) {
+                    contacts.append(user)
+                }
+            }
+            contactResults = contacts
+            channelResults = (try? await client.searchChannels(text)) ?? []
+            let found = (try? await client.searchMessages(text)) ?? []
+            let savedId = client.me?.id
+            searchResults = found.filter { $0.chatId != savedId }
+            if !contactResults.isEmpty || !channelResults.isEmpty || !searchResults.isEmpty {
+                searchHistory.record(text)
+            }
+        }
+    }
+
+    private func historyPreview(chatId: Int64) -> String? {
+        guard let message = store.messages[chatId]?.last else { return nil }
+        return MessageFormatter.preview(message.content)
+    }
+
+    private func presence(for chat: ChatItem) -> String? {
+        guard store.actionText(chatId: chat.id) == nil else { return nil }
+        guard let userId = chat.privateUserId, let user = store.users[userId] else { return nil }
+        if case .userTypeBot = user.type { return nil }
+        switch user.status {
+        case .userStatusOnline: return "в сети"
+        case .userStatusRecently: return "был(а) недавно"
+        case .userStatusLastWeek: return "был(а) на этой неделе"
+        case .userStatusLastMonth: return "был(а) в этом месяце"
+        default: return nil
+        }
+    }
+
+    private var composeMenu: some View {
+        Menu {
+            Button { createKind = .channel } label: {
+                Label("Новый канал", systemImage: "megaphone")
+            }
+            Button { createKind = .group } label: {
+                Label("Новая группа", systemImage: "person.2")
+            }
+            Button { showNewChat = true } label: {
+                Label("Новое сообщение", systemImage: "bubble.left.and.bubble.right")
+            }
+        } label: {
+            Image(systemName: "square.and.pencil")
+                .font(.system(size: 21))
+                .foregroundColor(.accentColor)
+        }
+    }
+
+    private var normalHeader: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass").foregroundColor(.secondary)
+            TextField("Поиск чатов, каналов, контактов", text: $search)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+            if !search.isEmpty {
+                Button { search = "" } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 42)
+        .glassPanel(cornerRadius: 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 6)
+    }
+
+    private var profileMenu: some View {
+        Menu {
+            if let me = client.me {
+                Text([me.firstName, me.lastName].filter { !$0.isEmpty }.joined(separator: " "))
+                if let username = me.usernames?.activeUsernames.first {
+                    Text("@\(username)")
+                }
+                if !me.phoneNumber.isEmpty { Text("+\(me.phoneNumber)") }
+                Divider()
+            }
+            Button { showProfile = true } label: {
+                Label("Профиль", systemImage: "person.crop.circle")
+            }
+            Toggle(isOn: Binding(
+                get: { proxy.isEnabled },
+                set: { proxy.setEnabled($0) }
+            )) {
+                Label("Встроенный прокси", systemImage: "network")
+            }
+            Button { showAccounts = true } label: {
+                Label("Аккаунты", systemImage: "person.2")
+            }
+            Button { showSettings = true } label: {
+                Label("Настройки", systemImage: "gearshape")
+            }
+            Button(role: .destructive) { confirmLogout = true } label: {
+                Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+        } label: {
+            Image(systemName: "person.crop.circle").font(.system(size: 21))
+                .foregroundColor(.accentColor)
+        }
+    }
+
+    // MARK: - Classic header (iOS 18 style)
+
+    private var classicHeader: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 18) {
+                Button { showSearchHistory = true } label: {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 21))
+                }
+                Spacer()
+                composeMenu
+                profileMenu
+                    .font(.system(size: 21))
+            }
+            .foregroundColor(.accentColor)
+
+            Text("Fignyagram")
+                .font(.system(size: 34, weight: .bold))
+
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.secondary)
+                TextField("Поиск чатов, каналов, контактов", text: $search)
+                    .focused($searchFocused)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                if !search.isEmpty {
+                    Button { search = "" } label: {
+                        Image(systemName: "xmark.circle.fill").foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .frame(height: 42)
+            .glassPanel(cornerRadius: 14)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Visit history
+
+    private var visitHistoryView: some View {
+        NavigationView {
+            List(visitHistory.visits) { visit in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(store.chats[visit.chatId]?.title ?? "Чат \(visit.chatId)")
+                        Text(visit.lastVisited, style: .date)
+                            .font(.appCaption).foregroundColor(.secondary)
+                    }
+                    Spacer()
+                    Text("\(visit.visits)×").font(.appCaption.monospacedDigit()).foregroundColor(.secondary)
+                }
+            }
+            .navigationTitle("История заходов")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Закрыть") { showVisitHistory = false }
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+    }
+
+    private var openChatLink: some View {
+        NavigationLink(
+            destination: Group {
+                if let target = openTarget {
+                    ChatView(chatId: target.chatId, focusMessageId: target.messageId)
+                }
+            },
+            isActive: Binding(
+                get: { openTarget != nil },
+                set: { if !$0 { openTarget = nil } }
+            )
+        ) { EmptyView() }
+        .hidden()
+    }
+}
+
+/// A chat to open, optionally focused on a specific message (search result).
+struct ChatTarget: Identifiable, Equatable {
+    let chatId: Int64
+    let messageId: Int64?
+    var id: String { "\(chatId)-\(messageId ?? 0)" }
 }
 
 struct ChatRow: View {
     let chat: ChatItem
-    @ObservedObject private var store = ChatStore.shared
+    let actionText: String?
+    let senderName: String
+    let isPinned: Bool
+    let hidesLastMessage: Bool
+    var isRecent = false
+    var isSaved = false
+    var isLastOpened = false
+    var presence: String?
+    var fallbackPreview: String?
 
     var body: some View {
         HStack(spacing: 12) {
             AvatarView(id: chat.id, title: chat.title, photo: chat.photo)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 4) {
-                    if chat.isChannel { Image(systemName: "megaphone.fill").font(.caption).foregroundColor(.secondary) }
-                    else if chat.isGroup { Image(systemName: "person.2.fill").font(.caption).foregroundColor(.secondary) }
-                    Text(chat.title).font(.headline).lineLimit(1)
+                    if chat.isChannel { Image(systemName: "megaphone.fill").font(.appCaption).foregroundColor(.secondary) }
+                    else if chat.isGroup { Image(systemName: "person.2.fill").font(.appCaption).foregroundColor(.secondary) }
+                    Text(chat.title).font(.appHeadline).lineLimit(1)
+                    if isSaved {
+                        Text("Избранное").font(.appCaption2.bold()).padding(.horizontal, 5)
+                            .background(Capsule().fill(Color.accentColor.opacity(0.16)))
+                            .foregroundColor(.accentColor)
+                    } else if isLastOpened {
+                        Text("Недавний").font(.appCaption2).foregroundColor(.secondary)
+                    }
                     Spacer()
                     if let message = chat.lastMessage {
                         if message.isOutgoing {
                             Text(message.id <= chat.lastReadOutboxMessageId ? "✓✓" : "✓")
-                                .font(.caption).foregroundColor(.accentColor)
+                                .font(.appCaption).foregroundColor(.accentColor)
                         }
                         Text(MessageFormatter.listDate(message.date))
-                            .font(.caption).foregroundColor(.secondary)
+                            .font(.appCaption).foregroundColor(.secondary)
                     }
                 }
                 HStack(alignment: .top) {
-                    if let action = store.actionText(chatId: chat.id) {
-                        Text(action).font(.subheadline).foregroundColor(.accentColor).lineLimit(1)
+                    if let action = actionText {
+                        Text(action).font(.appSubheadline).foregroundColor(.accentColor).lineLimit(1)
                     } else {
-                        Text(preview).font(.subheadline).foregroundColor(.secondary).lineLimit(2)
+                        Text(preview).font(.appSubheadline).foregroundColor(.secondary).lineLimit(2)
                     }
                     Spacer()
                     if chat.unreadCount > 0 || chat.isMarkedAsUnread {
                         Text(chat.unreadCount > 0 ? "\(chat.unreadCount)" : " ")
-                            .font(.caption.bold())
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
+                            .font(.caption.bold()).foregroundColor(.white)
+                            .padding(.horizontal, 7).padding(.vertical, 3)
                             .background(Capsule().fill(Color.accentColor))
-                    } else if chat.isPinned {
-                        Image(systemName: "pin.fill").font(.caption).foregroundColor(.secondary)
+                    } else if isPinned {
+                        Image(systemName: "pin.fill").font(.appCaption).foregroundColor(.secondary)
+                    }
+                }
+                if let presence, actionText == nil {
+                    HStack(spacing: 4) {
+                        if presence == "в сети" {
+                            Circle().fill(Color.green).frame(width: 6, height: 6)
+                        }
+                        Text(presence)
+                            .font(.appCaption2)
+                            .foregroundColor(presence == "в сети" ? .green : .secondary)
+                            .lineLimit(1)
                     }
                 }
             }
         }
         .padding(.vertical, 4)
+        .id(chat.id)
     }
 
     private var preview: String {
-        guard let message = chat.lastMessage else { return "" }
-        let text = MessageFormatter.preview(message.content)
+        guard let message = chat.lastMessage else { return fallbackPreview ?? "Нет сообщений" }
+        if hidesLastMessage { return "Сообщение скрыто" }
+        var text = MessageFormatter.preview(message.content)
+        if text.isEmpty { text = MessageFormatter.serviceText(message.content) ?? "Сообщение" }
         if MessageFormatter.serviceText(message.content) != nil { return text }
         if message.isOutgoing && !chat.isChannel { return "Вы: \(text)" }
-        if chat.isGroup { return "\(store.senderName(message.senderId)): \(text)" }
+        if chat.isGroup { return "\(senderName): \(text)" }
         return text
     }
 }
 
-/// Chat selection for forwarding.
+extension ChatRow: Equatable {
+    static func == (lhs: ChatRow, rhs: ChatRow) -> Bool {
+        lhs.chat == rhs.chat && lhs.actionText == rhs.actionText &&
+        lhs.senderName == rhs.senderName && lhs.isPinned == rhs.isPinned &&
+        lhs.hidesLastMessage == rhs.hidesLastMessage && lhs.isRecent == rhs.isRecent &&
+        lhs.isSaved == rhs.isSaved && lhs.isLastOpened == rhs.isLastOpened &&
+        lhs.presence == rhs.presence && lhs.fallbackPreview == rhs.fallbackPreview
+    }
+}
+
 struct ChatPickerView: View {
     let title: String
     let onPick: (Int64) -> Void
-
     @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var client = TelegramClient.shared
     @Environment(\.dismiss) private var dismiss
     @State private var search = ""
 
-    private var chatIds: [Int64] {
+    private var orderedIds: [Int64] {
+        var ids = store.mainChatIds
+        if let saved = store.chats.first(where: { $0.value.privateUserId == client.me?.id })?.key {
+            ids.removeAll { $0 == saved }
+            ids.insert(saved, at: 0)
+        }
         let query = search.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return store.mainChatIds }
-        return store.mainChatIds.filter { store.chats[$0]?.title.localizedCaseInsensitiveContains(query) == true }
+        guard !query.isEmpty else { return ids }
+        return ids.filter { store.chats[$0]?.title.localizedCaseInsensitiveContains(query) == true }
     }
 
     var body: some View {
         NavigationView {
-            List(chatIds, id: \.self) { chatId in
+            List(orderedIds, id: \.self) { chatId in
                 if let chat = store.chats[chatId] {
                     Button {
-                        onPick(chatId)
-                        dismiss()
+                        onPick(chatId); dismiss()
                     } label: {
                         HStack(spacing: 12) {
                             AvatarView(id: chat.id, title: chat.title, photo: chat.photo, size: 40)
@@ -156,8 +712,8 @@ struct ChatPickerView: View {
                     }
                 }
             }
-            .listStyle(.plain)
             .searchable(text: $search, prompt: "Поиск")
+            .modifier(GlassListModifier())
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

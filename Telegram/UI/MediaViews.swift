@@ -10,12 +10,40 @@ import TDLibKit
 
 // MARK: - Shared helpers
 
-private func thumbnailImage(_ thumbnail: TDLibKit.Thumbnail?, minithumbnail: TDLibKit.Minithumbnail?, store: ChatStore) -> (UIImage, Bool)? {
-    if let thumbnail, let path = store.localPath(thumbnail.file), let image = ImageCache.image(atPath: path, maxPixel: 480) {
-        return (image, false)
+/// Asynchronously decoded thumbnail used as a background for videos, GIFs and round videos.
+private struct MediaThumbnail: View {
+    let thumbnail: TDLibKit.Thumbnail?
+    let minithumbnail: TDLibKit.Minithumbnail?
+    let blurRadius: CGFloat
+
+    @ObservedObject private var files = FileStore.shared
+    @State private var image: UIImage?
+
+    private var path: String? {
+        guard let thumbnail else { return nil }
+        return files.localPath(thumbnail.file)
     }
-    if let image = ImageCache.image(minithumbnail: minithumbnail) { return (image, true) }
-    return nil
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else if let mini = ImageCache.image(minithumbnail: minithumbnail) {
+                Image(uiImage: mini).resizable().scaledToFill().blur(radius: blurRadius)
+            } else {
+                Color.black.opacity(0.25)
+            }
+        }
+        .task(id: path) {
+            guard let path else {
+                image = nil
+                return
+            }
+            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: 480)
+            guard !Task.isCancelled else { return }
+            image = decoded
+        }
+    }
 }
 
 private func mediaFrame(width: Int, height: Int, maxWidth: CGFloat = 240) -> CGSize {
@@ -23,7 +51,74 @@ private func mediaFrame(width: Int, height: Int, maxWidth: CGFloat = 240) -> CGS
     return CGSize(width: maxWidth, height: min(max(maxWidth / aspect, 80), 360))
 }
 
-enum ViewerItem: Identifiable {
+/// Shows percentage, downloaded/total size and estimated time left.
+struct DownloadStatusView: View {
+    let file: TDLibKit.File
+    var compact = false
+    var showCancel = true
+    @ObservedObject private var files = FileStore.shared
+
+    var body: some View {
+        if let status = files.downloadStatus(file) {
+            let percent = Int((status.fraction * 100).rounded())
+            let text = compact
+                ? "\(percent)% · \(MessageFormatter.fileSize(status.remainingBytes))"
+                : "\(percent)% · \(MessageFormatter.fileSize(status.downloaded)) из \(MessageFormatter.fileSize(status.total)) · \(timeText(status.remainingSeconds))"
+            HStack(spacing: 6) {
+                Text(text)
+                    .font(.appCaption2)
+                    .foregroundColor(.secondary)
+                if showCancel {
+                    Button("Отменить") {
+                        TelegramClient.shared.cancelDownload(file)
+                    }
+                    .font(.appCaption2)
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func timeText(_ seconds: TimeInterval?) -> String {
+        guard let seconds, seconds.isFinite, seconds > 0 else { return "осталось…" }
+        if seconds < 60 { return "~" + "\(Int(seconds.rounded())) с" }
+        return "~" + "\(Int((seconds / 60).rounded())) мин"
+    }
+}
+
+/// Delays a download until the row has stayed visible for a moment, so fast
+/// scrolling doesn't queue network work for media that is immediately gone.
+private struct DeferredDownloadModifier: ViewModifier {
+    let file: TDLibKit.File?
+    let priority: Int
+
+    @State private var task: Task<Void, Never>?
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                guard let file, FileStore.shared.localPath(file) == nil else { return }
+                task?.cancel()
+                task = Task {
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                    guard !Task.isCancelled else { return }
+                    TelegramClient.shared.download(file, priority: priority)
+                }
+            }
+            .onDisappear {
+                task?.cancel()
+                task = nil
+            }
+    }
+}
+
+extension View {
+    func downloadAfterDelay(_ file: TDLibKit.File?, priority: Int) -> some View {
+        modifier(DeferredDownloadModifier(file: file, priority: priority))
+    }
+}
+
+enum ViewerItem: Identifiable, Equatable {
     case image(String)
     case video(String)
 
@@ -38,8 +133,13 @@ enum ViewerItem: Identifiable {
 
 struct PhotoView: View {
     let photo: TDLibKit.Photo
-    @ObservedObject private var store = ChatStore.shared
+    var chatId: Int64 = 0
+    var messageId: Int64 = 0
+    var hasSpoiler = false
+    @ObservedObject private var files = FileStore.shared
     @State private var viewer: ViewerItem?
+    @State private var image: UIImage?
+    @State private var revealed = false
 
     private var size: TDLibKit.PhotoSize? {
         let sorted = photo.sizes.sorted { $0.width < $1.width }
@@ -48,9 +148,9 @@ struct PhotoView: View {
 
     var body: some View {
         let frame = mediaFrame(width: size?.width ?? 1, height: size?.height ?? 1)
-        let path = size.flatMap { store.localPath($0.photo) }
+        let path = size.flatMap { files.localPath($0.photo) }
         Group {
-            if let path, let image = ImageCache.image(atPath: path, maxPixel: 720) {
+            if let image {
                 Image(uiImage: image).resizable().scaledToFill()
             } else if let thumb = ImageCache.image(minithumbnail: photo.minithumbnail) {
                 Image(uiImage: thumb).resizable().scaledToFill().blur(radius: 6)
@@ -60,16 +160,54 @@ struct PhotoView: View {
         }
         .frame(width: frame.width, height: frame.height)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(alignment: .bottomLeading) {
+            if let size, files.downloadStatus(size.photo) != nil {
+                DownloadStatusView(file: size.photo, compact: true)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(Color.black.opacity(0.55)))
+                    .foregroundColor(.white)
+                    .padding(6)
+            }
+        }
         .overlay {
-            if let size, let progress = store.progress(size.photo) {
+            if let size, let progress = files.progress(size.photo) {
                 ProgressRing(progress: progress)
             } else if path == nil {
                 ProgressView()
             }
         }
-        .onTapGesture { if let path { viewer = .image(path) } }
-        .onAppear { if let size { TelegramClient.shared.download(size.photo, priority: 16) } }
-        .fullScreenCover(item: $viewer) { MediaViewer(item: $0) }
+        .blur(radius: hasSpoiler && !revealed ? 18 : 0)
+        .overlay {
+            if hasSpoiler && !revealed {
+                Label("Спойлер", systemImage: "eye.slash.fill")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .foregroundColor(.primary)
+            }
+        }
+        .onTapGesture {
+            if hasSpoiler && !revealed {
+                withAnimation { revealed = true }
+            } else if let path {
+                viewer = .image(path)
+            }
+        }
+        .task(id: path) {
+            guard let path else {
+                image = nil
+                return
+            }
+            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: 720)
+            guard !Task.isCancelled else { return }
+            image = decoded
+        }
+        .downloadAfterDelay(size?.photo, priority: 16)
+        .fullScreenCover(item: $viewer) {
+            MediaViewer(chatId: chatId, messageId: messageId, item: $0)
+        }
     }
 }
 
@@ -77,19 +215,19 @@ struct PhotoView: View {
 
 struct VideoView: View {
     let video: TDLibKit.Video
-    @ObservedObject private var store = ChatStore.shared
+    var chatId: Int64 = 0
+    var messageId: Int64 = 0
+    var hasSpoiler = false
+    @ObservedObject private var files = FileStore.shared
     @State private var viewer: ViewerItem?
+    @State private var revealed = false
 
     var body: some View {
         let frame = mediaFrame(width: video.width, height: video.height)
-        let path = store.localPath(video.video)
+        let path = files.localPath(video.video)
         ZStack {
-            if let (image, blurred) = thumbnailImage(video.thumbnail, minithumbnail: video.minithumbnail, store: store) {
-                Image(uiImage: image).resizable().scaledToFill().blur(radius: blurred ? 6 : 0)
-            } else {
-                Color.black.opacity(0.6)
-            }
-            if let progress = store.progress(video.video) {
+            MediaThumbnail(thumbnail: video.thumbnail, minithumbnail: video.minithumbnail, blurRadius: 6)
+            if let progress = files.progress(video.video) {
                 ProgressRing(progress: progress, size: 48)
             } else {
                 Image(systemName: path == nil ? "arrow.down.circle.fill" : "play.circle.fill")
@@ -101,22 +239,47 @@ struct VideoView: View {
         .frame(width: frame.width, height: frame.height)
         .overlay(alignment: .topLeading) {
             Text("\(MessageFormatter.duration(video.duration)) · \(MessageFormatter.fileSize(video.video.size))")
-                .font(.caption2).foregroundColor(.white)
+                .font(.appCaption2).foregroundColor(.white)
                 .padding(.horizontal, 6).padding(.vertical, 2)
                 .background(Capsule().fill(Color.black.opacity(0.5)))
                 .padding(6)
         }
+        .overlay(alignment: .bottomLeading) {
+            if files.downloadStatus(video.video) != nil {
+                DownloadStatusView(file: video.video, compact: true)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Capsule().fill(Color.black.opacity(0.55)))
+                    .foregroundColor(.white)
+                    .padding(6)
+            }
+        }
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .blur(radius: hasSpoiler && !revealed ? 18 : 0)
+        .overlay {
+            if hasSpoiler && !revealed {
+                Label("Спойлер", systemImage: "eye.slash.fill")
+                    .font(.caption.bold())
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .foregroundColor(.primary)
+            }
+        }
         .contentShape(Rectangle())
         .onTapGesture {
-            if let path {
+            if hasSpoiler && !revealed {
+                withAnimation { revealed = true }
+            } else if let path {
                 viewer = .video(path)
             } else {
                 TelegramClient.shared.download(video.video, priority: 32)
             }
         }
-        .onAppear { if let t = video.thumbnail { TelegramClient.shared.download(t.file, priority: 8) } }
-        .fullScreenCover(item: $viewer) { MediaViewer(item: $0) }
+        .downloadAfterDelay(video.thumbnail?.file, priority: 8)
+        .fullScreenCover(item: $viewer) {
+            MediaViewer(chatId: chatId, messageId: messageId, item: $0)
+        }
     }
 }
 
@@ -124,26 +287,24 @@ struct VideoView: View {
 
 struct AnimationView: View {
     let gif: TDLibKit.Animation
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
     @State private var looping: LoopingPlayer?
 
     private static let autoDownloadLimit: Int64 = 3 * 1024 * 1024
 
     var body: some View {
         let frame = mediaFrame(width: gif.width, height: gif.height)
-        let path = store.localPath(gif.animation)
+        let path = files.localPath(gif.animation)
         ZStack {
             if let looping {
                 PlayerLayerView(player: looping.player)
             } else if let path, gif.mimeType == "image/gif", let image = ImageCache.image(atPath: path, maxPixel: 480) {
                 Image(uiImage: image).resizable().scaledToFill()
-            } else if let (image, blurred) = thumbnailImage(gif.thumbnail, minithumbnail: gif.minithumbnail, store: store) {
-                Image(uiImage: image).resizable().scaledToFill().blur(radius: blurred ? 6 : 0)
             } else {
-                Color.gray.opacity(0.2)
+                MediaThumbnail(thumbnail: gif.thumbnail, minithumbnail: gif.minithumbnail, blurRadius: 6)
             }
             if path == nil {
-                if let progress = store.progress(gif.animation) {
+                if let progress = files.progress(gif.animation) {
                     ProgressRing(progress: progress)
                 } else {
                     Text("GIF").font(.caption.bold()).foregroundColor(.white)
@@ -156,13 +317,11 @@ struct AnimationView: View {
         .contentShape(Rectangle())
         .onTapGesture { TelegramClient.shared.download(gif.animation, priority: 32) }
         .onAppear {
-            if let t = gif.thumbnail { TelegramClient.shared.download(t.file, priority: 8) }
-            if gif.animation.size <= Self.autoDownloadLimit {
-                TelegramClient.shared.download(gif.animation, priority: 4)
-            }
             startIfReady(path)
         }
         .onChange(of: path) { startIfReady($0) }
+        .downloadAfterDelay(gif.thumbnail?.file, priority: 8)
+        .downloadAfterDelay(gif.animation.size <= Self.autoDownloadLimit ? gif.animation : nil, priority: 4)
         .onDisappear {
             looping?.player.pause()
             looping = nil
@@ -181,29 +340,45 @@ struct AnimationView: View {
 
 struct StickerView: View {
     let sticker: TDLibKit.Sticker
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
+    @State private var image: UIImage?
 
     var body: some View {
         Group {
-            if case .stickerFormatWebp = sticker.format,
-               let path = store.localPath(sticker.sticker),
-               let image = ImageCache.image(atPath: path, maxPixel: 320) {
-                Image(uiImage: image).resizable().scaledToFit()
-            } else if let thumb = sticker.thumbnail, let path = store.localPath(thumb.file),
-                      let image = ImageCache.image(atPath: path, maxPixel: 320) {
+            if let image {
                 Image(uiImage: image).resizable().scaledToFit()
             } else {
                 Text(sticker.emoji.isEmpty ? "🖼" : sticker.emoji).font(.system(size: 72))
             }
         }
         .frame(width: 150, height: 150)
-        .onAppear {
-            if case .stickerFormatWebp = sticker.format {
-                TelegramClient.shared.download(sticker.sticker, priority: 8)
-            } else if let thumb = sticker.thumbnail {
-                TelegramClient.shared.download(thumb.file, priority: 8)
+        .downloadAfterDelay(downloadFile, priority: 8)
+        .task(id: decodePath) {
+            guard let path = decodePath else {
+                image = nil
+                return
             }
+            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: 320)
+            guard !Task.isCancelled else { return }
+            image = decoded
         }
+    }
+
+    private var decodePath: String? {
+        if case .stickerFormatWebp = sticker.format, let path = files.localPath(sticker.sticker) {
+            return path
+        }
+        if let thumb = sticker.thumbnail, let path = files.localPath(thumb.file) {
+            return path
+        }
+        return nil
+    }
+
+    private var downloadFile: TDLibKit.File? {
+        if case .stickerFormatWebp = sticker.format {
+            return sticker.sticker
+        }
+        return sticker.thumbnail?.file
     }
 }
 
@@ -225,15 +400,80 @@ struct AudioFileView: View {
     let audio: TDLibKit.Audio
     let isOutgoing: Bool
 
+    @ObservedObject private var player = MusicPlayer.shared
+    @ObservedObject private var library = MusicLibrary.shared
+    @State private var isPreparing = false
+
+    private var track: MusicTrack? {
+        library.track(forTelegramFileID: audio.audio.id)
+    }
+
+    private var isCurrent: Bool {
+        player.current?.telegramFileID == audio.audio.id
+    }
+
     var body: some View {
-        AudioRow(file: audio.audio, isOutgoing: isOutgoing, duration: audio.duration) { _ in
-            VStack(alignment: .leading, spacing: 1) {
-                Text(audio.title.isEmpty ? audio.fileName : audio.title).font(.subheadline.bold()).lineLimit(1)
-                if !audio.performer.isEmpty {
-                    Text(audio.performer).font(.caption).lineLimit(1).opacity(0.8)
+        HStack(spacing: 9) {
+            Button(action: play) {
+                ZStack {
+                    Circle().fill(isOutgoing ? Color.white : Color.accentColor)
+                    if isPreparing {
+                        ProgressView()
+                            .tint(isOutgoing ? .accentColor : .white)
+                    } else {
+                        Image(systemName: isCurrent && player.isPlaying ? "pause.fill" : "play.fill")
+                            .foregroundColor(isOutgoing ? .accentColor : .white)
+                    }
                 }
+                .frame(width: 40, height: 40)
+            }
+            .buttonStyle(.plain)
+            .disabled(isPreparing)
+
+            if let track {
+                MusicArtworkView(track: track, size: 34)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(audio.title.isEmpty ? audio.fileName : audio.title)
+                    .font(.subheadline.bold())
+                    .lineLimit(1)
+                if !audio.performer.isEmpty {
+                    Text(audio.performer)
+                        .font(.appCaption)
+                        .lineLimit(1)
+                        .opacity(0.8)
+                }
+                if isCurrent {
+                    ProgressView(value: player.progress)
+                        .tint(isOutgoing ? .white : .accentColor)
+                }
+                Text(MessageFormatter.duration(isCurrent ? Int(Double(audio.duration) * player.progress) : audio.duration))
+                    .font(.appCaption2)
+                    .opacity(0.7)
             }
             .frame(maxWidth: 170, alignment: .leading)
+        }
+        .foregroundColor(isOutgoing ? .white : .primary)
+    }
+
+    private func play() {
+        if isCurrent {
+            player.togglePlayPause()
+            return
+        }
+        isPreparing = true
+        Task {
+            if track == nil {
+                await library.ensureImported(audio: audio)
+            }
+            if let track = library.track(forTelegramFileID: audio.audio.id) {
+                AudioPlayback.shared.stop()
+                player.play(track, queue: library.tracks)
+            } else {
+                TelegramClient.shared.errorMessage = "Не удалось открыть аудио"
+            }
+            isPreparing = false
         }
     }
 }
@@ -244,14 +484,14 @@ private struct AudioRow<Middle: View>: View {
     let duration: Int
     @ViewBuilder let middle: (Double) -> Middle
 
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
     @ObservedObject private var playback = AudioPlayback.shared
     @State private var playWhenReady = false
 
     private var isCurrent: Bool { playback.currentFileId == file.id }
 
     var body: some View {
-        let path = store.localPath(file)
+        let path = files.localPath(file)
         HStack(spacing: 10) {
             Button {
                 if let path {
@@ -263,7 +503,7 @@ private struct AudioRow<Middle: View>: View {
             } label: {
                 ZStack {
                     Circle().fill(isOutgoing ? Color.white : Color.accentColor)
-                    if let progress = store.progress(file), path == nil {
+                    if let progress = files.progress(file), path == nil {
                         ProgressView(value: progress).progressViewStyle(.circular)
                             .tint(isOutgoing ? .accentColor : .white)
                     } else {
@@ -277,7 +517,7 @@ private struct AudioRow<Middle: View>: View {
             VStack(alignment: .leading, spacing: 2) {
                 middle(isCurrent ? playback.progress : 0)
                 Text(MessageFormatter.duration(isCurrent ? Int(Double(duration) * playback.progress) : duration))
-                    .font(.caption2).opacity(0.8)
+                    .font(.appCaption2).opacity(0.8)
             }
         }
         .onChange(of: path) { newPath in
@@ -314,7 +554,7 @@ private struct Waveform_View: View {
 
 struct VideoNoteView: View {
     let note: TDLibKit.VideoNote
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
     @State private var player: AVPlayer?
     @State private var isPlaying = false
     @State private var playWhenReady = false
@@ -322,16 +562,14 @@ struct VideoNoteView: View {
     private let side: CGFloat = 200
 
     var body: some View {
-        let path = store.localPath(note.video)
+        let path = files.localPath(note.video)
         ZStack {
             if let player {
                 PlayerLayerView(player: player)
-            } else if let (image, blurred) = thumbnailImage(note.thumbnail, minithumbnail: note.minithumbnail, store: store) {
-                Image(uiImage: image).resizable().scaledToFill().blur(radius: blurred ? 4 : 0)
             } else {
-                Color.gray.opacity(0.3)
+                MediaThumbnail(thumbnail: note.thumbnail, minithumbnail: note.minithumbnail, blurRadius: 4)
             }
-            if let progress = store.progress(note.video), path == nil {
+            if let progress = files.progress(note.video), path == nil {
                 ProgressRing(progress: progress, size: 48)
             } else if !isPlaying {
                 Image(systemName: "play.fill").font(.system(size: 30)).foregroundColor(.white).shadow(radius: 4)
@@ -341,14 +579,14 @@ struct VideoNoteView: View {
         .clipShape(Circle())
         .overlay(alignment: .bottomLeading) {
             Text(MessageFormatter.duration(note.duration))
-                .font(.caption2).foregroundColor(.white)
+                .font(.appCaption2).foregroundColor(.white)
                 .padding(.horizontal, 6).padding(.vertical, 2)
                 .background(Capsule().fill(Color.black.opacity(0.5)))
                 .padding(12)
         }
         .contentShape(Circle())
         .onTapGesture { toggle(path) }
-        .onAppear { if let t = note.thumbnail { TelegramClient.shared.download(t.file, priority: 8) } }
+        .downloadAfterDelay(note.thumbnail?.file, priority: 8)
         .onChange(of: path) { newPath in
             if playWhenReady, newPath != nil {
                 playWhenReady = false
@@ -393,28 +631,33 @@ struct VideoNoteView: View {
 struct DocumentView: View {
     let document: TDLibKit.Document
     let isOutgoing: Bool
-    @ObservedObject private var store = ChatStore.shared
+    @ObservedObject private var files = FileStore.shared
     @State private var previewURL: URL?
     @State private var openWhenReady = false
 
     var body: some View {
-        let path = store.localPath(document.document)
+        let path = files.localPath(document.document)
         HStack(spacing: 10) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10).fill(isOutgoing ? Color.white.opacity(0.25) : Color.accentColor.opacity(0.15))
-                if let progress = store.progress(document.document) {
+                if let progress = files.progress(document.document) {
                     ProgressView(value: progress).progressViewStyle(.circular)
                 } else {
                     Image(systemName: path == nil ? "arrow.down.doc" : "doc.text")
-                        .font(.title3)
+                        .font(.appTitle3)
                 }
             }
             .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
                 Text(document.fileName.isEmpty ? "Документ" : document.fileName)
                     .font(.subheadline.bold()).lineLimit(2)
-                Text(MessageFormatter.fileSize(max(document.document.size, document.document.expectedSize)))
-                    .font(.caption).opacity(0.8)
+                if files.downloadStatus(document.document) != nil {
+                    DownloadStatusView(file: document.document, showCancel: true)
+                        .opacity(0.9)
+                } else {
+                    Text(MessageFormatter.fileSize(max(document.document.size, document.document.expectedSize)))
+                        .font(.appCaption).opacity(0.8)
+                }
             }
         }
         .frame(maxWidth: 260, alignment: .leading)
@@ -463,45 +706,184 @@ struct QuickLookView: UIViewControllerRepresentable {
 // MARK: - Fullscreen viewer
 
 struct MediaViewer: View {
-    let item: ViewerItem
     @Environment(\.dismiss) private var dismiss
+
+    @State private var items: [ViewerItem]
+    @State private var index: Int
+    @State private var shareItem: ShareItem?
+
+    init(chatId: Int64 = 0, messageId: Int64 = 0, item: ViewerItem) {
+        let gallery = chatId != 0 ? ViewerItem.gallery(chatId: chatId) : []
+        var all = gallery
+        if !all.contains(item) {
+            all.insert(item, at: 0)
+        }
+        _items = State(initialValue: all.isEmpty ? [item] : all)
+        _index = State(initialValue: all.firstIndex(of: item) ?? 0)
+    }
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Color.black.ignoresSafeArea()
+
+            TabView(selection: $index) {
+                ForEach(Array(items.enumerated()), id: \.offset) { offset, item in
+                    page(item)
+                        .tag(offset)
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+
+            HStack {
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundStyle(Color.white, Color.black.opacity(0.45))
+                }
+                Spacer()
+                Text("\(index + 1) / \(items.count)")
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.white.opacity(0.85))
+                Spacer()
+                Button {
+                    shareItem = ShareItem(url: URL(fileURLWithPath: items[index].id))
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 22))
+                        .foregroundColor(.white)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        }
+        .statusBar(hidden: true)
+        .sheet(item: $shareItem) { item in
+            ShareSheet(items: [item.url])
+        }
+    }
+
+    @ViewBuilder
+    private func page(_ item: ViewerItem) -> some View {
+        switch item {
+        case .image(let path):
+            ZoomableImageView(path: path)
+        case .video(let path):
+            ViewerVideoPage(path: path)
+        }
+    }
+}
+
+private struct ZoomableImageView: View {
+    let path: String
+
     @State private var scale: CGFloat = 1
+    @State private var offset: CGSize = .zero
+    @State private var lastScale: CGFloat = 1
+    @State private var lastOffset: CGSize = .zero
+
+    var body: some View {
+        Group {
+            if let image = UIImage(contentsOfFile: path) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .scaleEffect(scale)
+                    .offset(offset)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                scale = min(max(lastScale * value, 1), 6)
+                            }
+                            .onEnded { _ in
+                                lastScale = scale
+                                if scale <= 1.01 {
+                                    withAnimation { reset() }
+                                }
+                            }
+                    )
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 5)
+                            .onChanged { value in
+                                guard scale > 1.01 else { return }
+                                offset = CGSize(
+                                    width: lastOffset.width + value.translation.width,
+                                    height: lastOffset.height + value.translation.height
+                                )
+                            }
+                            .onEnded { _ in
+                                lastOffset = offset
+                            },
+                        including: scale > 1.01 ? .all : .none
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation {
+                            if scale > 1.01 {
+                                reset()
+                            } else {
+                                scale = 2.5
+                                lastScale = 2.5
+                            }
+                        }
+                    }
+            } else {
+                ProgressView().tint(.white)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .clipped()
+    }
+
+    private func reset() {
+        scale = 1
+        lastScale = 1
+        offset = .zero
+        lastOffset = .zero
+    }
+}
+
+private struct ViewerVideoPage: View {
+    let path: String
     @State private var player: AVPlayer?
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            Color.black.ignoresSafeArea()
-            switch item {
-            case .image(let path):
-                if let image = UIImage(contentsOfFile: path) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .scaleEffect(scale)
-                        .gesture(MagnificationGesture()
-                            .onChanged { scale = max(1, min($0, 5)) }
-                            .onEnded { _ in if scale < 1.1 { withAnimation { scale = 1 } } })
-                        .onTapGesture(count: 2) { withAnimation { scale = scale > 1 ? 1 : 2.5 } }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VideoPlayer(player: player)
+            .onAppear {
+                AudioPlayback.shared.stop()
+                try? AVAudioSession.sharedInstance().setCategory(.playback)
+                let player = AVPlayer(url: URL(fileURLWithPath: path))
+                self.player = player
+                player.play()
+            }
+            .onDisappear { player?.pause() }
+    }
+}
+
+extension ViewerItem {
+    @MainActor
+    static func gallery(chatId: Int64) -> [ViewerItem] {
+        let messages = ChatStore.shared.messages[chatId] ?? []
+        var result: [ViewerItem] = []
+        for message in messages {
+            switch message.content {
+            case .messagePhoto(let photo):
+                let sorted = photo.photo.sizes.sorted { $0.width < $1.width }
+                if let size = sorted.last(where: { $0.width <= 1280 }) ?? sorted.first,
+                   let path = FileStore.shared.localPath(size.photo) {
+                    result.append(.image(path))
                 }
-            case .video(let path):
-                VideoPlayer(player: player)
-                    .onAppear {
-                        AudioPlayback.shared.stop()
-                        try? AVAudioSession.sharedInstance().setCategory(.playback)
-                        let newPlayer = AVPlayer(url: URL(fileURLWithPath: path))
-                        player = newPlayer
-                        newPlayer.play()
-                    }
-                    .onDisappear { player?.pause() }
+            case .messageVideo(let video):
+                if let path = FileStore.shared.localPath(video.video.video) {
+                    result.append(.video(path))
+                }
+            case .messageAnimation(let animation):
+                if let path = FileStore.shared.localPath(animation.animation.animation) {
+                    result.append(.video(path))
+                }
+            default:
+                break
             }
-            Button { dismiss() } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 30))
-                    .foregroundStyle(Color.white, Color.black.opacity(0.5))
-            }
-            .padding()
         }
+        return result
     }
 }
 
@@ -633,7 +1015,7 @@ struct VideoNoteRecorderView: View {
                 .disabled(!isReady)
             }
             Text(isRecording ? "Нажмите, чтобы отправить" : "Нажмите, чтобы записать видеосообщение")
-                .font(.footnote).foregroundColor(.white.opacity(0.8))
+                .font(.appFootnote).foregroundColor(.white.opacity(0.8))
         }
         .padding(.vertical)
         .background(Color.black.ignoresSafeArea())

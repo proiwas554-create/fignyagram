@@ -35,7 +35,7 @@ final class AudioPlayback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         do {
             let url = try Self.playableURL(fileId: fileId, path: path)
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio)
-            try AVAudioSession.sharedInstance().setActive(true)
+            Self.activateAudioSessionOffMain()
             let player = try AVAudioPlayer(contentsOf: url)
             player.delegate = self
             player.play()
@@ -56,7 +56,7 @@ final class AudioPlayback: NSObject, ObservableObject, AVAudioPlayerDelegate {
         currentFileId = nil
         isPlaying = false
         progress = 0
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        Self.deactivateAudioSessionOffMain()
     }
 
     private func startTimer() {
@@ -66,6 +66,20 @@ final class AudioPlayback: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 guard let self, let player = self.player, player.duration > 0 else { return }
                 self.progress = player.currentTime / player.duration
             }
+        }
+    }
+
+    /// AVAudioSession.setActive on the main thread can stall the UI for
+    /// hundreds of milliseconds; route the blocking call off-main.
+    static func activateAudioSessionOffMain() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            try? AVAudioSession.sharedInstance().setActive(true)
+        }
+    }
+
+    static func deactivateAudioSessionOffMain() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         }
     }
 
@@ -116,7 +130,7 @@ final class VoiceRecorder: ObservableObject {
         AudioPlayback.shared.stop()
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-        try? session.setActive(true)
+        AudioPlayback.activateAudioSessionOffMain()
 
         // Opus is what Telegram expects; AAC is a fallback for devices where Opus recording fails.
         let opus: [String: Any] = [
@@ -202,7 +216,7 @@ final class VoiceRecorder: ObservableObject {
         recorder = nil
         isRecording = false
         level = 0
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        AudioPlayback.deactivateAudioSessionOffMain()
     }
 }
 
@@ -306,28 +320,51 @@ nonisolated enum MediaPreparer {
         }
         guard let data = resized.jpegData(compressionQuality: 0.85) else { return nil }
         let url = TelegramClient.makeOutgoingURL(extension: "jpg")
-        guard (try? data.write(to: url)) != nil else { return nil }
+        guard (try? data.write(to: url, options: .atomic)) != nil else { return nil }
         return Prepared(url: url, width: Int(target.width), height: Int(target.height), duration: 0)
     }
 
     static func loadImage(_ provider: NSItemProvider) async -> UIImage? {
-        await withCheckedContinuation { continuation in
+        let object = await withCheckedContinuation { continuation in
             provider.loadObject(ofClass: UIImage.self) { object, _ in
                 continuation.resume(returning: object as? UIImage)
+            }
+        }
+        if let object { return object }
+        // Some providers (e.g. shared JPEGs) don't expose a UIImage object;
+        // fall back to the raw data representation.
+        return await withCheckedContinuation { continuation in
+            provider.loadDataRepresentation(forTypeIdentifier: UTType.image.identifier) { data, _ in
+                continuation.resume(returning: data.flatMap(UIImage.init(data:)))
             }
         }
     }
 
     /// The picker deletes its temporary file after the callback, so it is copied first.
     static func loadMovie(_ provider: NSItemProvider) async -> URL? {
+        for type in [UTType.movie, UTType.video, UTType.data]
+        where provider.hasItemConformingToTypeIdentifier(type.identifier) {
+            if let url = await loadFile(provider, type: type.identifier) { return url }
+        }
+        return nil
+    }
+
+    /// Copies any provider payload (movie, video, image data) into the outgoing directory.
+    static func loadFile(_ provider: NSItemProvider, type: String) async -> URL? {
         await withCheckedContinuation { continuation in
-            provider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { url, _ in
+            provider.loadFileRepresentation(forTypeIdentifier: type) { url, _ in
                 guard let url else { return continuation.resume(returning: nil) }
-                let copy = TelegramClient.makeOutgoingURL(extension: url.pathExtension.isEmpty ? "mov" : url.pathExtension)
+                let ext = url.pathExtension.isEmpty ? "dat" : url.pathExtension
+                let copy = TelegramClient.makeOutgoingURL(extension: ext)
                 let ok = (try? FileManager.default.copyItem(at: url, to: copy)) != nil
                 continuation.resume(returning: ok ? copy : nil)
             }
         }
+    }
+
+    /// Copies the original, un-reencoded file (photos/videos sent "without compression").
+    static func originalFile(_ provider: NSItemProvider, type: UTType) async -> URL? {
+        await loadFile(provider, type: type.identifier)
     }
 
     /// Converts a video to H.264 MP4 of at most 720p.
