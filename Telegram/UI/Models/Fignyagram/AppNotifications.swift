@@ -231,5 +231,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         ImageCache.clear()
+        CallDiag.log("memory warning: cleared image caches")
+        ImageCache.clear()
     }
 }

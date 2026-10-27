@@ -295,7 +295,10 @@ final class CallManager: ObservableObject {
 
         // Older/low-memory devices get a lower render rate; decoding every
         // frame through Core Image is the most expensive part of a video call.
-        let renderFPS = DevicePerformance.isVeryLowMemory ? 15 : (DevicePerformance.isLowMemory ? 20 : 30)
+        var renderFPS = DevicePerformance.isVeryLowMemory ? 15 : (DevicePerformance.isLowMemory ? 20 : 30)
+        if ProcessInfo.processInfo.isLowPowerModeEnabled {
+            renderFPS = min(renderFPS, 20)
+        }
         VoIPBridge.shared().setVideoMaximumFramesPerSecond(renderFPS)
         CallDiag.log("video render fps limit=\(renderFPS) lowMemory=\(DevicePerformance.isLowMemory)")
 

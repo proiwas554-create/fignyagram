@@ -616,6 +616,27 @@ struct LongTextView: UIViewRepresentable {
     }
 }
 
+/// Attributed text is rebuilt for every visible row pass; entity parsing is the
+/// expensive part, so results are cached by text revision.
+private enum AttributedTextCache {
+    final class Box: NSObject { let value: AttributedString
+        init(_ value: AttributedString) { self.value = value }
+    }
+    private static let storage: NSCache<NSString, Box> = {
+        let cache = NSCache<NSString, Box>()
+        cache.countLimit = 500
+        return cache
+    }()
+
+    static func value(for formatted: TDLibKit.FormattedText) -> AttributedString {
+        let key = "\(formatted.text.hashValue):\(formatted.text.count):\(formatted.entities.count)" as NSString
+        if let box = storage.object(forKey: key) { return box.value }
+        let value = MessageFormatter.attributed(formatted)
+        storage.setObject(Box(value), forKey: key)
+        return value
+    }
+}
+
 struct SpoilerTextView: View {
     let formatted: TDLibKit.FormattedText
     @State private var revealed = false
@@ -671,7 +692,7 @@ struct SpoilerTextView: View {
                 }
                 .fixedSize(horizontal: false, vertical: true)
         } else {
-            Text(MessageFormatter.attributed(formatted))
+            Text(AttributedTextCache.value(for: formatted))
                 .modifier(SelectableTextModifier())
                 .onTapGesture {
                     if hasSpoiler { revealed = false }
