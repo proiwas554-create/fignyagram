@@ -95,9 +95,43 @@ struct DeveloperTerminalView: View {
             return
         }
 
+        if cmd.hasPrefix("/open_secret_chat_") {
+            if let id = Int64(cmd.replacingOccurrences(of: "/open_secret_chat_", with: "")) {
+                HiddenChats.shared.reveal(id)
+                lines.append("chat \(id) revealed for this session")
+            } else {
+                lines.append("usage: /open_secret_chat_<id>")
+            }
+            return
+        }
+        if cmd.hasPrefix("/hide_secret_chat_") {
+            if let id = Int64(cmd.replacingOccurrences(of: "/hide_secret_chat_", with: "")) {
+                HiddenChats.shared.hide(id)
+                lines.append("chat \(id) hidden")
+            } else {
+                lines.append("usage: /hide_secret_chat_<id>")
+            }
+            return
+        }
+        if cmd.hasPrefix("/unhide_secret_chat_") {
+            if let id = Int64(cmd.replacingOccurrences(of: "/unhide_secret_chat_", with: "")) {
+                HiddenChats.shared.unhide(id)
+                lines.append("chat \(id) is visible again")
+            } else {
+                lines.append("usage: /unhide_secret_chat_<id>")
+            }
+            return
+        }
+        if cmd == "/hidden" {
+            let ids = HiddenChats.shared.hiddenIds.sorted().map(String.init).joined(separator: ", ")
+            lines.append(ids.isEmpty ? "no hidden chats" : "hidden: \(ids)")
+            return
+        }
+
         switch cmd {
         case "help", "?":
             lines.append("help status cache clear messages proxy notify optimize deleted chats account version echo")
+            lines.append("/hidden | /open_secret_chat_<id> | /hide_secret_chat_<id> | /unhide_secret_chat_<id>")
             lines.append("proxy on|off | optimize on|off | notify on|off | deleted on|off | log 0...5")
         case "status":
             lines.append("account=\(client.me?.id ?? 0) chats=\(store.chats.count) cache=\(MessageFormatter.fileSize(cache.totalBytes))")

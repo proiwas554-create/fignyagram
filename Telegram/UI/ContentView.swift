@@ -113,6 +113,7 @@ struct ContentView: View {
             CrashLogger.install()
             CallDiag.log("app started engineAvailable=\(VoIPBridge.engineAvailable()) framework=\(Bundle.main.privateFrameworksURL?.appendingPathComponent("TgVoipWebrtc.framework").path ?? "n/a")")
             DiagnosticsLog.log("ContentView.onAppear")
+            ScreenProtection.shared.apply()
             MainThreadWatchdog.shared.start()
             // Verify which image owns the WebRTC Objective-C classes: the
             // engine and LiveKit both define them and the runtime keeps the

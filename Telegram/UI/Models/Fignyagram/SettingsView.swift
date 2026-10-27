@@ -168,6 +168,10 @@ struct SettingsView: View {
                             }
                         }
                     ))
+                    Toggle("Блокировать скриншоты и запись экрана", isOn: Binding(
+                        get: { privacy.blockScreenshots },
+                        set: { privacy.blockScreenshots = $0 }
+                    ))
                     Toggle("Блокировка Face ID / Touch ID", isOn: Binding(
                         get: { AppLock.shared.isEnabled },
                         set: { value in

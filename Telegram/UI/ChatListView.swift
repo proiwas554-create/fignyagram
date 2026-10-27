@@ -18,6 +18,7 @@ struct ChatListView: View {
     @ObservedObject private var searchHistory = SearchHistory.shared
     @ObservedObject private var proxy = BuiltInProxyManager.shared
     @ObservedObject private var recentContacts = RecentContactsStore.shared
+    @ObservedObject private var hiddenChats = HiddenChats.shared
     @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
@@ -122,7 +123,7 @@ struct ChatListView: View {
     private var displayedChatIds: [Int64] {
         var limit = max(1, limits.effectiveRenderedChats + extraChats)
         if DevicePerformance.isLowMemory { limit = min(limit, 40) }
-        return Array(chatIds.prefix(limit))
+        return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
     private func displayTitle(_ chat: ChatItem) -> String {
