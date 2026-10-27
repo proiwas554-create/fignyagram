@@ -80,6 +80,15 @@ final class ViewOnceStore: ObservableObject {
         }
     }
 
+    func clearAll() {
+        for path in saved.values {
+            try? FileManager.default.removeItem(atPath: path)
+        }
+        saved.removeAll()
+        try? Data().write(to: indexURL)
+        CallDiag.log("view-once storage cleared")
+    }
+
     private func record(key: String, path: String) {
         saved[key] = path
         if let data = try? JSONEncoder().encode(saved) {
@@ -92,5 +101,34 @@ final class ViewOnceStore: ObservableObject {
         let remote = (file.remote as? RemoteFile)?.uniqueId ?? ""
         let ext = (remote as NSString).pathExtension
         return ext.isEmpty ? key : "\(key).\(ext)"
+    }
+}
+
+
+import QuickLook
+import SwiftUI
+
+/// Read-only preview of a preserved self-destructing file.
+struct SecretMediaPreview: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> QLPreviewController {
+        let controller = QLPreviewController()
+        controller.dataSource = context.coordinator
+        return controller
+    }
+
+    func updateUIViewController(_ controller: QLPreviewController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator { Coordinator(url: url) }
+
+    final class Coordinator: NSObject, QLPreviewControllerDataSource {
+        let url: URL
+        init(url: URL) { self.url = url }
+
+        func numberOfPreviewItems(in controller: QLPreviewController) -> Int { 1 }
+        func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
+            url as NSURL
+        }
     }
 }

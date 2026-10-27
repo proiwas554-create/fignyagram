@@ -4,6 +4,8 @@ import TDLibKit
 struct ContentView: View {
     @ObservedObject private var client = TelegramClient.shared
     @State private var selectedTab = 0
+    @AppStorage("showMusicTab") private var showMusicTab = true
+    @AppStorage("showNewsTab") private var showNewsTab = false
     @State private var secretChatTaps = 0
     @State private var showDeveloper = false
     @AppStorage("showFPS") private var showFPS = false
@@ -32,9 +34,16 @@ struct ContentView: View {
                             ChatListView()
                                 .tag(0)
                                 .tabItem { Label("Чаты", systemImage: "bubble.left.and.bubble.right") }
-                            MusicView()
-                                .tag(1)
-                                .tabItem { Label("Музыка", systemImage: "music.note") }
+                            if showMusicTab {
+                                MusicView()
+                                    .tag(1)
+                                    .tabItem { Label("Музыка", systemImage: "music.note") }
+                            }
+                            if showNewsTab {
+                                NewsFeedView()
+                                    .tag(2)
+                                    .tabItem { Label("Новости", systemImage: "newspaper") }
+                            }
                         }
                         .overlay(alignment: .bottom) {
                             if !chatPresentation.isChatOpen {

@@ -3,6 +3,8 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var privacy = PrivacyPreferences.shared
+    @AppStorage("showMusicTab") private var showMusicTab = true
+    @AppStorage("showNewsTab") private var showNewsTab = false
     @ObservedObject private var globalSearch = GlobalSearchPreferences.shared
     @ObservedObject private var developer = DeveloperMode.shared
     @ObservedObject private var classicDesign = ClassicDesignMode.shared
@@ -172,6 +174,8 @@ struct SettingsView: View {
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
+                    Toggle("Вкладка «Музыка» в нижнем баре", isOn: $showMusicTab)
+                    Toggle("Вкладка «Новости» в нижнем баре", isOn: $showNewsTab)
                     Toggle("Невидимый просмотр историй", isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }

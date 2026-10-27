@@ -38,7 +38,13 @@ final class CacheManager: ObservableObject {
             case "jpg", "jpeg", "png", "heic", "webp", "gif":
                 add("photos", file)
             case "mp4", "mov", "m4v", "webm":
-                add("videos", file)
+                if file.local.path.contains("video_note") {
+                    add("roundVideos", file)
+                } else if file.local.path.contains("animation") || file.local.path.contains("gif") {
+                    add("gifs", file)
+                } else {
+                    add("videos", file)
+                }
             case "mp3", "m4a", "aac", "flac", "ogg", "opus", "wav", "caf":
                 add("audio", file)
             case "tgs":
@@ -59,6 +65,8 @@ final class CacheManager: ObservableObject {
             ("audio", "Аудио", "music.note"),
             ("documents", "Файлы", "doc"),
             ("stickers", "Стикеры", "face.smiling"),
+            ("voice", "Голосовые", "waveform"),
+            ("roundVideos", "Круглые видео", "circle.dashed"),
             ("gifs", "Гифки", "rectangle.stack")
         ]
 
@@ -66,6 +74,7 @@ final class CacheManager: ObservableObject {
             let stat = groups[key] ?? (0, 0)
             return Category(id: key, title: title, icon: icon, bytes: stat.bytes, count: stat.count)
         }
+        autoCleanIfNeeded()
     }
 
     func clear(_ category: Category) {
@@ -97,6 +106,22 @@ final class CacheManager: ObservableObject {
         }
     }
 
+    /// Clears the biggest categories when the cache grows past the configured
+    /// limit (MB, 0 = off). Runs at most once every 10 minutes.
+    func autoCleanIfNeeded() {
+        let limitMB = UserDefaults.standard.integer(forKey: "autoCleanCacheLimitMB")
+        guard limitMB > 0 else { return }
+        let last = UserDefaults.standard.object(forKey: "autoCleanLastRun") as? Foundation.Date
+        if let last, Foundation.Date().timeIntervalSince(last) < 600 { return }
+        guard totalBytes > Int64(limitMB) * 1024 * 1024 else { return }
+        UserDefaults.standard.set(Foundation.Date(), forKey: "autoCleanLastRun")
+        let heaviest = categories.filter { $0.bytes > 0 }.sorted { $0.bytes > $1.bytes }.prefix(2)
+        for category in heaviest {
+            clear(category)
+        }
+        CallDiag.log("auto cache clean: limit=\(limitMB)MB cleared=\(heaviest.map(\.id))")
+    }
+
     func clearAll() {
         guard !isWorking else { return }
         isWorking = true
@@ -116,6 +141,12 @@ final class CacheManager: ObservableObject {
         }
     }
 
+    /// Clears the in-memory feed cache as well; the feed keeps no media on disk.
+    func clearFeedCache() {
+        NewsFeedDataManager.shared.clearCachedPosts()
+        refresh()
+    }
+
     private func matchingFiles(_ categoryID: String) -> [TDLibKit.File] {
         FileStore.shared.downloadedFiles.filter { file in
             let ext = URL(fileURLWithPath: file.local.path).pathExtension.lowercased()
@@ -125,7 +156,11 @@ final class CacheManager: ObservableObject {
             case "videos":
                 return ["mp4", "mov", "m4v", "webm"].contains(ext)
             case "audio":
-                return ["mp3", "m4a", "aac", "flac", "ogg", "opus", "wav", "caf"].contains(ext)
+                return ["mp3", "m4a", "aac", "flac", "wav", "caf"].contains(ext)
+            case "voice":
+                return ["ogg", "opus"].contains(ext)
+            case "roundVideos":
+                return ["mp4", "mov", "m4v", "webm"].contains(ext) && file.local.path.contains("video_note")
             case "documents":
                 return !["jpg", "jpeg", "png", "heic", "webp", "gif", "mp4", "mov", "m4v", "webm", "mp3", "m4a", "aac", "flac", "ogg", "opus", "wav", "caf", "tgs"].contains(ext)
             default:

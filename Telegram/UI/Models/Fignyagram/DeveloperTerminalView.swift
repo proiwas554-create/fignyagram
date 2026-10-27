@@ -128,10 +128,79 @@ struct DeveloperTerminalView: View {
             return
         }
 
+        if cmd == "/cachelimit" {
+            let limit = UserDefaults.standard.integer(forKey: "autoCleanCacheLimitMB")
+            lines.append(limit > 0 ? "auto clean limit=\(limit)MB" : "auto clean off")
+            return
+        }
+        if cmd.hasPrefix("/cachelimit ") {
+            let value = Int(cmd.replacingOccurrences(of: "/cachelimit ", with: "")) ?? 0
+            UserDefaults.standard.set(max(0, value), forKey: "autoCleanCacheLimitMB")
+            lines.append(value > 0 ? "auto clean limit set to \(value)MB" : "auto clean disabled")
+            return
+        }
+        if cmd == "/macro_list" {
+            if AutomationEngine.shared.rules.isEmpty {
+                lines.append("no macros")
+            } else {
+                for (index, rule) in AutomationEngine.shared.rules.enumerated() {
+                    let chat = rule.chatId.map(String.init) ?? "any"
+                    lines.append("\(index): chat=\(chat) keyword=\(rule.keyword) -> \(rule.action.rawValue) \(rule.value)")
+                }
+            }
+            return
+        }
+        if cmd == "/macro_clear" {
+            AutomationEngine.shared.removeAll()
+            lines.append("macros cleared")
+            return
+        }
+        if cmd.hasPrefix("/macro_remove ") {
+            if let index = Int(cmd.replacingOccurrences(of: "/macro_remove ", with: "")) {
+                AutomationEngine.shared.removeRule(at: index)
+                lines.append("macro removed")
+            } else {
+                lines.append("usage: /macro_remove <index>")
+            }
+            return
+        }
+        if cmd.hasPrefix("/macro_add ") {
+            // /macro_add <chatId|any> <keyword> <action> [value...]
+            let parts = cmd.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+            if parts.count >= 4 {
+                let chatPart = parts[1]
+                let chatId: Int64? = chatPart == "any" ? nil : Int64(chatPart)
+                let keyword = parts[2]
+                if let action = AutomationEngine.Rule.Action(rawValue: parts[3]) {
+                    let value = parts.dropFirst(4).joined(separator: " ")
+                    if let rule = AutomationEngine.shared.addRule(chatId: chatId, keyword: keyword, action: action, value: value) {
+                        lines.append("macro added: \(rule.keyword) -> \(action.rawValue)")
+                    }
+                } else {
+                    lines.append("actions: " + AutomationEngine.Rule.Action.allCases.map(\.rawValue).joined(separator: "|"))
+                }
+            } else {
+                lines.append("usage: /macro_add <chatId|any> <keyword> <action> [value]")
+            }
+            return
+        }
+        if cmd == "/viewonce_list" {
+            let keys = ViewOnceStore.shared.saved.keys.sorted()
+            lines.append(keys.isEmpty ? "no preserved media" : keys.joined(separator: ", "))
+            return
+        }
+        if cmd == "/viewonce_clear" {
+            ViewOnceStore.shared.clearAll()
+            lines.append("preserved media cleared")
+            return
+        }
+
         switch cmd {
         case "help", "?":
             lines.append("help status cache clear messages proxy notify optimize deleted chats account version echo")
             lines.append("/hidden | /open_secret_chat_<id> | /hide_secret_chat_<id> | /unhide_secret_chat_<id>")
+            lines.append("/macro_add <chatId|any> <keyword> <action> [value] | /macro_list | /macro_remove <i> | /macro_clear")
+            lines.append("/viewonce_list | /viewonce_clear | /cachelimit <MB>")
             lines.append("proxy on|off | optimize on|off | notify on|off | deleted on|off | log 0...5")
         case "status":
             lines.append("account=\(client.me?.id ?? 0) chats=\(store.chats.count) cache=\(MessageFormatter.fileSize(cache.totalBytes))")

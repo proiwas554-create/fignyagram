@@ -65,6 +65,7 @@ struct MessageRow: View {
     @State private var showTagEditor = false
     @State private var myTagDraft = ""
     @State private var longTextPayload: LongTextPayload?
+    @State private var secretMediaURL: URL?
 
     @AppStorage("showAdminAuthors") private var showAdminAuthors = true
     @AppStorage("hideSenderNames") private var hideSenderNames = false

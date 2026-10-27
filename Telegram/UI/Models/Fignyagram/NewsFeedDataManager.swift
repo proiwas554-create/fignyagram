@@ -41,6 +41,7 @@ final class NewsFeedDataManager: ObservableObject {
     enum Tab: String, CaseIterable {
         case added = "Добавленные"
         case forYou = "Для вас"
+        case important = "Важное"
     }
 
     enum Sorting {
@@ -162,6 +163,11 @@ final class NewsFeedDataManager: ObservableObject {
     // MARK: - Ranking
 
     private func sortAndPublish(_ source: [NewsFeedPost]) {
+        let stopWords = Self.stopWords()
+        let source = stopWords.isEmpty ? source : source.filter { post in
+            let text = Self.plainText(of: post.message).lowercased()
+            return !stopWords.contains { text.contains($0) }
+        }
         let sorted: [NewsFeedPost]
         switch tab {
         case .added:
@@ -173,6 +179,12 @@ final class NewsFeedDataManager: ObservableObject {
             }
         case .forYou:
             sorted = rankedForYou(source)
+        case .important:
+            let triggers = Self.importantKeywords()
+            sorted = triggers.isEmpty ? [] : source.filter { post in
+                let text = Self.plainText(of: post.message).lowercased()
+                return triggers.contains { text.contains($0) }
+            }
         }
         posts = Array(sorted.prefix(maximumPosts))
     }
@@ -194,6 +206,25 @@ final class NewsFeedDataManager: ObservableObject {
             .sorted { (lhs: (NewsFeedPost, Double), rhs: (NewsFeedPost, Double)) in lhs.1 > rhs.1 }
             .prefix(recommendationsCount)
             .map { $0.0 }
+    }
+
+    static func stopWords() -> [String] {
+        keywords(forKey: "newsFeedStopWords")
+    }
+
+    static func importantKeywords() -> [String] {
+        keywords(forKey: "newsFeedImportantWords")
+    }
+
+    private static func keywords(forKey key: String) -> [String] {
+        (UserDefaults.standard.string(forKey: key) ?? "")
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            .filter { !$0.isEmpty }
+    }
+
+    func clearCachedPosts() {
+        posts = []
     }
 
     private static func interestKeywords() -> [String] {
@@ -222,6 +253,7 @@ struct NewsFeedView: View {
     @ObservedObject private var manager = NewsFeedDataManager.shared
     @Environment(\.dismiss) private var dismiss
     @State private var tab: NewsFeedDataManager.Tab = .added
+    @State private var showFilters = false
 
     var body: some View {
         NavigationView {
@@ -290,6 +322,9 @@ struct NewsFeedView: View {
                     Button("Закрыть") { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showFilters = true } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                    }
                     Menu {
                         Button("Сначала новые") {
                             manager.sorting = .recent
@@ -303,6 +338,9 @@ struct NewsFeedView: View {
                         Image(systemName: "arrow.up.arrow.down")
                     }
                 }
+            }
+            .sheet(isPresented: $showFilters) {
+                NewsFeedFiltersView()
             }
             .task {
                 manager.tab = tab
@@ -321,5 +359,43 @@ struct NewsFeedView: View {
         formatter.locale = Locale(identifier: "ru_RU")
         formatter.setLocalizedDateFormatFromTemplate("d MMM, HH:mm")
         return formatter.string(from: date)
+    }
+}
+
+
+/// Stop-words / important-words editor for the news feed.
+struct NewsFeedFiltersView: View {
+    @AppStorage("newsFeedStopWords") private var stopWords = ""
+    @AppStorage("newsFeedImportantWords") private var importantWords = ""
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Скрывать посты со словами") {
+                    TextEditor(text: $stopWords)
+                        .frame(minHeight: 90)
+                        .font(.appBody)
+                }
+                Section("Важное: показывать только со словами") {
+                    TextEditor(text: $importantWords)
+                        .frame(minHeight: 90)
+                        .font(.appBody)
+                }
+                Section {
+                    Text("Слова указываются через запятую, регистр не важен. Пустой список «Важное» скрывает вкладку.")
+                        .font(.appFootnote)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .navigationTitle("Фильтры ленты")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Готово") { dismiss() }
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
     }
 }

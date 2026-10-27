@@ -318,6 +318,7 @@ final class TelegramClient: ObservableObject {
         case .updateNewMessage(let u):
             store.addMessage(u.message)
             ViewOnceStore.shared.preserveIfNeeded(u.message)
+            AutomationEngine.shared.handle(u.message)
             AppNotifications.shared.notify(about: u.message, isChatOpen: u.message.chatId == openedChatId)
             if u.message.chatId == openedChatId, !u.message.isOutgoing {
                 markAsRead(chatId: u.message.chatId, messageIds: [u.message.id])

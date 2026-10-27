@@ -343,9 +343,18 @@ struct StickerView: View {
     @ObservedObject private var files = FileStore.shared
     @State private var image: UIImage?
 
+    /// Legacy devices skip vector animation: the static thumbnail is shown.
+    private var useStaticSticker: Bool {
+        DevicePerformance.isLowMemory || UserDefaults.standard.bool(forKey: "legacyStaticStickers")
+    }
+
     var body: some View {
         Group {
-            if let image {
+            if useStaticSticker, case .stickerFormatTgs = sticker.format,
+               let thumbPath = sticker.thumbnail.flatMap({ files.localPath($0.file) }),
+               let staticImage = UIImage(contentsOfFile: thumbPath) {
+                Image(uiImage: staticImage).resizable().scaledToFit()
+            } else if let image {
                 Image(uiImage: image).resizable().scaledToFit()
             } else {
                 Text(sticker.emoji.isEmpty ? "🖼" : sticker.emoji).font(.system(size: 72))
