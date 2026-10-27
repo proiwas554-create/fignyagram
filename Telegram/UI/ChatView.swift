@@ -43,6 +43,7 @@ struct ChatView: View {
     @State private var showVideoNoteRecorder = false
     @State private var preparingMedia = 0
     @State private var composerPayload: MediaComposerPayload?
+    @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0
     @State private var showPollComposer = false
     @State private var showAttachmentDialog = false
     @AppStorage("messageListCollection") private var useCollectionMessageList = false
@@ -926,7 +927,19 @@ struct ChatView: View {
                         .font(.system(size: 20))
                         .classicIconButton()
                 }
-                .accessibilityLabel("Отправить текст файлом .txt")
+                .accessibilityLabel("Отправить текст файлом")
+            }
+            if editing == nil && !text.isEmpty {
+                Menu {
+                    Button("Перевернуть") { text = TextTransformers.reversed(text) }
+                    Button("SpongeBob") { text = TextTransformers.spongebob(text) }
+                    Button("Убрать лишние пробелы") { text = TextTransformers.collapsedSpaces(text) }
+                } label: {
+                    Image(systemName: "wand.and.stars")
+                        .font(.system(size: 19))
+                        .classicIconButton()
+                }
+                .accessibilityLabel("Трансформировать текст")
             }
             if editing == nil {
                 Button {
@@ -1055,7 +1068,8 @@ struct ChatView: View {
         guard !content.isEmpty else { return }
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("txty", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let fileURL = directory.appendingPathComponent("message-\(Int(Date().timeIntervalSince1970)).txt")
+        let ext = TextFileHeuristics.suggestedExtension(for: content)
+        let fileURL = directory.appendingPathComponent("message-\(Int(Date().timeIntervalSince1970)).\(ext)")
         do {
             try content.write(to: fileURL, atomically: true, encoding: .utf8)
             client.sendDocument(fileURL, caption: "", to: chatId, replyTo: takeReply())
@@ -1066,6 +1080,12 @@ struct ChatView: View {
     }
 
     private func sendText() {
+        if editing == nil,
+           autoTextFileThreshold > 0,
+           text.trimmingCharacters(in: .whitespacesAndNewlines).count > autoTextFileThreshold {
+            sendTextAsFile()
+            return
+        }
         if let editing {
             client.editMessage(editing, text: text)
             self.editing = nil

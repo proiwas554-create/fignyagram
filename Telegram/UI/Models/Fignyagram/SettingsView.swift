@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject private var privacy = PrivacyPreferences.shared
     @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
+    @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0
     @ObservedObject private var globalSearch = GlobalSearchPreferences.shared
     @ObservedObject private var developer = DeveloperMode.shared
     @ObservedObject private var classicDesign = ClassicDesignMode.shared
@@ -174,6 +175,11 @@ struct SettingsView: View {
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
+                    Picker("Текст файлом длиннее", selection: $autoTextFileThreshold) {
+                        Text("Никогда").tag(0)
+                        Text("2000 символов").tag(2000)
+                        Text("4000 символов").tag(4000)
+                    }
                     Toggle("Вкладка «Музыка» в нижнем баре", isOn: $showMusicTab)
                     Toggle("Вкладка «Новости» в нижнем баре", isOn: $showNewsTab)
                     Toggle("Невидимый просмотр историй", isOn: Binding(
