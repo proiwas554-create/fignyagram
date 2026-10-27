@@ -526,67 +526,90 @@ struct ChatView: View {
         )
     }
 
+    private var earlierButtonTitle: String {
+        "Показать ещё \(min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count))"
+    }
+
+    @ViewBuilder
+    private func messageRowCell(_ message: Message) -> some View {
+        let index = visibleMessages.firstIndex(where: { $0.id == message.id }) ?? 0
+        VStack(alignment: .leading, spacing: 4) {
+            if isFirstMessageOfDay(at: index) {
+                dayHeader(for: Date(timeIntervalSince1970: TimeInterval(message.date)))
+            }
+            MessageRow(
+                message: message,
+                showSender: shouldShowSender(message),
+                isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
+                senderName: store.senderName(message.senderId),
+                forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
+                onReply: { startReply(message) },
+                onLongPress: { actionMessage = message },
+                onReplyTap: { scrollTarget = $0 },
+                onSenderTap: { openSender($0) },
+                onOpenReplies: { repliesMessage = message },
+                onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
+            )
+            .equatable()
+        }
+    }
+
     private var messageList: some View {
         ScrollViewReader { proxy in
-            ScrollView {
-                    LazyVStack(spacing: 4) {
-                        if visibleMessages.count < unblockedMessages.count {
-                            Button {
-                                extraMessages += limits.effectiveMessagesPerChat
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "chevron.up")
-                                    Text("Показать ещё \(min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count))")
-                                }
-                                .font(.appFootnote)
-                            }
-                            .buttonStyle(.plain)
-                            .foregroundColor(.accentColor)
-                            .padding(.vertical, 6)
-                        } else if !messages.isEmpty && !store.fullyLoadedChats.contains(chatId) {
-                            ProgressView()
-                                .padding()
-                                .onAppear {
-                                    olderAnchorId = messages.first?.id
-                                    client.loadOlderMessages(chatId: chatId)
-                                }
+            List {
+                if visibleMessages.count < unblockedMessages.count {
+                    Button {
+                        extraMessages += limits.effectiveMessagesPerChat
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.up")
+                            Text("Показать ещё \(min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count))")
                         }
-                        ForEach(Array(visibleMessages.enumerated()), id: \.element.id) { index, message in
-                            if isFirstMessageOfDay(at: index) {
-                                dayHeader(for: Date(timeIntervalSince1970: TimeInterval(message.date)))
-                            }
-                            MessageRow(
-                                message: message,
-                                showSender: shouldShowSender(message),
-                                isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
-                                senderName: store.senderName(message.senderId),
-                                forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
-                                onReply: { startReply(message) },
-                                onLongPress: { actionMessage = message },
-                                onReplyTap: { scrollTarget = $0 },
-                                onSenderTap: { openSender($0) },
-                                onOpenReplies: { repliesMessage = message },
-                                onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
-                            )
-                            .equatable()
-                            .id(message.id)
-                        }
-
-                        // Always-reachable bottom target, even for an empty list.
-                        Color.clear
-                            .frame(height: 1)
-                            .id(Self.bottomAnchor)
-                            .background(
-                                ScrollBottomObserver { atBottom in
-                                    guard atBottom != isAtBottom else { return }
-                                    withAnimation(.easeInOut(duration: 0.15)) { isAtBottom = atBottom }
-                                    if atBottom { unseenWhileScrolledUp = 0 }
-                                }
-                            )
+                        .font(.appFootnote)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 8)
+                    .buttonStyle(.plain)
+                    .foregroundColor(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else if !messages.isEmpty && !store.fullyLoadedChats.contains(chatId) {
+                    ProgressView()
+                        .padding()
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .onAppear {
+                            olderAnchorId = messages.first?.id
+                            client.loadOlderMessages(chatId: chatId)
+                        }
                 }
+                ForEach(visibleMessages, id: \.id) { message in
+                    messageRowCell(message)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 8, bottom: 2, trailing: 8))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .id(message.id)
+                }
+
+                // Bottom marker: drives the "jump to latest" button without a
+                // per-frame geometry observer, which invalidated the whole list.
+                Color.clear
+                    .frame(height: 1)
+                    .id(Self.bottomAnchor)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .onAppear {
+                        if !isAtBottom {
+                            isAtBottom = true
+                            unseenWhileScrolledUp = 0
+                        }
+                    }
+                    .onDisappear {
+                        if isAtBottom { isAtBottom = false }
+                    }
+            }
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 1)
                 .coordinateSpace(name: Self.scrollSpace)
                 .overlay(alignment: .top) {
                     if let text = headerDateText, !isAtBottom {
