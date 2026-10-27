@@ -7,6 +7,7 @@ struct FignyagramApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
+        ConsoleCapture.install()
         ImageCache.configureForDevice()
         _ = HardwareTuning.shared
         _ = ClassicDesignMode.shared
@@ -35,9 +36,11 @@ struct FignyagramApp: App {
                 TelegramClient.shared.start() // retry if launch happened before first unlock
                 TelegramClient.shared.retryTdlibParametersIfNeeded()
                 TelegramClient.shared.setOnline(true)
+                Task { await TelegramClient.shared.enforceInvisibleIfNeeded() }
                 BuiltInProxyManager.shared.refreshOnActivation()
                 Task { await AppNotifications.shared.refreshSettings() }
             case .background:
+                AppLock.shared.lockIfNeeded()
                 ImageCache.flushForBackground()
                 URLCache.shared.removeAllCachedResponses()
                 // Keep TDLib online while files are downloading; the background
@@ -47,8 +50,12 @@ struct FignyagramApp: App {
                 }
                 // Keep music playing in the background; only stop the separate
                 // voice-note player so it doesn't fight over the audio session.
-                if MusicPlayer.shared.current == nil {
+                let callIsActive = CallManager.shared.currentCall != nil || GroupCallManager.shared.isActive
+                if MusicPlayer.shared.current == nil && !callIsActive {
                     AudioPlayback.shared.stop()
+                }
+                if callIsActive {
+                    CallDiag.log("app entered background during a call: keeping audio session")
                 }
             default:
                 break

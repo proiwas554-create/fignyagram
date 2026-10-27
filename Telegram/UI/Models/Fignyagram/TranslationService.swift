@@ -108,7 +108,7 @@ struct TranslatedTextView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .task(id: text) {
+        .task(id: "\(text)-\(translation.autoTranslateMessages)") {
             guard translation.autoTranslateMessages, containsCyrillic else { return }
             try? await Task.sleep(nanoseconds: 400_000_000)
             guard !Task.isCancelled else { return }

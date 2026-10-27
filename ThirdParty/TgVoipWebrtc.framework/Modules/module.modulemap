@@ -1,0 +1,5 @@
+framework module TgVoipWebrtc {
+    umbrella header "TgVoipWebrtc.h"
+    export *
+    module * { export * }
+}

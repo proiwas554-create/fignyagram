@@ -222,6 +222,13 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         return true
     }
 
+    func application(_ application: UIApplication,
+                     supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        // Calls are portrait-only: the video stage and the top strip are laid
+        // out for the book orientation.
+        return .all
+    }
+
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         ImageCache.clear()
     }

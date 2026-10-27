@@ -1,0 +1,46 @@
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+/// Objective-C++ bridge over tgcalls (C++), entry point tgcalls::Meta::Create.
+@interface VoIPBridge : NSObject
+
++ (instancetype)shared;
+
+/// SOCKS5 proxy used by the media transport (TCP relays).
+- (void)configureProxyWithHost:(NSString *)host
+                          port:(uint16_t)port
+                      username:(NSString *)username
+                      password:(NSString *)password;
+
+/// Starts an audio or video 1-on-1 call.
+/// - key:       256-byte encryption key (CallStateReady.encryptionKey).
+/// - isOutgoing: YES for calls we initiated.
+/// - isVideo:    YES to enable video.
+/// - servers:    dictionaries:
+///               "ipv4"/"ipv6" (NSString), "port" (NSNumber),
+///               "tcp" (NSNumber bool), "peerTag" (NSData, 16 bytes),
+///               "rtc" (NSNumber bool), "username"/"password" (NSString).
+/// - localView:  UIView receiving our camera preview (nullable for audio).
+/// - remoteView: UIView receiving the remote video (nullable for audio).
+- (BOOL)startCallWithKey:(NSData *)key
+              isOutgoing:(BOOL)isOutgoing
+                 isVideo:(BOOL)isVideo
+                 servers:(NSArray<NSDictionary *> *)servers
+               localView:(nullable UIView *)localView
+              remoteView:(nullable UIView *)remoteView;
+
+- (void)receiveSignalingData:(NSData *)data;
+- (void)stopCall;
+
+- (void)setMicMute:(BOOL)mute;
+- (void)setVideoEnabled:(BOOL)enabled;
+
+/// tgcalls::State, -1 when the engine is not linked.
+@property (nonatomic, readonly) NSInteger connectionState;
+@property (nonatomic, readonly) NSString *stateText;
+
+@end
+
+NS_ASSUME_NONNULL_END

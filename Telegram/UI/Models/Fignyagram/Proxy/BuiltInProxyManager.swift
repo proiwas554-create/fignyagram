@@ -112,6 +112,56 @@ final class BuiltInProxyManager: ObservableObject {
         }
     }
 
+    /// A previous build disabled the built-in proxy automatically when the
+    /// connection flapped; that turned out to break networking on networks
+    /// where the proxy is required. Restore the user's setting once.
+    /// One-time rollback of the proxy state that was changed by the removed
+    /// watchdog. Direct connection is what worked before the incident.
+    /// Restore the configuration that was in use when calls worked: the
+    /// built-in proxy running, TDLib routed through it.
+    func restoreWorkingProxyOnce() {
+        let key = "proxyRestoredWorkingConfig"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        if !isEnabled {
+            setEnabled(true)
+            CallDiag.log("proxy restored to the working configuration")
+        }
+    }
+
+    func rollbackProxyIncident() {
+        let key = "proxyIncidentRollback"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        if isEnabled {
+            setEnabled(false)
+            CallDiag.log("proxy rollback: built-in proxy disabled, using direct connection")
+        }
+    }
+
+    /// The user originally had the built-in proxy enabled; earlier builds
+    /// switched it off automatically. Restore it exactly once and never touch
+    /// this setting again.
+    func restoreUserProxySettingOnce() {
+        let key = "proxyRestoredAfterIncident"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        if !isEnabled {
+            setEnabled(true)
+            CallDiag.log("proxy restored to the user's original enabled state")
+        }
+    }
+
+    func restoreProxyIfDisabledByMigration() {
+        let key = "proxyRestoreMigrationDidRun"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.set(true, forKey: key)
+        if !isEnabled {
+            setEnabled(true)
+            CallDiag.log("proxy restored after watchdog migration")
+        }
+    }
+
     func applyIfEnabled() {
         if isEnabled {
             start()

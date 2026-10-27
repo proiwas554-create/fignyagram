@@ -27,18 +27,32 @@ final class AccountStore: ObservableObject {
 
     /// Deletes tdlib_db_* folders that no longer belong to any account slot.
     /// Dozens of stale databases slow directory scans and waste disk.
+    private static var didCleanupOrphans = false
+
     static func cleanupOrphanDatabases() {
+        guard !didCleanupOrphans else { return }
+        didCleanupOrphans = true
+
         let fm = FileManager.default
         guard let documents = fm.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
         let accounts = UserDefaults.standard.data(forKey: "telegramAccounts")
             .flatMap { try? JSONDecoder().decode([AccountSlot].self, from: $0) } ?? []
+        // Never delete anything if the account list could not be decoded:
+        // this used to remove the LIVE TDLib database right after login.
+        guard !accounts.isEmpty else { return }
         let keep = Set(accounts.map { URL(fileURLWithPath: $0.databaseDirectory).lastPathComponent })
-        guard let contents = try? fm.contentsOfDirectory(at: documents, includingPropertiesForKeys: nil) else { return }
+        guard let contents = try? fm.contentsOfDirectory(
+            at: documents,
+            includingPropertiesForKeys: [.contentModificationDateKey]
+        ) else { return }
         for url in contents where url.lastPathComponent.hasPrefix("tdlib_db_") {
-            if !keep.contains(url.lastPathComponent) {
-                try? fm.removeItem(at: url)
-                DiagnosticsLog.log("cleanup orphan db \(url.lastPathComponent)")
-            }
+            guard !keep.contains(url.lastPathComponent) else { continue }
+            let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?
+                .contentModificationDate ?? .distantPast
+            // Only clean things untouched for at least a day, never a fresh slot.
+            guard Date().timeIntervalSince(modified) > 86_400 else { continue }
+            try? fm.removeItem(at: url)
+            DiagnosticsLog.log("cleanup orphan db \(url.lastPathComponent)")
         }
     }
 

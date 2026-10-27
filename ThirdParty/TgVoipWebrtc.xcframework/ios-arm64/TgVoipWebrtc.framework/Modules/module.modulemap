@@ -1,0 +1,23 @@
+framework module TgVoipWebrtc {
+  umbrella header "TgVoipWebrtc.h"
+  export *
+  module * { export * }
+  link "bz2"
+  link "iconv"
+  link "z"
+  link framework "AVFoundation"
+  link framework "AudioToolbox"
+  link framework "CFNetwork"
+  link framework "CoreAudio"
+  link framework "CoreGraphics"
+  link framework "CoreMedia"
+  link framework "CoreTelephony"
+  link framework "CoreVideo"
+  link framework "Foundation"
+  link framework "GLKit"
+  link framework "QuartzCore"
+  link framework "Security"
+  link framework "SystemConfiguration"
+  link framework "UIKit"
+  link framework "VideoToolbox"
+}

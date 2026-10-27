@@ -1,0 +1,395 @@
+#import "VoIPBridge.h"
+#import <TgVoipWebrtc/OngoingCallThreadLocalContext.h>
+
+static NSData *VoIPDerivedState(void) {
+    static NSData *state = nil;
+    return state ?: [NSData data];
+}
+
+static void VoIPSaveDerivedState(NSData *state) {
+    static NSData *stored = nil;
+    stored = [state copy];
+}
+
+static NSString *VoIPHexString(NSData *data) {
+    const unsigned char *bytes = (const unsigned char *)data.bytes;
+    NSMutableString *result = [NSMutableString stringWithCapacity:data.length * 2];
+    for (NSUInteger i = 0; i < data.length; i++) {
+        [result appendFormat:@"%02x", bytes[i]];
+    }
+    return result;
+}
+
+@interface VoIPQueue : NSObject <OngoingCallThreadLocalContextQueueWebrtc>
+@property(nonatomic) dispatch_queue_t queue;
+@end
+
+@implementation VoIPQueue
+
+- (instancetype)init {
+    if ((self = [super init])) {
+        _queue = dispatch_queue_create("com.fignyagram.voip", DISPATCH_QUEUE_SERIAL);
+        dispatch_queue_set_specific(_queue, (__bridge const void *)self,
+                                    (__bridge void *)self, NULL);
+    }
+    return self;
+}
+
+- (void)dispatch:(void (^)(void))f {
+    dispatch_async(self.queue, f);
+}
+
+- (bool)isCurrent {
+    return dispatch_get_specific((__bridge const void *)self) != NULL;
+}
+
+- (GroupCallDisposable *)scheduleBlock:(void (^)(void))f after:(double)timeout {
+    __block BOOL cancelled = NO;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                    (int64_t)(MAX(0.0, timeout) * NSEC_PER_SEC)),
+                   self.queue, ^{
+        if (!cancelled) { f(); }
+    });
+    return [[GroupCallDisposable alloc] initWithBlock:^{
+        cancelled = YES;
+    }];
+}
+
+@end
+
+@interface VoIPBridge () {
+    VoipProxyServerWebrtc *_proxy;
+    OngoingCallThreadLocalContextWebrtc *_context;
+    OngoingCallThreadLocalContextVideoCapturer *_capturer;
+    SharedCallAudioDevice *_audioDevice;
+    VoIPQueue *_queue;
+    NSString *_serverConfig;
+    NSString *_customParameters;
+    NSArray<NSString *> *_libraryVersions;
+    BOOL _allowP2P;
+    int32_t _maxLayer;
+    BOOL _isBackCamera;
+    BOOL _videoRequested;
+}
+@property(nonatomic, readwrite) NSInteger connectionState;
+@property(nonatomic, copy, readwrite) NSString *stateText;
+@end
+
+@implementation VoIPBridge
+
++ (instancetype)shared {
+    static VoIPBridge *instance;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{ instance = [[self alloc] init]; });
+    return instance;
+}
+
+- (instancetype)init {
+    if ((self = [super init])) {
+        _queue = [[VoIPQueue alloc] init];
+        _serverConfig = @"";
+        _customParameters = @"";
+        _libraryVersions = @[];
+        _connectionState = -1;
+        _stateText = @"Ожидание звонка";
+    }
+    return self;
+}
+
+- (void)configureProxyWithHost:(NSString *)host
+                          port:(uint16_t)port
+                      username:(NSString *)username
+                      password:(NSString *)password {
+    _proxy = [[VoipProxyServerWebrtc alloc]
+        initWithHost:host port:port username:username password:password];
+}
+
+- (void)configureCallWithServerConfig:(NSString *)serverConfig
+                     customParameters:(NSString *)customParameters
+                             allowP2P:(BOOL)allowP2P
+                             maxLayer:(int32_t)maxLayer
+                       libraryVersions:(NSArray<NSString *> *)libraryVersions {
+    _serverConfig = [serverConfig copy] ?: @"";
+    _customParameters = [customParameters copy] ?: @"";
+    _allowP2P = allowP2P;
+    _maxLayer = maxLayer;
+    _libraryVersions = [libraryVersions copy] ?: @[];
+}
+
+- (NSString *)negotiateVersion {
+    NSArray<NSString *> *engineVersions =
+        [OngoingCallThreadLocalContextWebrtc versionsWithIncludeReference:NO];
+
+    // Prefer the highest library version the peer also supports (official
+    // clients negotiate from newest to oldest).
+    for (NSString *libraryVersion in [_libraryVersions reverseObjectEnumerator]) {
+        if ([engineVersions containsObject:libraryVersion]) {
+            return libraryVersion;
+        }
+    }
+    return engineVersions.firstObject ?: @"";
+}
+
+- (BOOL)startCallWithKey:(NSData *)key
+              isOutgoing:(BOOL)isOutgoing
+                isVideo:(BOOL)isVideo
+                servers:(NSArray<NSDictionary *> *)servers
+               localView:(UIView *)localView
+              remoteView:(UIView *)remoteView {
+    if (key.length == 0 || _context != nil) {
+        self.stateText = @"Не удалось запустить звонок";
+        return NO;
+    }
+
+    // Map TDLib CallStateReady.servers exactly like the official client:
+    //   - Telegram reflectors: sequential reflectorId starting from 1,
+    //     username "reflector", password = hex(peerTag);
+    //   - WebRTC servers: reflectorId 0 with STUN/TURN flags and credentials.
+    NSMutableArray<NSNumber *> *reflectorIds = [NSMutableArray array];
+    for (NSDictionary *server in servers) {
+        if (![server[@"rtc"] boolValue]) {
+            [reflectorIds addObject:server[@"id"]];
+        }
+    }
+    [reflectorIds sortUsingSelector:@selector(compare:)];
+    NSMutableDictionary<NSNumber *, NSNumber *> *idMapping =
+        [NSMutableDictionary dictionary];
+    for (NSUInteger i = 0; i < reflectorIds.count; i++) {
+        idMapping[reflectorIds[i]] = @(i + 1);
+    }
+
+    NSMutableArray<OngoingCallConnectionDescriptionWebrtc *> *connections =
+        [NSMutableArray array];
+    for (NSDictionary *server in servers) {
+        BOOL rtc = [server[@"rtc"] boolValue];
+        int32_t port = [server[@"port"] intValue];
+        if (port <= 0) { continue; }
+
+        NSArray<NSString *> *ips = @[];
+        if ([server[@"ipv4"] isKindOfClass:NSString.class] &&
+            [server[@"ipv4"] length] > 0) {
+            ips = [ips arrayByAddingObject:server[@"ipv4"]];
+        }
+        if ([server[@"ipv6"] isKindOfClass:NSString.class] &&
+            [server[@"ipv6"] length] > 0) {
+            ips = [ips arrayByAddingObject:server[@"ipv6"]];
+        }
+        if (ips.count == 0) { continue; }
+
+        if (rtc) {
+            for (NSString *ip in ips) {
+                [connections addObject:
+                    [[OngoingCallConnectionDescriptionWebrtc alloc]
+                        initWithReflectorId:0
+                        hasStun:[server[@"supportsStun"] boolValue]
+                        hasTurn:[server[@"supportsTurn"] boolValue]
+                        hasTcp:NO
+                        ip:ip
+                        port:port
+                        username:server[@"username"] ?: @""
+                        password:server[@"password"] ?: @""]];
+            }
+        } else {
+            uint8_t reflectorId =
+                [idMapping[server[@"id"]] unsignedCharValue];
+            NSData *peerTag = server[@"peerTag"];
+            NSString *password = [peerTag isKindOfClass:NSData.class]
+                ? VoIPHexString(peerTag) : @"";
+            for (NSString *ip in ips) {
+                [connections addObject:
+                    [[OngoingCallConnectionDescriptionWebrtc alloc]
+                        initWithReflectorId:reflectorId
+                        hasStun:NO
+                        hasTurn:YES
+                        hasTcp:[server[@"tcp"] boolValue]
+                        ip:ip
+                        port:port
+                        username:@"reflector"
+                        password:password]];
+            }
+        }
+    }
+
+    if (connections.count == 0) {
+        self.stateText = @"Telegram не предоставил подходящих серверов";
+        return NO;
+    }
+
+    NSString *version = [self negotiateVersion];
+    if (version.length == 0) {
+        self.stateText = @"Не найдена совместимая версия WebRTC";
+        return NO;
+    }
+
+    [OngoingCallThreadLocalContextWebrtc applyServerConfig:_serverConfig];
+    [OngoingCallThreadLocalContextWebrtc setupAudioSession];
+    _audioDevice = [[SharedCallAudioDevice alloc]
+        initWithDisableRecording:NO enableSystemMute:YES];
+    [_audioDevice setManualAudioSessionIsActive:YES];
+
+    // Video capture, if requested.
+    if (isVideo) {
+        _capturer = [[OngoingCallThreadLocalContextVideoCapturer alloc]
+            initWithDeviceId:@"" keepLandscape:NO];
+
+        __weak VoIPBridge *weakSelf = self;
+        [_capturer makeOutgoingVideoView:NO completion:^(
+            UIView<OngoingCallThreadLocalContextWebrtcVideoView> *mainView,
+            UIView<OngoingCallThreadLocalContextWebrtcVideoView> *cloneView) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                VoIPBridge *strongSelf = weakSelf;
+                if (!strongSelf || !mainView) { return; }
+                [strongSelf installVideoView:mainView inContainer:localView];
+            });
+        }];
+    }
+
+    NSString *base = [NSHomeDirectory()
+        stringByAppendingPathComponent:@"Library/Caches/FignyagramVoIP"];
+    [[NSFileManager defaultManager] createDirectoryAtPath:base
+                              withIntermediateDirectories:YES
+                                               attributes:nil
+                                                    error:nil];
+
+    _context = [[OngoingCallThreadLocalContextWebrtc alloc]
+        initWithVersion:version
+        customParameters:_customParameters
+        queue:_queue
+        proxy:_proxy
+        networkType:OngoingCallNetworkTypeWifi
+        dataSaving:OngoingCallDataSavingNever
+        derivedState:VoIPDerivedState()
+        key:key
+        isOutgoing:isOutgoing
+        connections:connections
+        maxLayer:_maxLayer > 0 ? _maxLayer :
+            [OngoingCallThreadLocalContextWebrtc maxLayer]
+        allowP2P:_allowP2P
+        allowTCP:YES
+        enableStunMarking:YES
+        logPath:[base stringByAppendingPathComponent:@"call.log"]
+        statsLogPath:[base stringByAppendingPathComponent:@"stats.log"]
+        sendSignalingData:^(NSData *data) {
+            if (self.signalingDataHandler) {
+                self.signalingDataHandler(data);
+            }
+        }
+        videoCapturer:isVideo ? _capturer : nil
+        preferredVideoCodec:@""
+        audioInputDeviceId:@"default"
+        audioDevice:_audioDevice
+        directConnection:nil];
+
+    __weak VoIPBridge *weakSelf = self;
+    _context.stateChanged = ^(OngoingCallStateWebrtc state,
+                              OngoingCallVideoStateWebrtc videoState,
+                              OngoingCallRemoteVideoStateWebrtc remoteVideoState,
+                              OngoingCallRemoteAudioStateWebrtc remoteAudioState,
+                              OngoingCallRemoteBatteryLevelWebrtc battery,
+                              float level) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            VoIPBridge *strongSelf = weakSelf;
+            if (!strongSelf) { return; }
+            strongSelf.connectionState = state;
+            switch (state) {
+                case OngoingCallStateInitializing:
+                    strongSelf.stateText = @"Соединение…";
+                    break;
+                case OngoingCallStateConnected:
+                    strongSelf.stateText = @"Звонок подключён";
+                    break;
+                case OngoingCallStateReconnecting:
+                    strongSelf.stateText = @"Переподключение…";
+                    break;
+                case OngoingCallStateFailed:
+                    strongSelf.stateText = @"Ошибка соединения";
+                    break;
+            }
+            if (strongSelf.stateHandler) {
+                strongSelf.stateHandler(state);
+            }
+        });
+    };
+
+    if (isVideo) {
+        [_context makeIncomingVideoView:^(
+            UIView<OngoingCallThreadLocalContextWebrtcVideoView> *incomingView) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                VoIPBridge *strongSelf = weakSelf;
+                if (!strongSelf || !incomingView) { return; }
+                [strongSelf installVideoView:incomingView inContainer:remoteView];
+            });
+        }];
+        [_context requestVideo:_capturer];
+        _videoRequested = YES;
+    }
+
+    self.connectionState = OngoingCallStateInitializing;
+    self.stateText = @"Соединение…";
+    return YES;
+}
+
+- (void)installVideoView:(UIView *)view inContainer:(UIView *)container {
+    if (!container) { return; }
+    view.frame = container.bounds;
+    view.autoresizingMask = UIViewAutoresizingFlexibleWidth |
+                            UIViewAutoresizingFlexibleHeight;
+    [container addSubview:view];
+}
+
+- (void)receiveSignalingData:(NSData *)data {
+    if (data.length > 0 && _context != nil) {
+        [_context addSignalingData:data];
+    }
+}
+
+- (void)stopCall {
+    OngoingCallThreadLocalContextWebrtc *context = _context;
+    _context = nil;
+    if (context) {
+        [context beginTermination];
+        [context stop:^(NSString *debugLog, int64_t sentWifi,
+                        int64_t receivedWifi, int64_t sentMobile,
+                        int64_t receivedMobile) {
+            VoIPSaveDerivedState([context getDerivedState]);
+        }];
+    }
+    _capturer = nil;
+    _videoRequested = NO;
+    [_audioDevice setManualAudioSessionIsActive:NO];
+    _audioDevice = nil;
+    self.connectionState = -1;
+    self.stateText = @"Звонок завершён";
+}
+
+- (void)setMicMute:(BOOL)mute {
+    [_context setIsMuted:mute];
+}
+
+- (void)setVideoEnabled:(BOOL)enabled {
+    if (enabled) {
+        if (_context && _capturer && !_videoRequested) {
+            [_context requestVideo:_capturer];
+            _videoRequested = YES;
+        }
+        [_capturer setIsVideoEnabled:YES];
+    } else {
+        [_capturer setIsVideoEnabled:NO];
+        if (_context) {
+            [_context disableVideo];
+            _videoRequested = NO;
+        }
+    }
+}
+
+- (void)switchCamera {
+    if (!_capturer) { return; }
+    _isBackCamera = !_isBackCamera;
+    [_capturer switchVideoInput:_isBackCamera ? @"back" : @""];
+}
+
+- (BOOL)isBackCamera {
+    return _isBackCamera;
+}
+
+@end

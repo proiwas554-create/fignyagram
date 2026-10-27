@@ -45,6 +45,7 @@ struct ChatView: View {
     @State private var composerPayload: MediaComposerPayload?
     @State private var showPollComposer = false
     @State private var showAttachmentDialog = false
+    @AppStorage("messageListCollection") private var useCollectionMessageList = true
     @State private var sendMediaAsFiles = false
     @State private var registeredChatPresentation = false
     @State private var showScheduleComposer = false
@@ -111,7 +112,11 @@ struct ChatView: View {
                 pinnedBanner(pinned)
                 Divider()
             }
-            messageList
+            if useCollectionMessageList {
+                collectionMessageListView
+            } else {
+                messageList
+            }
             if let error = client.errorMessage {
                 ErrorBanner(message: error)
                     .padding(.vertical, 4)
@@ -226,9 +231,12 @@ struct ChatView: View {
                 ChatPresentationState.shared.enter()
             }
             client.openChat(chatId)
+            if let userId = chat?.privateUserId {
+                RecentContactsStore.shared.record(userId)
+            }
+            ChatStore.shared.applyDeletedArchive(chatId: chatId)
             focusOnSearchResultIfNeeded()
         }
-        .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
         .onDisappear {
             dismissKeyboard()
             if registeredChatPresentation {
@@ -435,6 +443,88 @@ struct ChatView: View {
 
     // MARK: - Messages
 
+    @State private var headerDateText: String?
+
+    private func isFirstMessageOfDay(at index: Int) -> Bool {
+        guard index > 0 else { return true }
+        let current = visibleMessages[index]
+        let previous = visibleMessages[index - 1]
+        let a = Date(timeIntervalSince1970: TimeInterval(current.date))
+        let b = Date(timeIntervalSince1970: TimeInterval(previous.date))
+        return !Calendar.current.isDate(a, inSameDayAs: b)
+    }
+
+    @ViewBuilder
+    private func dayHeader(for date: Foundation.Date) -> some View {
+        Text(Self.dayHeaderFormatter.string(from: date))
+            .font(.appCaption.bold())
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color(.secondarySystemBackground)))
+            .padding(.vertical, 6)
+            .onAppear {
+                let text = Self.dayHeaderFormatter.string(from: date)
+                if headerDateText != text {
+                    withAnimation(.easeInOut(duration: 0.15)) { headerDateText = text }
+                }
+            }
+    }
+
+    private static let dayHeaderFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "ru_RU")
+        f.dateFormat = "d MMMM, EEEE"
+        return f
+    }()
+
+    // MARK: - Collection-backed message list
+
+    private var collectionMessageEntries: [CollectionMessageList.Entry] {
+        var result: [CollectionMessageList.Entry] = []
+        let list = visibleMessages
+        for (index, message) in list.enumerated() {
+            if isFirstMessageOfDay(at: index) {
+                result.append(.init(id: "d-\(message.id)", kind: .day(TimeInterval(message.date))))
+            }
+            result.append(.init(id: "m-\(message.id)", kind: .message(message)))
+        }
+        return result
+    }
+
+    private var collectionMessageListView: some View {
+        CollectionMessageList(
+            entries: collectionMessageEntries,
+            scrollTarget: scrollTarget,
+            onScrollTargetHandled: { scrollTarget = nil },
+            onReachTop: {
+                if visibleMessages.count < unblockedMessages.count {
+                    extraMessages += limits.effectiveMessagesPerChat
+                } else if !store.fullyLoadedChats.contains(chatId) {
+                    olderAnchorId = messages.first?.id
+                    client.loadOlderMessages(chatId: chatId)
+                }
+            },
+            makeRow: { message in
+                AnyView(
+                    MessageRow(
+                        message: message,
+                        showSender: shouldShowSender(message),
+                        isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
+                        senderName: store.senderName(message.senderId),
+                        forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
+                        onReply: { startReply(message) },
+                        onLongPress: { actionMessage = message },
+                        onReplyTap: { scrollTarget = $0 },
+                        onSenderTap: { openSender($0) },
+                        onOpenReplies: { repliesMessage = message },
+                        onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
+                    )
+                )
+            }
+        )
+    }
+
     private var messageList: some View {
         ScrollViewReader { proxy in
             ScrollView {
@@ -460,7 +550,10 @@ struct ChatView: View {
                                     client.loadOlderMessages(chatId: chatId)
                                 }
                         }
-                        ForEach(visibleMessages) { message in
+                        ForEach(Array(visibleMessages.enumerated()), id: \.element.id) { index, message in
+                            if isFirstMessageOfDay(at: index) {
+                                dayHeader(for: Date(timeIntervalSince1970: TimeInterval(message.date)))
+                            }
                             MessageRow(
                                 message: message,
                                 showSender: shouldShowSender(message),
@@ -494,6 +587,19 @@ struct ChatView: View {
                     .padding(.vertical, 8)
                 }
                 .coordinateSpace(name: Self.scrollSpace)
+                .overlay(alignment: .top) {
+                    if let text = headerDateText, !isAtBottom {
+                        Text(text)
+                            .font(.appCaption.bold())
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(.regularMaterial))
+                            .padding(.top, 6)
+                            .transition(.opacity)
+                            .allowsHitTesting(false)
+                    }
+                }
                 .overlay {
                     if messages.isEmpty || unblockedMessages.isEmpty {
                         if isLoading {
@@ -788,6 +894,16 @@ struct ChatView: View {
 
     private var inputBar: some View {
         HStack(alignment: .bottom, spacing: 8) {
+            if !text.isEmpty && editing == nil {
+                Button {
+                    sendTextAsFile()
+                } label: {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 20))
+                        .classicIconButton()
+                }
+                .accessibilityLabel("Отправить текст файлом .txt")
+            }
             if editing == nil {
                 Button {
                     showAttachmentDialog = true
@@ -907,6 +1023,22 @@ struct ChatView: View {
     private func loadDraft() {
         guard editing == nil, text.isEmpty else { return }
         text = drafts.draft(for: chatId)
+    }
+
+    /// Sends the composer text as a .txt document.
+    private func sendTextAsFile() {
+        let content = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !content.isEmpty else { return }
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("txty", isDirectory: true)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let fileURL = directory.appendingPathComponent("message-\(Int(Date().timeIntervalSince1970)).txt")
+        do {
+            try content.write(to: fileURL, atomically: true, encoding: .utf8)
+            client.sendDocument(fileURL, caption: "", to: chatId, replyTo: takeReply())
+            text = ""
+        } catch {
+            client.errorMessage = "Не удалось создать файл: \(error.localizedDescription)"
+        }
     }
 
     private func sendText() {
@@ -1080,6 +1212,11 @@ struct ChatView: View {
         return nil
     }
 
+    private static func pinnedPreview(_ message: TDLibKit.Message) -> String {
+        let preview = MessageFormatter.preview(message.content)
+        return preview.isEmpty ? "Сообщение" : preview
+    }
+
     private func pinnedBanner(_ message: TDLibKit.Message) -> some View {
         HStack(spacing: 10) {
             Button {
@@ -1092,7 +1229,7 @@ struct ChatView: View {
                         Text("Закреплённое сообщение")
                             .font(.caption2.bold())
                             .foregroundColor(.secondary)
-                        Text(MessageFormatter.preview(message.content))
+                        Text(Self.pinnedPreview(message))
                             .font(.appFootnote)
                             .lineLimit(1)
                             .foregroundColor(.primary)
@@ -1121,6 +1258,11 @@ struct ChatView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
+        .task(id: message.id) {
+            if MessageFormatter.preview(message.content).isEmpty {
+                client.refreshPinnedMessage(chatId: chatId, messageId: message.id)
+            }
+        }
         .background(Color(.secondarySystemBackground))
     }
 
@@ -1746,3 +1888,7 @@ struct HideTabBarModifier: ViewModifier {
         }
     }
 }
+
+
+
+

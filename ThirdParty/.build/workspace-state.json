@@ -1,0 +1,31 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : {
+          "xcframework" : {
+
+          }
+        },
+        "packageRef" : {
+          "identity" : "thirdparty",
+          "kind" : "root",
+          "location" : "/Users/admin/Fignyagram/ThirdParty",
+          "name" : "ThirdParty"
+        },
+        "path" : "/Users/admin/Fignyagram/ThirdParty/LiveKitWebRTC.xcframework",
+        "source" : {
+          "type" : "local"
+        },
+        "targetName" : "LiveKitWebRTC"
+      }
+    ],
+    "dependencies" : [
+
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

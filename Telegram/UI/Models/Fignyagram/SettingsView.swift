@@ -12,6 +12,7 @@ struct SettingsView: View {
     @AppStorage("disableAutoScroll") private var disableAutoScroll = false
     @AppStorage("anonymousForwarding") private var anonymousForwarding = true
     @AppStorage("hideSenderNames") private var hideSenderNames = false
+    @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @Environment(\.dismiss) private var dismiss
     @State private var destination: SettingsDestination?
     @State private var showDeviceQR = false
@@ -19,7 +20,7 @@ struct SettingsView: View {
     @State private var deviceResultText = ""
 
     private enum SettingsDestination: String, Identifiable {
-        case profile, cloudPassword, notifications, proxy, limits, optimization, downloads, cache, commands, scanner, developer, directStats, fonts, hardware
+        case profile, cloudPassword, notifications, proxy, limits, optimization, downloads, cache, commands, scanner, developer, directStats, fonts, hardware, sessions
         var id: String { rawValue }
     }
 
@@ -28,6 +29,25 @@ struct SettingsView: View {
             List {
                 Section("Сеть") {
                     row("Прокси", icon: "network", value: .proxy)
+                }
+
+                Section {
+                    Toggle("Показывать недавние контакты", isOn: $recentContactsEnabled)
+                    Button {
+                        DeepLinkRouter.shared.pendingUsername = "fignyagram"
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Label("Официальный канал", systemImage: "megaphone")
+                            Spacer()
+                            Text("@fignyagram").foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Fignyagram")
+                } footer: {
+                    Text("Недавние контакты показываются в истории поиска (\(Image(systemName: "clock.arrow.circlepath")) в списке чатов).")
+                        .font(.appFootnote)
                 }
 
                 Section {
@@ -40,6 +60,7 @@ struct SettingsView: View {
                         set: { value in
                             UserDefaults.standard.set(true, forKey: "translationUserOverride")
                             translation.isEnabled = value
+                            if value { translation.autoTranslateMessages = true }
                         }
                     ))
                     Toggle("Переводить сообщения", isOn: Binding(
@@ -73,6 +94,7 @@ struct SettingsView: View {
 
                 Section("Аккаунт") {
                     row("Профиль", icon: "person.crop.circle", value: .profile)
+                    row("Устройства и сессии", icon: "laptopcomputer.and.iphone", value: .sessions)
                     row("Облачный пароль", icon: "lock.shield", value: .cloudPassword)
                     Button {
                         showDeviceQR = true
@@ -135,7 +157,43 @@ struct SettingsView: View {
                     Toggle("Отключить автоматическую прокрутку", isOn: $disableAutoScroll)
                     Toggle("Пересылать без автора", isOn: $anonymousForwarding)
                     Toggle("Глобальный поиск", isOn: $globalSearch.isEnabled)
-                    Toggle("Показывать удалённые сообщения", isOn: $privacy.keepDeletedMessages)
+                    Toggle("Показывать удалённые сообщения", isOn: Binding(
+                        get: { privacy.keepDeletedMessages },
+                        set: { value in
+                            privacy.keepDeletedMessages = value
+                            if value {
+                                ChatStore.shared.applyDeletedArchiveEverywhere()
+                            } else {
+                                ChatStore.shared.hideDeletedArchive()
+                            }
+                        }
+                    ))
+                    Toggle("Блокировка Face ID / Touch ID", isOn: Binding(
+                        get: { AppLock.shared.isEnabled },
+                        set: { value in
+                            AppLock.shared.isEnabled = value
+                            if value { AppLock.shared.lockIfNeeded() }
+                        }
+                    ))
+                    Toggle("Звонки через приложение", isOn: Binding(
+                        get: { UserDefaults.standard.bool(forKey: "callViaApp") },
+                        set: { UserDefaults.standard.set($0, forKey: "callViaApp") }
+                    ))
+                    .disabled(!VoIPBridge.engineAvailable())
+                    if !VoIPBridge.engineAvailable() {
+                        Text("Встроенный VoIP-движок отключён: аудиозвонки идут через системную звонилку, видеозвонки недоступны. Для включения нужен готовый TelegramVoIP.framework.")
+                            .font(.appFootnote)
+                            .foregroundColor(.secondary)
+                    }
+                    Toggle("Режим невидимки", isOn: Binding(
+                        get: { client.isInvisible },
+                        set: { value in
+                            Task {
+                                do { try await client.setInvisibleMode(value) }
+                                catch { client.errorMessage = TelegramClient.describe(error) }
+                            }
+                        }
+                    ))
                 } header: {
                     Text("Приватность")
                 } footer: {
@@ -174,6 +232,7 @@ struct SettingsView: View {
                 case .commands: CommandPaletteView()
                 case .scanner: UniversalScannerView()
                 case .developer: DeveloperSettingsView()
+                case .sessions: SessionsView()
                 case .directStats: DirectMessageStatsView()
                 case .fonts: FontSettingsView()
                 case .hardware: HardwareSettingsView()

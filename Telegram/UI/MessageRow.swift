@@ -3,6 +3,49 @@ import UIKit
 import Combine
 import TDLibKit
 
+
+/// Formatting results are expensive (entity parsing, attributed strings) and
+/// are recomputed for every visible row on each SwiftUI pass. Cache them per
+/// message revision so scrolling and incoming updates stay cheap.
+private enum MessageFormatCache {
+    private static let storage: NSCache<NSString, Box> = {
+        let cache = NSCache<NSString, Box>()
+        cache.countLimit = 600
+        return cache
+    }()
+
+    final class Box: NSObject {
+        let value: Any
+        init(_ value: Any) { self.value = value }
+    }
+
+    static func key(_ message: TDLibKit.Message, _ kind: String) -> NSString {
+        "\(message.chatId):\(message.id):\(message.editDate ?? 0):\(kind)" as NSString
+    }
+
+    static func value<T>(for message: TDLibKit.Message, kind: String, make: () -> T) -> T {
+        let cacheKey = key(message, kind)
+        if let box = storage.object(forKey: cacheKey), let value = box.value as? T {
+            return value
+        }
+        let value = make()
+        storage.setObject(Box(value), forKey: cacheKey)
+        return value
+    }
+}
+
+private extension TDLibKit.Message {
+    var cachedServiceText: String? {
+        MessageFormatCache.value(for: self, kind: "service") { MessageFormatter.serviceText(content) }
+    }
+    var cachedPreview: String {
+        MessageFormatCache.value(for: self, kind: "preview") { MessageFormatter.preview(content) }
+    }
+    var cachedCaption: TDLibKit.FormattedText? {
+        MessageFormatCache.value(for: self, kind: "caption") { MessageFormatter.caption(of: content) }
+    }
+}
+
 struct MessageRow: View {
     let message: TDLibKit.Message
     let showSender: Bool
@@ -21,14 +64,29 @@ struct MessageRow: View {
     @State private var senderTag: TelegramClient.MemberTagInfo?
     @State private var showTagEditor = false
     @State private var myTagDraft = ""
+    @State private var longTextPayload: LongTextPayload?
 
     @AppStorage("showAdminAuthors") private var showAdminAuthors = true
     @AppStorage("hideSenderNames") private var hideSenderNames = false
     @ObservedObject private var ultra = UltraMode.shared
     @ObservedObject private var classic = ClassicDesignMode.shared
 
+    /// The peer a "call ended" service message belongs to, so tapping it can
+    /// call back.
+    private var callMessageUserId: Int64? {
+        guard case .messageCall = message.content else { return nil }
+        if let chat = ChatStore.shared.chats[message.chatId],
+           case .chatTypePrivate(let info) = chat.type {
+            return info.userId
+        }
+        if case .messageSenderUser(let sender) = message.senderId {
+            return sender.userId
+        }
+        return nil
+    }
+
     var body: some View {
-        if let service = MessageFormatter.serviceText(message.content) {
+        if let service = message.cachedServiceText {
             Text(service)
                 .font(.appCaption)
                 .foregroundColor(.secondary)
@@ -37,6 +95,17 @@ struct MessageRow: View {
                 .background(Capsule().fill(Color(.secondarySystemBackground)))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 4)
+                .contentShape(Capsule())
+                .onTapGesture {
+                    guard let userId = callMessageUserId else { return }
+                    let isVideo: Bool
+                    if case .messageCall(let call) = message.content {
+                        isVideo = call.isVideo
+                    } else {
+                        isVideo = false
+                    }
+                    TelegramClient.shared.callUser(userId: userId, isVideo: isVideo)
+                }
         } else {
             HStack {
                 if message.isOutgoing { Spacer(minLength: 48) }
@@ -162,13 +231,14 @@ struct MessageRow: View {
             replyHeader
             MessageContentView(message: message)
             if case .messageText(let textContent) = message.content,
-               !textContent.text.text.isEmpty {
+               !textContent.text.text.isEmpty,
+               textContent.text.text.count <= 4000 {
                 TranslatedTextView(
                     text: textContent.text.text,
                     font: .appCaption2.italic()
                 )
             }
-            if let caption = MessageFormatter.caption(of: message.content), !caption.text.isEmpty {
+            if let caption = message.cachedCaption, !caption.text.isEmpty {
                 SpoilerTextView(formatted: caption)
                 TranslatedTextView(
                     text: caption.text,
@@ -178,6 +248,9 @@ struct MessageRow: View {
             if !ultra.isEnabled { reactions }
             repliesButton
             footer
+        }
+        .sheet(item: $longTextPayload) { payload in
+            LongTextSheet(text: payload.text)
         }
         .sheet(isPresented: $showTagEditor) {
             NavigationView {
@@ -317,7 +390,7 @@ private struct MessageReplyHeader: View {
         let text = blocked
             ? "Скрыто"
             : (reply.quote?.text.text
-                ?? replied.map { MessageFormatter.preview($0.content) }
+                ?? replied.map(\.cachedPreview)
                 ?? reply.content.map { MessageFormatter.preview($0) }
                 ?? "…")
         HStack(spacing: 6) {
@@ -494,9 +567,67 @@ struct PollMessageView: View {
     }
 }
 
+
+/// Efficient viewer for very long messages: UIKit's text view handles huge
+/// strings without the layout cost that SwiftUI Text pays on every pass.
+struct LongTextSheet: View {
+    let text: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            LongTextView(text: text)
+                .navigationTitle("Сообщение")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Закрыть") { dismiss() }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            UIPasteboard.general.string = text
+                        } label: {
+                            Image(systemName: "doc.on.doc")
+                        }
+                    }
+                }
+        }
+        .navigationViewStyle(.stack)
+    }
+}
+
+struct LongTextView: UIViewRepresentable {
+    let text: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let view = UITextView()
+        view.isEditable = false
+        view.isSelectable = true
+        view.isScrollEnabled = true
+        view.backgroundColor = .clear
+        view.font = UIFont.preferredFont(forTextStyle: .body)
+        view.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 24, right: 12)
+        view.text = text
+        return view
+    }
+
+    func updateUIView(_ view: UITextView, context: Context) {
+        if view.text != text { view.text = text }
+    }
+}
+
 struct SpoilerTextView: View {
     let formatted: TDLibKit.FormattedText
     @State private var revealed = false
+    @State private var showFullText = false
+
+    private static let inlineLimit = 4000
+
+    private var isHuge: Bool { formatted.text.count > Self.inlineLimit }
+
+    private var preview: String {
+        String(formatted.text.prefix(Self.inlineLimit))
+    }
 
     private var hasSpoiler: Bool {
         formatted.entities.contains {
@@ -506,7 +637,23 @@ struct SpoilerTextView: View {
     }
 
     var body: some View {
-        if hasSpoiler && !revealed {
+        if isHuge {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(preview)
+                    .modifier(SelectableTextModifier())
+                    .fixedSize(horizontal: false, vertical: true)
+                Text("… ещё \(formatted.text.count - Self.inlineLimit) символов")
+                    .font(.appCaption)
+                    .foregroundColor(.secondary)
+                Button("Показать полностью") { showFullText = true }
+                    .font(.appCaption.bold())
+                    .buttonStyle(.plain)
+                    .foregroundColor(.accentColor)
+            }
+            .sheet(isPresented: $showFullText) {
+                LongTextSheet(text: formatted.text)
+            }
+        } else if hasSpoiler && !revealed {
             Text(formatted.text)
                 .modifier(SelectableTextModifier())
                 .foregroundColor(.clear)
@@ -741,4 +888,10 @@ extension MessageRow: Equatable {
         lhs.senderName == rhs.senderName &&
         lhs.forwardedFrom == rhs.forwardedFrom
     }
+}
+
+
+private struct LongTextPayload: Identifiable {
+    let id = UUID()
+    let text: String
 }

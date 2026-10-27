@@ -17,6 +17,9 @@ struct ChatListView: View {
     @ObservedObject private var limits = DisplayLimits.shared
     @ObservedObject private var searchHistory = SearchHistory.shared
     @ObservedObject private var proxy = BuiltInProxyManager.shared
+    @ObservedObject private var recentContacts = RecentContactsStore.shared
+    @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
+    @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
     @State private var search = ""
     @FocusState private var searchFocused: Bool
@@ -78,17 +81,46 @@ struct ChatListView: View {
         return result
     }
 
+    private var normalizedQuery: String { SearchMatcher.normalized(query) }
+
+    /// Users matched by their local tag/alias or username, even when server
+    /// search does not know about the tag.
+    private func aliasMatchedUserIds(_ text: String) -> [Int64] {
+        let normalized = SearchMatcher.normalized(text)
+        guard !normalized.isEmpty else { return [] }
+        return store.users.values.compactMap { user in
+            if let alias = aliases.userAlias(user.id), SearchMatcher.matches(alias, query: normalized) {
+                return user.id
+            }
+            let usernames = user.usernames?.activeUsernames ?? []
+            if usernames.contains(where: { SearchMatcher.matches($0, query: normalized) }) {
+                return user.id
+            }
+            return nil
+        }
+    }
+
     private var chatIds: [Int64] {
         let base = orderedChatIds
         guard !query.isEmpty else { return base }
-        return base.filter {
-            guard let chat = store.chats[$0] else { return false }
-            return SearchMatcher.matches(displayTitle(chat), query: query)
+        let normalized = normalizedQuery
+        return base.filter { id in
+            guard let chat = store.chats[id] else { return false }
+            if SearchMatcher.matches(displayTitle(chat), query: normalized) { return true }
+            if let userId = chat.privateUserId,
+               let alias = aliases.userAlias(userId),
+               SearchMatcher.matches(alias, query: normalized) { return true }
+            if let userId = chat.privateUserId,
+               let user = store.users[userId],
+               let usernames = user.usernames?.activeUsernames,
+               usernames.contains(where: { SearchMatcher.matches($0, query: normalized) }) { return true }
+            return false
         }
     }
 
     private var displayedChatIds: [Int64] {
-        let limit = max(1, limits.effectiveRenderedChats + extraChats)
+        var limit = max(1, limits.effectiveRenderedChats + extraChats)
+        if DevicePerformance.isLowMemory { limit = min(limit, 40) }
         return Array(chatIds.prefix(limit))
     }
 
@@ -107,7 +139,6 @@ struct ChatListView: View {
 
     var body: some View {
         NavigationView {
-            let visibleIds = displayedChatIds
             VStack(spacing: 0) {
                 if classic.isEnabled { classicHeader }
                 List {
@@ -141,7 +172,7 @@ struct ChatListView: View {
                     if !query.isEmpty && (globalSearch.isEnabled || !contactResults.isEmpty) {
                         searchSection
                     }
-                    ForEach(visibleIds, id: \.self) { chatId in
+                    ForEach(displayedChatIds, id: \.self) { chatId in
                         if let chat = store.chats[chatId] {
                             chatRow(chat)
                         }
@@ -149,8 +180,8 @@ struct ChatListView: View {
                     if client.isLoadingChats {
                         HStack { Spacer(); ProgressView(); Spacer() }
                     }
-                    if chatIds.count > visibleIds.count {
-                        Text("Показать ещё \(min(max(10, limits.effectiveRenderedChats), chatIds.count - visibleIds.count))")
+                    if chatIds.count > displayedChatIds.count {
+                        Text("Показать ещё \(min(max(10, limits.effectiveRenderedChats), chatIds.count - displayedChatIds.count))")
                             .font(.appFootnote)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -163,6 +194,7 @@ struct ChatListView: View {
                     }
                 }
                 .listStyle(.plain)
+                .transaction { transaction in transaction.animation = nil }
             }
             .searchable(text: $search, prompt: "Поиск чатов, каналов, контактов")
             .navigationBarHidden(classic.isEnabled)
@@ -201,10 +233,16 @@ struct ChatListView: View {
             .sheet(isPresented: $showProxy) { ProxySettingsView() }
             .sheet(isPresented: $showVisitHistory) { visitHistoryView }
             .sheet(isPresented: $showSearchHistory) {
-                SearchHistoryView { item in
+                SearchHistoryView(onPick: { item in
                     search = item
                     searchFocused = true
-                }
+                }, onOpenContact: { userId in
+                    Task {
+                        if let chatId = try? await client.openChat(userId: userId) {
+                            openTarget = ChatTarget(chatId: chatId, messageId: nil)
+                        }
+                    }
+                })
             }
             .sheet(isPresented: $showClassicProfileMenu) {
                 ClassicProfileMenuView(onSettings: { showSettings = true }, onLogout: { confirmLogout = true })
@@ -223,6 +261,15 @@ struct ChatListView: View {
                 if target == nil { ChatPresentationState.shared.reset() }
             }
             .onAppear { ChatPresentationState.shared.reset() }
+            .onChange(of: deepLinks.pendingUsername) { username in
+                guard let username, !username.isEmpty else { return }
+                deepLinks.pendingUsername = nil
+                Task {
+                    if let chatId = try? await client.openChat(username: username) {
+                        openTarget = ChatTarget(chatId: chatId, messageId: nil)
+                    }
+                }
+            }
             .onChange(of: chatIds) { ids in
                 if let last = ids.last, last == store.mainChatIds.last { client.loadMoreChats() }
             }
@@ -233,6 +280,13 @@ struct ChatListView: View {
     // MARK: - Rows
 
     @ViewBuilder
+    /// Precomputed once per body pass instead of scanning visit history per row.
+    private var recentVisitChatIds: Set<Int64> {
+        var ids = Set<Int64>()
+        for visit in visitHistory.visits.prefix(3) { ids.insert(visit.chatId) }
+        return ids
+    }
+
     private func chatRow(_ chat: ChatItem) -> some View {
         Button {
             openTarget = ChatTarget(chatId: chat.id, messageId: nil)
@@ -243,7 +297,7 @@ struct ChatListView: View {
                 senderName: chat.isGroup ? store.senderName(chat.lastMessage?.senderId ?? .messageSenderUser(MessageSenderUser(userId: 0))) : "",
                 isPinned: isPinned(chat),
                 hidesLastMessage: chat.lastMessage.map { store.isSenderBlocked($0.senderId) } ?? false,
-                isRecent: !ultra.isEnabled && visitHistory.visits.prefix(3).contains { $0.chatId == chat.id },
+                isRecent: !ultra.isEnabled && recentVisitChatIds.contains(chat.id),
                 isSaved: chat.id == savedChatId,
                 isLastOpened: chat.id == store.lastOpenedChatId,
                 presence: presence(for: chat),
@@ -275,9 +329,24 @@ struct ChatListView: View {
                     Label("Скопировать юзернейм", systemImage: "at")
                 }
             }
-            if let userId = chat.privateUserId, let user = store.users[userId], !user.phoneNumber.isEmpty {
-                Button { client.call(phoneNumber: user.phoneNumber) } label: {
+            if chat.isGroup && !chat.isChannel {
+                Button {
+                    Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: false) }
+                } label: {
+                    Label("Голосовой чат", systemImage: "waveform")
+                }
+                Button {
+                    Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: true) }
+                } label: {
+                    Label("Видеочат", systemImage: "video.badge.waveform")
+                }
+            }
+            if let userId = chat.privateUserId, userId != client.me?.id {
+                Button { client.callUser(userId: userId, isVideo: false) } label: {
                     Label("Позвонить", systemImage: "phone")
+                }
+                Button { client.callUser(userId: userId, isVideo: true) } label: {
+                    Label("Видеозвонок", systemImage: "video")
                 }
             }
             if let userId = chat.privateUserId {
@@ -374,8 +443,16 @@ struct ChatListView: View {
     private func scheduleSearch() {
         searchTask?.cancel()
         let text = query
-        guard !text.isEmpty, globalSearch.isEnabled else {
+        guard !text.isEmpty else {
             searchResults = []; contactResults = []; channelResults = []
+            return
+        }
+        let aliasUsers = aliasMatchedUserIds(text)
+        guard globalSearch.isEnabled else {
+            // Local tags must still be searchable with global search disabled.
+            searchResults = []
+            channelResults = []
+            contactResults = aliasUsers.compactMap { store.users[$0] }
             return
         }
         searchTask = Task {
@@ -397,6 +474,10 @@ struct ChatListView: View {
                     contacts.append(user)
                 }
             }
+            for userId in aliasUsers where !contacts.contains(where: { $0.id == userId }) {
+                if let user = store.users[userId] { contacts.append(user) }
+            }
+            guard search.trimmingCharacters(in: .whitespacesAndNewlines) == text else { return }
             contactResults = contacts
             channelResults = (try? await client.searchChannels(text)) ?? []
             let found = (try? await client.searchMessages(text)) ?? []
@@ -444,6 +525,40 @@ struct ChatListView: View {
         }
     }
 
+    private var recentContactsBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 14) {
+                ForEach(recentContacts.userIds, id: \.self) { userId in
+                    if let user = store.users[userId] {
+                        Button {
+                            Task {
+                                if let chatId = try? await client.openChat(userId: userId) {
+                                    openTarget = ChatTarget(chatId: chatId, messageId: nil)
+                                }
+                            }
+                        } label: {
+                            VStack(spacing: 4) {
+                                LegacyAvatarView(
+                                    id: userId,
+                                    title: [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " "),
+                                    file: user.profilePhoto?.big,
+                                    size: 46
+                                )
+                                Text(user.firstName)
+                                    .font(.appCaption2)
+                                    .lineLimit(1)
+                                    .frame(width: 54)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+        }
+    }
+
     private var normalHeader: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass").foregroundColor(.secondary)
@@ -476,11 +591,13 @@ struct ChatListView: View {
             Button { showProfile = true } label: {
                 Label("Профиль", systemImage: "person.crop.circle")
             }
-            Toggle(isOn: Binding(
-                get: { proxy.isEnabled },
-                set: { proxy.setEnabled($0) }
-            )) {
-                Label("Встроенный прокси", systemImage: "network")
+            Button {
+                proxy.setEnabled(!proxy.isEnabled)
+            } label: {
+                Label(
+                    proxy.isEnabled ? "Выключить прокси" : "Включить прокси",
+                    systemImage: proxy.isEnabled ? "network.slash" : "network"
+                )
             }
             Button { showAccounts = true } label: {
                 Label("Аккаунты", systemImage: "person.2")
@@ -543,6 +660,10 @@ struct ChatListView: View {
     private var visitHistoryView: some View {
         NavigationView {
             List(visitHistory.visits) { visit in
+                Button {
+                    showVisitHistory = false
+                    openTarget = ChatTarget(chatId: visit.chatId, messageId: nil)
+                } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(store.chats[visit.chatId]?.title ?? "Чат \(visit.chatId)")
@@ -552,6 +673,9 @@ struct ChatListView: View {
                     Spacer()
                     Text("\(visit.visits)×").font(.appCaption.monospacedDigit()).foregroundColor(.secondary)
                 }
+                .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             .navigationTitle("История заходов")
             .navigationBarTitleDisplayMode(.inline)

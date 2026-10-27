@@ -13,6 +13,10 @@
 		844C68FE30824C9C0030F13D /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FD30824C9C0030F13D /* Secrets.swift */; };
 		844C690030824E740030F13D /* StdOutLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FF30824E740030F13D /* StdOutLogger.swift */; };
 		849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */ = {isa = PBXBuildFile; productRef = 849E0116308A83FA008B5F4E /* TDLibKit */; };
+		849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; };
+		A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; };
+		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
@@ -38,6 +42,16 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		5DB7617BC8E885CBFE48DFB7 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = Frameworks;
+			files = (
+				A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */,
+				A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+		};
 		AA100000000000000000000E /* Embed App Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			dstPath = "";
@@ -56,6 +70,8 @@
 		844C68FD30824C9C0030F13D /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		844C68FF30824E740030F13D /* StdOutLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StdOutLogger.swift; sourceTree = "<group>"; };
 		84808575308210CA00D269FE /* Fignyagram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fignyagram.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LiveKitWebRTC.xcframework; sourceTree = "<group>"; };
+		A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ThirdParty/TgVoipWebrtc.framework; sourceTree = SOURCE_ROOT; };
 		AA1000000000000000000002 /* FignyagramShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FignyagramShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA1000000000000000000003 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		AA1000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -78,6 +94,11 @@
 			path = Fignyagram;
 			sourceTree = "<group>";
 		};
+		8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ThirdParty/tgcalls;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,6 +106,8 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */,
+				A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.framework in Frameworks */,
+				849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */,
 			);
 		};
 		AA1000000000000000000009 /* Frameworks */ = {
@@ -156,6 +179,9 @@
 			isa = PBXGroup;
 			children = (
 				AABBCCDD00000000000000E0 /* Localizable.strings */,
+				8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */,
+				849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */,
+				A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -180,6 +206,7 @@
 				84808572308210CA00D269FE /* Frameworks */,
 				84808573308210CA00D269FE /* Resources */,
 				AA100000000000000000000E /* Embed App Extensions */,
+				5DB7617BC8E885CBFE48DFB7 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -359,6 +386,11 @@
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
+					"WEBRTC_IOS=1",
+					"WEBRTC_POSIX=1",
+					"WEBRTC_MAC=1",
+					"LIBYUV_DISABLE_NEON=1",
+					"LIBYUV_DISABLE_SVE=1",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -371,6 +403,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "$(inherited)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -427,6 +460,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				OTHER_LDFLAGS = "$(inherited)";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -439,17 +473,39 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_ENTITLEMENTS = Telegram/Fignyagram.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEVELOPMENT_TEAM = K63F32HXQ4;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+					"$(SRCROOT)/ThirdParty",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/admin/WebRTC_Telegram,
+					/Users/admin/WebRTC_Telegram/sdk/objc,
+					/Users/admin/WebRTC_Telegram/sdk/objc/base,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/api/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_frame_buffer,
+					/Users/admin/WebRTC_Telegram/sdk/objc/helpers,
+					"/Users/admin/WebRTC_Telegram/third_party/abseil-cpp",
+					/Users/admin/WebRTC_Telegram/third_party/libyuv,
+					/Users/admin/WebRTC_Telegram/third_party/libyuv/libyuv,
+					"$(SRCROOT)/ThirdParty/TgVoipWebrtc.framework/Headers",
+					"$(SRCROOT)/ThirdParty/tgcalls",
+					"$(SRCROOT)/ThirdParty/tgcalls/tgcalls",
+				);
 				INFOPLIST_FILE = Telegram/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID используется для разблокировки Fignyagram.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Сохранение фото и видео из чатов в приложение «Фото».";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Доступ к фото нужен для сохранения медиа из чатов.";
@@ -464,13 +520,15 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.7.0;
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Telegram/Bridging-Header.h";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -483,18 +541,40 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CODE_SIGN_ENTITLEMENTS = Telegram/Fignyagram.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 18;
+				CURRENT_PROJECT_VERSION = 19;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = K63F32HXQ4;
 				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+					"$(SRCROOT)/ThirdParty",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/admin/WebRTC_Telegram,
+					/Users/admin/WebRTC_Telegram/sdk/objc,
+					/Users/admin/WebRTC_Telegram/sdk/objc/base,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/api/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_frame_buffer,
+					/Users/admin/WebRTC_Telegram/sdk/objc/helpers,
+					"/Users/admin/WebRTC_Telegram/third_party/abseil-cpp",
+					/Users/admin/WebRTC_Telegram/third_party/libyuv,
+					/Users/admin/WebRTC_Telegram/third_party/libyuv/libyuv,
+					"$(SRCROOT)/ThirdParty/TgVoipWebrtc.framework/Headers",
+					"$(SRCROOT)/ThirdParty/tgcalls",
+					"$(SRCROOT)/ThirdParty/tgcalls/tgcalls",
+				);
 				INFOPLIST_FILE = Telegram/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID используется для разблокировки Fignyagram.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Сохранение фото и видео из чатов в приложение «Фото».";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Доступ к фото нужен для сохранения медиа из чатов.";
@@ -509,7 +589,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.6.0;
+				MARKETING_VERSION = 0.7.0;
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -518,6 +599,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Telegram/Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -542,6 +624,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.5.0;
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -568,6 +651,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 0.5.0;
+				OTHER_LDFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

@@ -1,0 +1,7 @@
+Target dependency graph (3 targets)
+Target 'AllExcludingTests' in project 'Aggregate'
+➜ Explicit dependency on target 'TgVoipWebrtc-product' in project 'TgVoipWebrtc'
+➜ Explicit dependency on target 'TgVoipWebrtc' in project 'TgVoipWebrtc'
+Target 'TgVoipWebrtc-product' in project 'TgVoipWebrtc'
+➜ Explicit dependency on target 'TgVoipWebrtc' in project 'TgVoipWebrtc'
+Target 'TgVoipWebrtc' in project 'TgVoipWebrtc' (no dependencies)

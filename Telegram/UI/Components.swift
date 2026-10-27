@@ -268,7 +268,8 @@ struct AvatarView: View {
                 image = nil
                 return
             }
-            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: 160)
+            let pixel: CGFloat = DevicePerformance.isLowMemory ? 120 : 160
+            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: pixel)
             guard !Task.isCancelled else { return }
             image = decoded
         }

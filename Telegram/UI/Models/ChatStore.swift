@@ -358,6 +358,34 @@ final class ChatStore: ObservableObject {
         messages[chatId] = list
     }
 
+    /// Merges archived deleted messages into loaded history when the user has
+    /// enabled "show deleted messages".
+    func applyDeletedArchive(chatId: Int64) {
+        guard PrivacyPreferences.shared.keepDeletedMessages else { return }
+        let archived = DeletedMessageStore.shared.messages(chatId: chatId)
+        guard !archived.isEmpty else { return }
+        var list = messages[chatId] ?? []
+        let ids = Set(list.map { $0.id })
+        list.append(contentsOf: archived.filter { !ids.contains($0.id) })
+        list.sort { $0.id < $1.id }
+        messages[chatId] = list
+    }
+
+    func hideDeletedArchive() {
+        for chatId in messages.keys {
+            let archivedIds = Set(DeletedMessageStore.shared.messages(chatId: chatId).map { $0.id })
+            guard !archivedIds.isEmpty else { continue }
+            messages[chatId]?.removeAll { archivedIds.contains($0.id) }
+        }
+    }
+
+    func applyDeletedArchiveEverywhere() {
+        guard PrivacyPreferences.shared.keepDeletedMessages else { return }
+        for chatId in messages.keys {
+            applyDeletedArchive(chatId: chatId)
+        }
+    }
+
     func removeMessages(chatId: Int64, ids: [Int64]) {
         let set = Set(ids)
         for id in ids { detachedMessages[MessageKey(chatId: chatId, id: id)] = nil }
@@ -387,6 +415,15 @@ final class ChatStore: ObservableObject {
 
     func isMessagePinned(chatId: Int64, id: Int64) -> Bool {
         pinnedByChat[chatId]?.contains(where: { $0.id == id }) == true
+    }
+
+    func replacePinnedMessage(_ message: Message, chatId: Int64) {
+        guard var list = pinnedByChat[chatId] else { return }
+        if let index = list.firstIndex(where: { $0.id == message.id }) {
+            list[index] = message
+            pinnedByChat[chatId] = list
+            detachedMessages[MessageKey(chatId: chatId, id: message.id)] = message
+        }
     }
 
     func setPinnedMessages(_ newMessages: [Message], chatId: Int64) {

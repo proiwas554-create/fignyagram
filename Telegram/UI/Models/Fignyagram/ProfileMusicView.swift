@@ -12,6 +12,7 @@ struct ProfileMusicView: View {
 
     @State private var audios: [TDLibKit.Audio] = []
     @State private var isLoading = true
+    @State private var loadingAudioID: Int?
 
     var body: some View {
         NavigationView {
@@ -36,16 +37,24 @@ struct ProfileMusicView: View {
                             }
                             Spacer()
                             Button {
+                                guard loadingAudioID == nil else { return }
+                                loadingAudioID = audio.audio.id
                                 Task {
+                                    defer { loadingAudioID = nil }
                                     if let track = await library.ensureImported(audio: audio) {
                                         player.play(track, queue: library.tracks)
                                     }
                                 }
                             } label: {
-                                Image(systemName: "play.circle")
-                                    .font(.system(size: 22))
+                                if loadingAudioID == audio.audio.id {
+                                    ProgressView()
+                                } else {
+                                    Image(systemName: "play.circle")
+                                        .font(.system(size: 22))
+                                }
                             }
                             .buttonStyle(.plain)
+                            .disabled(loadingAudioID != nil)
                             Button {
                                 Task { await library.importProfileAudios([audio]) }
                             } label: {

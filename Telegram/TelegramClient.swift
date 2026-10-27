@@ -1,4 +1,5 @@
 import Foundation
+import AVFoundation
 import Combine
 import TDLibKit
 import UIKit
@@ -43,6 +44,7 @@ final class TelegramClient: ObservableObject {
     @Published private(set) var authStep: AuthStep = .initializing
     @Published private(set) var isBusy = false
     @Published var errorMessage: String?
+    private var recentConnects: [Foundation.Date] = []
     @Published private(set) var me: User?
     @Published private(set) var isLoadingChats = false
     @Published private(set) var allChatsLoaded = false
@@ -84,7 +86,15 @@ final class TelegramClient: ObservableObject {
             DiagnosticsLog.log("TDLib createClient begin")
         let newClient = manager.createClient(updateHandler: Self.makeUpdateHandler())
         DiagnosticsLog.log("TDLib createClient done id=\(newClient.id)")
-            _ = try? newClient.execute(query: DTO(SetLogVerbosityLevel(newVerbosityLevel: 1)))
+            do {
+                _ = try newClient.execute(query: DTO(SetLogVerbosityLevel(newVerbosityLevel: 1)))
+                DiagnosticsLog.log("TDLib verbosity 1 ok")
+            } catch {
+                DiagnosticsLog.log("TDLib verbosity FAILED \(error)")
+            }
+            // Keep TDLib's default stderr log stream: ConsoleCapture redirects
+            // fd 2 to Documents/console.log. Installing a file log stream here
+            // silenced TDLib's own output, which we need for the call actor.
             DispatchQueue.main.async {
                 self.client = newClient
                 // Re-attach the built-in proxy whenever a TDLib client is
@@ -111,7 +121,26 @@ final class TelegramClient: ObservableObject {
     /// Updates are decoded on TDLib's serial queue and delivered to the main thread in order.
     nonisolated private static func makeUpdateHandler() -> (Data, TDLibClient) -> Void {
         return { data, client in
-            guard let update = try? client.decoder.decode(Update.self, from: data) else { return }
+            let update: Update
+            do {
+                update = try client.decoder.decode(Update.self, from: data)
+            } catch {
+                // A dropped update here silently breaks features (e.g. a call
+                // that never reaches callStateReady). Log the type and reason.
+                var kind = "<undecodable>"
+                if let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let type = object["@type"] as? String {
+                    kind = type
+                }
+                CallDiag.log("decode FAILED type=\(kind) bytes=\(data.count) error=\(String(describing: error).prefix(300))")
+                if kind == "updateCall",
+                   let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    DispatchQueue.main.async {
+                        CallManager.shared.handleRawCallUpdate(object)
+                    }
+                }
+                return
+            }
             // File progress arrives in bursts; coalesce it before touching the main thread.
             if case .updateFile(let u) = update {
                 FileUpdateCoalescer.shared.submit(u.file)
@@ -166,6 +195,24 @@ final class TelegramClient: ObservableObject {
     }
 
     /// Runs a TDLib request, tracking the busy state and showing errors in the UI.
+    func sendCallSignalingData(callId: Int, data: Data) {
+        guard let client else {
+            CallDiag.log("sendCallSignalingData: no client")
+            return
+        }
+        Task {
+            do {
+                _ = try await client.sendCallSignalingData(callId: callId, data: data)
+            } catch {
+                CallDiag.log("sendCallSignalingData FAILED bytes=\(data.count) error=\(Self.describe(error))")
+                self.errorMessage = Self.describe(error)
+            }
+        }
+    }
+
+    /// Read-only access to the underlying TDLib client for feature managers.
+    var tdClient: TDLibClient? { client }
+
     private func perform(_ action: @escaping (TDLibClient) async throws -> Void) {
         guard let client else { return }
         isBusy = true
@@ -284,9 +331,37 @@ final class TelegramClient: ObservableObject {
             refreshMessage(chatId: u.chatId, messageId: u.messageId)
         case .updateMessageInteractionInfo(let u):
             refreshMessage(chatId: u.chatId, messageId: u.messageId)
+        case .updateGroupCall(let u):
+            GroupCallManager.shared.handleGroupCallUpdate(u.groupCall)
+        case .updateGroupCallParticipant(let u):
+            GroupCallManager.shared.handleParticipant(u.participant)
+        case .updateGroupCallParticipants(let u):
+            GroupCallManager.shared.handleParticipantIds(u.participantUserIds.map { $0.rawValue })
+        case .updateConnectionState(let u):
+            CallDiag.log("connection=\(u.state)")
+            if case .connectionStateConnecting = u.state {
+                recentConnects.append(Foundation.Date())
+                recentConnects = recentConnects.filter { Foundation.Date().timeIntervalSince($0) < 120 }
+                CallDiag.log("reconnects in 120s=\(recentConnects.count) proxyEnabled=\(BuiltInProxyManager.shared.isEnabled)")
+            }
+            if case .connectionStateReady = u.state {
+                // ContactsSync is disabled: bulk imports could hit FloodWait and
+                // stall the whole connection.
+            }
+        case .updateNewCallSignalingData(let u):
+            CallDiag.log("updateNewCallSignalingData callId=\(u.callId) bytes=\(u.data.count)")
+            CallManager.shared.handleSignalingData(callId: u.callId, data: u.data)
+        case .updateCall(let u):
+            CallManager.shared.handle(update)
         case .updateDeleteMessages(let u):
-            if u.isPermanent, !PrivacyPreferences.shared.keepDeletedMessages {
-                store.removeMessages(chatId: u.chatId, ids: u.messageIds)
+            if u.isPermanent {
+                let existing = (store.messages[u.chatId] ?? [])
+                    .filter { u.messageIds.contains($0.id) }
+                DeletedMessageStore.shared.archive(chatId: u.chatId, messages: existing)
+                store.applyDeletedArchive(chatId: u.chatId)
+                if !PrivacyPreferences.shared.keepDeletedMessages {
+                    store.removeMessages(chatId: u.chatId, ids: u.messageIds)
+                }
             }
 
         case .updateUser(let u):
@@ -438,6 +513,7 @@ final class TelegramClient: ObservableObject {
 
     private func onAuthorized() {
         guard let client else { return }
+        Task { await refreshInvisibleState() }
         AccountStore.shared.markAuthenticated(id: AccountStore.shared.currentId)
         Task {
             if let user = try? await client.getMe() {
@@ -470,8 +546,21 @@ final class TelegramClient: ObservableObject {
     }
 
     /// Tells Telegram whether the app is in the foreground; TDLib keeps fewer connections when offline.
+    @Published private(set) var isInvisible: Bool = UserDefaults.standard.bool(forKey: "invisibleModePersistent")
+
+    func refreshInvisibleState() async {
+        let remote = await isInvisibleMode()
+        if UserDefaults.standard.bool(forKey: "invisibleModePersistent") {
+            isInvisible = true
+            if !remote { try? await setInvisibleMode(true) }
+        } else {
+            isInvisible = remote
+        }
+    }
+
     func setOnline(_ online: Bool) {
         guard let client, isAuthorized else { return }
+        if online, isInvisible { return }
         Task { _ = try? await client.setOption(name: "online", value: .optionValueBoolean(OptionValueBoolean(value: online))) }
     }
 
@@ -739,8 +828,15 @@ final class TelegramClient: ObservableObject {
     private func refreshMessage(chatId: Int64, messageId: Int64) {
         guard let client, store.isHistoryLoaded(chatId) || store.message(chatId: chatId, id: messageId) != nil else { return }
         Task {
-            if let message = try? await client.getMessage(chatId: chatId, messageId: messageId) {
-                self.store.replaceMessage(chatId: chatId, oldId: messageId, with: message)
+            // TDLib may still return the previous revision right after an edit,
+            // so retry a few times and stop once editDate changes.
+            let previousEditDate = store.message(chatId: chatId, id: messageId)?.editDate ?? 0
+            for attempt in 0..<6 {
+                if let message = try? await client.getMessage(chatId: chatId, messageId: messageId) {
+                    self.store.replaceMessage(chatId: chatId, oldId: messageId, with: message)
+                    if message.editDate > previousEditDate || attempt >= 2 { break }
+                }
+                try? await Task.sleep(nanoseconds: 200_000_000)
             }
         }
     }
@@ -931,8 +1027,28 @@ final class TelegramClient: ObservableObject {
         }
     }
 
+    /// Re-applies the invisible privacy rules after actions that can reset the
+    /// status (sending messages, reconnects, foreground transitions).
+    func enforceInvisibleIfNeeded() async {
+        guard isInvisible, let client else { return }
+        let rules = UserPrivacySettingRules(rules: [.userPrivacySettingRuleRestrictAll])
+        _ = try? await client.setUserPrivacySettingRules(
+            rules: rules, setting: .userPrivacySettingShowStatus
+        )
+        _ = try? await client.setOption(
+            name: "online",
+            value: .optionValueBoolean(OptionValueBoolean(value: false))
+        )
+    }
+
     func setInvisibleMode(_ enabled: Bool) async throws {
         guard let client else { throw ChatCreationError.notReady }
+        isInvisible = enabled
+        UserDefaults.standard.set(enabled, forKey: "invisibleModePersistent")
+        _ = try? await client.setOption(
+            name: "online",
+            value: .optionValueBoolean(OptionValueBoolean(value: enabled ? false : true))
+        )
         let rules = UserPrivacySettingRules(rules: [
             enabled ? .userPrivacySettingRuleRestrictAll : .userPrivacySettingRuleAllowAll
         ])
@@ -1607,6 +1723,104 @@ final class TelegramClient: ObservableObject {
     // MARK: - Audio in chats
 
     /// All audio-file messages in a chat/channel, newest first.
+    func callProtocol() -> CallProtocol {
+        // Only 13.0.0 maps to a fully implemented engine path in this build
+        // (InstanceV2Impl). 14.0.0 selects InstanceV2CompatImpl, whose
+        // SignalingTranslator object is missing from the prebuilt archive, and
+        // 10-12 use the legacy signaling API that is stubbed out.
+        // Only versions implemented by InstanceV2Impl are advertised: 14.0.0
+        // would select the compat implementation whose SignalingTranslator is
+        // missing from the prebuilt engine archive, and 10/11 have no engine
+        // implementation at all. Older versions let third-party clients that
+        // don't know 13.0.0 negotiate a working protocol.
+        CallProtocol(libraryVersions: ["13.0.0", "12.0.0"],
+                     maxLayer: 92, minLayer: 65, udpP2p: true, udpReflector: true)
+    }
+
+    /// Starts an in-app call through TDLib (signaling goes through the proxy).
+    func startCall(userId: Int64, isVideo: Bool = false) async {
+        guard VoIPBridge.engineAvailable() else {
+            // Without a working media engine TDLib would create a call whose
+            // DH handshake cannot complete, so the user would get a hung call.
+            errorMessage = "Встроенный VoIP-движок отключён в этой сборке"
+            return
+        }
+        guard let client else { return }
+        do {
+            let result = try await client.createCall(isVideo: isVideo, protocol: callProtocol(), userId: userId)
+            CallDiag.log("createCall ok video=\(isVideo) callId=\(result.id) versions=\(callProtocol().libraryVersions.joined(separator: ","))")
+            CallManager.shared.setStatus("Набор номера…")
+        } catch {
+            CallDiag.log("createCall FAILED video=\(isVideo) error=\(Self.describe(error))")
+            errorMessage = Self.describe(error)
+        }
+    }
+
+    func acceptCall() async {
+        guard let client, let call = CallManager.shared.currentCall else {
+            CallDiag.log("acceptCall: no current call")
+            return
+        }
+        do {
+            _ = try await client.acceptCall(callId: call.id, protocol: callProtocol())
+            CallManager.shared.markAccepted()
+            CallDiag.log("acceptCall ok callId=\(call.id)")
+        } catch {
+            CallDiag.log("acceptCall FAILED callId=\(call.id) error=\(Self.describe(error))")
+            errorMessage = Self.describe(error)
+        }
+    }
+
+    /// Ends a specific call without consulting CallManager (used by the
+    /// detached teardown path).
+    func discardCall(callId: Int) async {
+        guard let client else { return }
+        _ = try? await client.discardCall(callId: callId, connectionId: 0, duration: 0,
+                                          inviteLink: nil, isDisconnected: false, isVideo: false)
+    }
+
+    func discardCall() async {
+        guard let client, let call = CallManager.shared.currentCall else { return }
+        do {
+            _ = try await client.discardCall(
+                callId: call.id, connectionId: 0, duration: 0,
+                inviteLink: nil, isDisconnected: false, isVideo: call.isVideo
+            )
+            CallDiag.log("discardCall ok callId=\(call.id)")
+        } catch {
+            CallDiag.log("discardCall FAILED callId=\(call.id) error=\(Self.describe(error))")
+            errorMessage = Self.describe(error)
+        }
+    }
+
+    func activeSessions() async -> [Session] {
+        guard let client, let result = try? await client.getActiveSessions() else { return [] }
+        return result.sessions
+    }
+
+    func terminateSession(_ id: TdInt64) async throws {
+        guard let client else { throw ChatCreationError.notReady }
+        _ = try await client.terminateSession(sessionId: id)
+    }
+
+    func terminateOtherSessions() async throws {
+        guard let client else { throw ChatCreationError.notReady }
+        _ = try await client.terminateAllOtherSessions()
+    }
+
+    func availableGifts() async -> [AvailableGift] {
+        guard let client, let result = try? await client.getAvailableGifts() else { return [] }
+        return result.gifts
+    }
+
+    func sendGift(_ gift: Gift, to sender: MessageSender) async throws {
+        guard let client else { throw ChatCreationError.notReady }
+        _ = try await client.sendGift(
+            giftId: gift.id, isPrivate: false, ownerId: sender,
+            payForUpgrade: false, text: nil
+        )
+    }
+
     func chatMediaMessages(chatId: Int64, filter: SearchMessagesFilter, limit: Int = 200) async -> [TDLibKit.Message] {
         guard let client else { return [] }
         var result: [TDLibKit.Message] = []
@@ -1681,6 +1895,15 @@ final class TelegramClient: ObservableObject {
     }
 
     // MARK: - Pinned messages
+
+    /// Pinned messages can be delivered without their content (only the id is
+    /// valid). Fetch the full message so the banner shows a preview.
+    func refreshPinnedMessage(chatId: Int64, messageId: Int64) {
+        Task {
+            guard let client, let message = try? await client.getMessage(chatId: chatId, messageId: messageId) else { return }
+            store.replacePinnedMessage(message, chatId: chatId)
+        }
+    }
 
     func loadPinnedMessages(chatId: Int64) {
         guard let client else { return }
@@ -1774,6 +1997,44 @@ final class TelegramClient: ObservableObject {
 
     /// Opens the system dialer with the contact's number. Telegram does not expose
     /// phone numbers for all users, so the button is shown only when one is known.
+    func callUser(userId: Int64, isVideo: Bool = false) {
+        // Video calls exist only inside the Telegram media engine.
+        if isVideo {
+            guard VoIPBridge.engineAvailable() else {
+                errorMessage = "Видеозвонки недоступны: встроенный VoIP-движок выключен"
+                return
+            }
+            // The media engine needs real camera access; without it the call
+            // would connect with a blank local view.
+            switch AVCaptureDevice.authorizationStatus(for: .video) {
+            case .authorized:
+                Task { await startCall(userId: userId, isVideo: true) }
+            case .notDetermined:
+                AVCaptureDevice.requestAccess(for: .video) { granted in
+                    Task { @MainActor in
+                        if granted {
+                            await self.startCall(userId: userId, isVideo: true)
+                        } else {
+                            self.errorMessage = "Нет доступа к камере"
+                        }
+                    }
+                }
+            default:
+                errorMessage = "Нет доступа к камере: разрешите его в Настройках"
+            }
+            return
+        }
+        if UserDefaults.standard.bool(forKey: "callViaApp") && VoIPBridge.engineAvailable() {
+            Task { await startCall(userId: userId, isVideo: false) }
+            return
+        }
+        if let phone = store.users[userId]?.phoneNumber, !phone.isEmpty {
+            call(phoneNumber: "+" + phone)
+        } else {
+            errorMessage = "Номер телефона недоступен"
+        }
+    }
+
     func call(phoneNumber: String) {
         let number = phoneNumber.filter { $0.isNumber || $0 == "+" }
         guard !number.isEmpty, let url = URL(string: "tel:\(number)") else {
@@ -2202,6 +2463,7 @@ final class TelegramClient: ObservableObject {
                     chatId: chatId, inputMessageContent: content,
                     options: options, replyMarkup: nil, replyTo: reply, topicId: nil
                 )
+                await self.enforceInvisibleIfNeeded()
             } catch {
                 self.errorMessage = Self.describe(error)
             }

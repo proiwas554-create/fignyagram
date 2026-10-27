@@ -1,0 +1,4 @@
+module TgVoipWebrtc {
+umbrella "/Users/admin/Fignyagram/ThirdParty/tgcalls/tgcalls"
+export *
+}

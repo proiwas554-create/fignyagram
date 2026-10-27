@@ -19,6 +19,7 @@ struct PeerInfoView: View {
     @State private var avatarViewer: AvatarViewerPayload?
     @State private var showAvatarError = false
     @State private var showLeaveConfirm = false
+    @State private var showGifts = false
 
     @State private var memberTag: TelegramClient.MemberTagInfo?
     @ObservedObject private var aliases = LocalAliases.shared
@@ -112,6 +113,22 @@ struct PeerInfoView: View {
                                     .accessibilityLabel("Скопировать тег")
                                 }
                                 .font(.appFootnote)
+                            }
+
+                            if let userId = info.userId,
+                               userId != TelegramClient.shared.me?.id {
+                                HStack(spacing: 0) {
+                                    profileAction("Позвонить", icon: "phone") {
+                                        TelegramClient.shared.callUser(userId: userId, isVideo: false)
+                                        dismiss()
+                                    }
+                                    Divider().frame(height: 28)
+                                    profileAction("Видеозвонок", icon: "video") {
+                                        TelegramClient.shared.callUser(userId: userId, isVideo: true)
+                                        dismiss()
+                                    }
+                                }
+                                .glassPanel(cornerRadius: 14)
                             }
 
                             if info.typeText == "группа" || info.typeText == "канал" {
@@ -240,6 +257,12 @@ struct PeerInfoView: View {
             .alert("Нет доступной аватарки", isPresented: $showAvatarError) {
                 Button("OK", role: .cancel) {}
             }
+            .sheet(isPresented: $showGifts) {
+                GiftsView(
+                    owner: giftOwner,
+                    title: info?.title ?? "Подарки"
+                )
+            }
             .sheet(isPresented: $showMembers) {
                 ChatMembersView(chatId: chatId, title: info?.title ?? "Участники")
             }
@@ -340,6 +363,13 @@ struct PeerInfoView: View {
                 .value
         }
         return nil
+    }
+
+    private var giftOwner: MessageSender {
+        if let userId = info?.userId {
+            return .messageSenderUser(MessageSenderUser(userId: userId))
+        }
+        return .messageSenderChat(MessageSenderChat(chatId: chatId))
     }
 
     private func leaveChat() {

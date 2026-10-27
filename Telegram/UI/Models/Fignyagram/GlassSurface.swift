@@ -6,7 +6,12 @@ struct GlassBackgroundView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> UIVisualEffectView {
         let view = UIVisualEffectView()
-        if #available(iOS 26.0, *) {
+        if DevicePerformance.isLowMemory {
+            // Blur layers are memory-hungry on 2 GB devices and can get the
+            // app jetsammed during login. Use an opaque surface instead.
+            view.effect = nil
+            view.backgroundColor = .secondarySystemBackground
+        } else if #available(iOS 26.0, *) {
             view.effect = UIGlassEffect(style: .regular)
         } else {
             view.effect = UIBlurEffect(style: .systemUltraThinMaterial)

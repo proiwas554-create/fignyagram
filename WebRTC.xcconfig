@@ -1,0 +1,5 @@
+HEADER_SEARCH_PATHS = $(inherited) $(PROJECT_DIR)/WebRTC_Telegram $(PROJECT_DIR)/WebRTC_Telegram/modules $(PROJECT_DIR)/WebRTC_Telegram/api $(PROJECT_DIR)/WebRTC_Telegram/rtc_base $(PROJECT_DIR)/WebRTC_Telegram/pc $(PROJECT_DIR)/WebRTC_Telegram/call $(PROJECT_DIR)/WebRTC_Telegram/media $(PROJECT_DIR)/WebRTC_Telegram/common_audio $(PROJECT_DIR)/ThirdParty/BoringSSL/include
+LIBRARY_SEARCH_PATHS = $(inherited) $(PROJECT_DIR)/ThirdParty/BoringSSL/lib
+OTHER_LDFLAGS = $(inherited) -lssl -lcrypto
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) WEBRTC_IOS=1 WEBRTC_POSIX=1 WEBRTC_MAC=1
+CLANG_CXX_LANGUAGE_STANDARD = c++17

@@ -74,40 +74,6 @@ struct ProfileSettingsView: View {
                     Text("Аккаунт")
                 }
 
-                Section {
-                    Toggle(isOn: Binding(
-                        get: { isInvisible },
-                        set: { newValue in
-                            let previous = isInvisible
-                            isInvisible = newValue
-                            UserDefaults.standard.set(newValue, forKey: "invisibleMode")
-                            isPrivacyBusy = true
-                            Task {
-                                do {
-                                    try await client.setInvisibleMode(newValue)
-                                } catch {
-                                    isInvisible = previous
-                                    client.errorMessage = TelegramClient.describe(error)
-                                }
-                                isPrivacyBusy = false
-                            }
-                        }
-                    )) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Режим невидимки")
-                            Text("Скрывает статус «в сети» и время последнего визита")
-                                .font(.appCaption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .disabled(isPrivacyBusy)
-                } header: {
-                    Text("Приватность")
-                } footer: {
-                    Text("Настройка применяется на сервере Telegram и действует на всех устройствах.")
-                        .font(.appFootnote)
-                }
-
                 Section("Имя") {
                     TextField("Имя", text: $firstName)
                         .textContentType(.givenName)
@@ -195,11 +161,7 @@ struct ProfileSettingsView: View {
         lastName = client.me?.lastName ?? ""
         username = client.me?.usernames?.activeUsernames.first ?? client.me?.usernames?.editableUsername ?? ""
         bio = await client.currentBio()
-        if let stored = UserDefaults.standard.object(forKey: "invisibleMode") as? Bool {
-            isInvisible = stored
-        } else {
-            isInvisible = await client.isInvisibleMode()
-        }
+        isInvisible = UserDefaults.standard.bool(forKey: "invisibleModePersistent")
         isLoading = false
     }
 

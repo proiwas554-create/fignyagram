@@ -1,0 +1,254 @@
+#import "VoIPBridge.h"
+
+// Stub until the real artifacts are linked:
+//   1) Telegram-patched WebRTC (C++ headers + lib) matching the tgcalls fork,
+//   2) tgcalls compiled into the target.
+// The complete implementation is kept under #if HAS_TGCALLS below and was
+// verified against this fork's Instance.h / Descriptor / VideoCaptureInterface.
+#define HAS_TGCALLS 0
+
+#if HAS_TGCALLS
+#define WEBRTC_IOS 1
+#include <tgcalls/Instance.h>
+#include <tgcalls/VideoCaptureInterface.h>
+#include <tgcalls/StaticThreads.h>
+#include "platform/darwin/VideoSampleBufferView.h"
+#endif
+
+#import <memory>
+#import <vector>
+#import <array>
+#import <cstring>
+
+@interface VoIPBridge () {
+#if HAS_TGCALLS
+    std::unique_ptr<tgcalls::Instance> _instance;
+    std::shared_ptr<tgcalls::VideoCaptureInterface> _capture;
+    VideoSampleBufferView *_localSink;
+    VideoSampleBufferView *_remoteSink;
+    UIView *_localView;
+    UIView *_remoteView;
+    NSString *_proxyHost;
+    uint16_t _proxyPort;
+    NSString *_proxyUser;
+    NSString *_proxyPass;
+#endif
+    NSInteger _state;
+}
+@end
+
+@implementation VoIPBridge
+
++ (instancetype)shared {
+    static VoIPBridge *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{ instance = [[VoIPBridge alloc] init]; });
+    return instance;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) { _state = -1; }
+    return self;
+}
+
+- (void)configureProxyWithHost:(NSString *)host
+                          port:(uint16_t)port
+                      username:(NSString *)username
+                      password:(NSString *)password {
+#if HAS_TGCALLS
+    _proxyHost = [host copy];
+    _proxyPort = port;
+    _proxyUser = [username copy] ?: @"";
+    _proxyPass = [password copy] ?: @"";
+#endif
+}
+
+- (BOOL)startCallWithKey:(NSData *)key
+              isOutgoing:(BOOL)isOutgoing
+                 isVideo:(BOOL)isVideo
+                 servers:(NSArray<NSDictionary *> *)servers
+               localView:(UIView *)localView
+              remoteView:(UIView *)remoteView {
+#if !HAS_TGCALLS
+    NSLog(@"[VoIPBridge] tgcalls/WebRTC not linked; audio unavailable");
+    return NO;
+#else
+    if (_instance) { [self stopCall]; }
+    _localView = localView;
+    _remoteView = remoteView;
+
+    if (key.length != tgcalls::EncryptionKey::kSize) {
+        NSLog(@"[VoIPBridge] bad key size: %lu", (unsigned long)key.length);
+        return NO;
+    }
+    auto keyValue = std::make_shared<const std::array<uint8_t, tgcalls::EncryptionKey::kSize>>();
+    memcpy((void *)keyValue->data(), key.bytes, tgcalls::EncryptionKey::kSize);
+
+    tgcalls::Config config;
+    config.enableP2P = false;
+    config.allowTCP = true;
+    config.enableAEC = true;
+    config.enableNS = true;
+    config.enableAGC = true;
+    config.maxApiLayer = 92;
+    config.dataSaving = tgcalls::DataSaving::Never;
+    config.initializationTimeout = 15.0;
+    config.receiveTimeout = 10.0;
+    config.protocolVersion = tgcalls::ProtocolVersion::V1;
+    config.enableVolumeControl = true;
+
+    std::unique_ptr<tgcalls::Proxy> proxy;
+    if (_proxyHost.length > 0 && _proxyPort > 0) {
+        proxy = std::make_unique<tgcalls::Proxy>();
+        proxy->host = _proxyHost.UTF8String ?: "";
+        proxy->port = _proxyPort;
+        proxy->login = _proxyUser.UTF8String ?: "";
+        proxy->password = _proxyPass.UTF8String ?: "";
+    }
+
+    std::vector<tgcalls::Endpoint> endpoints;
+    std::vector<tgcalls::RtcServer> rtcServers;
+    for (NSDictionary *s in servers) {
+        NSString *ipv4 = s[@"ipv4"];
+        NSString *ipv6 = s[@"ipv6"];
+        NSNumber *portNum = s[@"port"];
+        NSNumber *tcpNum = s[@"tcp"];
+        NSNumber *rtcNum = s[@"rtc"];
+        NSData *peerTag = s[@"peerTag"];
+        if (rtcNum != nil && rtcNum.boolValue) {
+            tgcalls::RtcServer rtc;
+            rtc.host = ipv4.UTF8String ?: "";
+            rtc.port = (uint16_t)portNum.intValue;
+            rtc.login = [s[@"username"] UTF8String] ?: "";
+            rtc.password = [s[@"password"] UTF8String] ?: "";
+            rtc.isTurn = YES;
+            rtcServers.push_back(rtc);
+            continue;
+        }
+        if (ipv4.length == 0 || portNum == nil) { continue; }
+        tgcalls::Endpoint endpoint;
+        endpoint.host.ipv4 = ipv4.UTF8String ?: "";
+        endpoint.host.ipv6 = ipv6.length ? (ipv6.UTF8String ?: "") : "";
+        endpoint.port = (uint16_t)portNum.intValue;
+        endpoint.type = (tcpNum != nil && tcpNum.boolValue)
+            ? tgcalls::EndpointType::TcpRelay
+            : tgcalls::EndpointType::UdpRelay;
+        if (peerTag.length >= sizeof(endpoint.peerTag)) {
+            memcpy(endpoint.peerTag, peerTag.bytes, sizeof(endpoint.peerTag));
+        }
+        endpoints.push_back(endpoint);
+    }
+
+    std::shared_ptr<tgcalls::VideoCaptureInterface> capture;
+    if (isVideo) {
+        capture = tgcalls::VideoCaptureInterface::Create(
+            tgcalls::StaticThreads::getThreads(), std::string(), false, nullptr);
+        if (_localView != nil) {
+            _localSink = [[VideoSampleBufferView alloc] initWithFrame:_localView.bounds];
+            _localSink.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+            [_localView addSubview:_localSink];
+            capture->setOutput([_localSink getSink]);
+        }
+    }
+
+    __weak VoIPBridge *weakSelf = self;
+    std::function<void(tgcalls::State)> stateUpdated = [weakSelf](tgcalls::State state) {
+        VoIPBridge *strong = weakSelf;
+        if (!strong) { return; }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            strong->_state = (NSInteger)state;
+        });
+    };
+
+    tgcalls::Descriptor descriptor{
+        "14.0.0",
+        config,
+        tgcalls::PersistentState{},
+        endpoints,
+        std::move(proxy),
+        rtcServers,
+        tgcalls::NetworkType::WiFi,
+        tgcalls::EncryptionKey(keyValue, (bool)isOutgoing),
+        tgcalls::MediaDevicesConfig{},
+        capture,
+        stateUpdated,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr,
+        std::string(), std::string(),
+        nullptr
+    };
+    _capture = capture;
+
+    _instance = tgcalls::Meta::Create(descriptor.version, std::move(descriptor));
+    if (!_instance) {
+        NSLog(@"[VoIPBridge] Meta::Create returned null");
+        [self stopCall];
+        return NO;
+    }
+
+    if (isVideo && _remoteView != nil) {
+        _remoteSink = [[VideoSampleBufferView alloc] initWithFrame:_remoteView.bounds];
+        _remoteSink.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        [_remoteView addSubview:_remoteSink];
+        _instance->setIncomingVideoOutput([_remoteSink getSink]);
+    }
+
+    _state = 0;
+    return YES;
+#endif
+}
+
+- (void)receiveSignalingData:(NSData *)data {
+#if HAS_TGCALLS
+    if (_instance && data.length > 0) {
+        const uint8_t *bytes = (const uint8_t *)data.bytes;
+        std::vector<uint8_t> payload(bytes, bytes + data.length);
+        _instance->receiveSignalingData(payload);
+    }
+#endif
+}
+
+- (void)stopCall {
+#if HAS_TGCALLS
+    if (_instance) {
+        _instance->stop([](tgcalls::FinalState) {});
+        _instance.reset();
+    }
+    _capture.reset();
+    if (_localSink) { [_localSink removeFromSuperview]; _localSink = nil; }
+    if (_remoteSink) { [_remoteSink removeFromSuperview]; _remoteSink = nil; }
+#endif
+    _state = -1;
+}
+
+- (void)setMicMute:(BOOL)mute {
+#if HAS_TGCALLS
+    if (_instance) { _instance->setMuteMicrophone((bool)mute); }
+#endif
+}
+
+- (void)setVideoEnabled:(BOOL)enabled {
+#if HAS_TGCALLS
+    if (_capture) {
+        _capture->setState(enabled ? tgcalls::VideoState::Active : tgcalls::VideoState::Paused);
+    }
+#endif
+}
+
+- (NSInteger)connectionState {
+    return _state;
+}
+
+- (NSString *)stateText {
+    switch (_state) {
+        case 0: return @"Инициализация…";
+        case 1: return @"Инициализация…";
+        case 2: return @"Соединено";
+        case 3: return @"Ошибка соединения";
+        case 4: return @"Переподключение…";
+        default: return @"Аудио-модуль не подключён";
+    }
+}
+
+@end

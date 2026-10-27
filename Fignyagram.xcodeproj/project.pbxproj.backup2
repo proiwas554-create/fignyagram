@@ -1,0 +1,693 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		844C68EF3082430C0030F13D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68EC3082430C0030F13D /* ContentView.swift */; };
+		844C68F830824BE30030F13D /* TelegramClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68F730824BE30030F13D /* TelegramClient.swift */; };
+		844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FB30824C6D0030F13D /* ChatStore.swift */; };
+		844C68FE30824C9C0030F13D /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FD30824C9C0030F13D /* Secrets.swift */; };
+		844C690030824E740030F13D /* StdOutLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FF30824E740030F13D /* StdOutLogger.swift */; };
+		849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */ = {isa = PBXBuildFile; productRef = 849E0116308A83FA008B5F4E /* TDLibKit */; };
+		849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; };
+		A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
+		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
+		F16A000230824E740030F13D /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000130824E740030F13D /* AuthView.swift */; };
+		F16A000430824E740030F13D /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000330824E740030F13D /* ChatListView.swift */; };
+		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
+		F16A000830824E740030F13D /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000730824E740030F13D /* Components.swift */; };
+		F16A001030824E740030F13D /* MessageFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000930824E740030F13D /* MessageFormatter.swift */; };
+		F16B000230824E740030F13D /* OggOpus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000130824E740030F13D /* OggOpus.swift */; };
+		F16B000430824E740030F13D /* MediaSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000330824E740030F13D /* MediaSupport.swift */; };
+		F16B000630824E740030F13D /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000530824E740030F13D /* MediaViews.swift */; };
+		F16B000830824E740030F13D /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000730824E740030F13D /* MessageRow.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA1000000000000000000010 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8480856D308210CA00D269FE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AA1000000000000000000001;
+			remoteInfo = FignyagramShare;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5DB7617BC8E885CBFE48DFB7 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = Frameworks;
+			files = (
+				A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+		};
+		AA100000000000000000000E /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		844C68EC3082430C0030F13D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		844C68F730824BE30030F13D /* TelegramClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramClient.swift; sourceTree = "<group>"; };
+		844C68FB30824C6D0030F13D /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
+		844C68FD30824C9C0030F13D /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
+		844C68FF30824E740030F13D /* StdOutLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StdOutLogger.swift; sourceTree = "<group>"; };
+		84808575308210CA00D269FE /* Fignyagram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fignyagram.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LiveKitWebRTC.xcframework; sourceTree = "<group>"; };
+		AA1000000000000000000002 /* FignyagramShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FignyagramShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA1000000000000000000003 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		AA1000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AABBCCDD00000000000000E2 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AABBCCDD00000000000000E3 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
+		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		F16A000730824E740030F13D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		F16A000930824E740030F13D /* MessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatter.swift; sourceTree = "<group>"; };
+		F16B000130824E740030F13D /* OggOpus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OggOpus.swift; sourceTree = "<group>"; };
+		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
+		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
+		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		84808577308210CA00D269FE /* Fignyagram */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Fignyagram;
+			sourceTree = "<group>";
+		};
+		8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ThirdParty/tgcalls;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		84808572308210CA00D269FE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+				849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */,
+				849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */,
+			);
+		};
+		AA1000000000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		844C68F430824A0B0030F13D /* Telegram */ = {
+			isa = PBXGroup;
+			children = (
+				844C68F530824AB50030F13D /* UI */,
+				844C68F730824BE30030F13D /* TelegramClient.swift */,
+				844C68FD30824C9C0030F13D /* Secrets.swift */,
+				844C68FF30824E740030F13D /* StdOutLogger.swift */,
+			);
+			path = Telegram;
+			sourceTree = "<group>";
+		};
+		844C68F530824AB50030F13D /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				F16B000730824E740030F13D /* MessageRow.swift */,
+				F16B000530824E740030F13D /* MediaViews.swift */,
+				F16A000730824E740030F13D /* Components.swift */,
+				F16A000530824E740030F13D /* ChatView.swift */,
+				F16A000330824E740030F13D /* ChatListView.swift */,
+				F16A000130824E740030F13D /* AuthView.swift */,
+				844C68F630824B530030F13D /* Models */,
+				844C68EC3082430C0030F13D /* ContentView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		844C68F630824B530030F13D /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F16B000330824E740030F13D /* MediaSupport.swift */,
+				F16B000130824E740030F13D /* OggOpus.swift */,
+				F16A000930824E740030F13D /* MessageFormatter.swift */,
+				84808577308210CA00D269FE /* Fignyagram */,
+				844C68FB30824C6D0030F13D /* ChatStore.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		8480856C308210CA00D269FE = {
+			isa = PBXGroup;
+			children = (
+				844C68F430824A0B0030F13D /* Telegram */,
+				AA1000000000000000000005 /* ShareExtension */,
+				84808576308210CA00D269FE /* Products */,
+				849E0252308B8B06008B5F4E /* Recovered References */,
+			);
+			sourceTree = "<group>";
+		};
+		84808576308210CA00D269FE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84808575308210CA00D269FE /* Fignyagram.app */,
+				AA1000000000000000000002 /* FignyagramShare.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		849E0252308B8B06008B5F4E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				AABBCCDD00000000000000E0 /* Localizable.strings */,
+				8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */,
+				849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		AA1000000000000000000005 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				AA1000000000000000000003 /* ShareViewController.swift */,
+				AA1000000000000000000004 /* Info.plist */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		84808574308210CA00D269FE /* Fignyagram */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84808580308210CB00D269FE /* Build configuration list for PBXNativeTarget "Fignyagram" */;
+			buildPhases = (
+				84808571308210CA00D269FE /* Sources */,
+				84808572308210CA00D269FE /* Frameworks */,
+				84808573308210CA00D269FE /* Resources */,
+				AA100000000000000000000E /* Embed App Extensions */,
+				5DB7617BC8E885CBFE48DFB7 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA100000000000000000000F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				84808577308210CA00D269FE /* Fignyagram */,
+			);
+			name = Fignyagram;
+			packageProductDependencies = (
+				849E0116308A83FA008B5F4E /* TDLibKit */,
+			);
+			productName = Fignyagram;
+			productReference = 84808575308210CA00D269FE /* Fignyagram.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AA1000000000000000000001 /* FignyagramShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA100000000000000000000B /* Build configuration list for PBXNativeTarget "FignyagramShare" */;
+			buildPhases = (
+				AA1000000000000000000008 /* Sources */,
+				AA1000000000000000000009 /* Frameworks */,
+				AA100000000000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			name = FignyagramShare;
+			productName = FignyagramShare;
+			productReference = AA1000000000000000000002 /* FignyagramShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8480856D308210CA00D269FE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					84808574308210CA00D269FE = {
+						CreatedOnToolsVersion = 27.0;
+					};
+				};
+			};
+			buildConfigurationList = 84808570308210CA00D269FE /* Build configuration list for PBXProject "Fignyagram" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ru,
+			);
+			mainGroup = 8480856C308210CA00D269FE;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				849E0115308A83FA008B5F4E /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 84808576308210CA00D269FE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				84808574308210CA00D269FE /* Fignyagram */,
+				AA1000000000000000000001 /* FignyagramShare */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		84808573308210CA00D269FE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				AABBCCDD00000000000000E1 /* Localizable.strings in Resources */,
+			);
+		};
+		AA100000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		84808571308210CA00D269FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				844C690030824E740030F13D /* StdOutLogger.swift in Sources */,
+				844C68EF3082430C0030F13D /* ContentView.swift in Sources */,
+				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,
+				844C68F830824BE30030F13D /* TelegramClient.swift in Sources */,
+				844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */,
+				F16B000830824E740030F13D /* MessageRow.swift in Sources */,
+				F16B000630824E740030F13D /* MediaViews.swift in Sources */,
+				F16B000430824E740030F13D /* MediaSupport.swift in Sources */,
+				F16B000230824E740030F13D /* OggOpus.swift in Sources */,
+				F16A001030824E740030F13D /* MessageFormatter.swift in Sources */,
+				F16A000830824E740030F13D /* Components.swift in Sources */,
+				F16A000630824E740030F13D /* ChatView.swift in Sources */,
+				F16A000430824E740030F13D /* ChatListView.swift in Sources */,
+				F16A000230824E740030F13D /* AuthView.swift in Sources */,
+			);
+		};
+		AA1000000000000000000008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				AA1000000000000000000006 /* ShareViewController.swift in Sources */,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA100000000000000000000F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AA1000000000000000000001 /* FignyagramShare */;
+			targetProxy = AA1000000000000000000010 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		AABBCCDD00000000000000E0 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AABBCCDD00000000000000E2 /* en */,
+				AABBCCDD00000000000000E3 /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		8480857E308210CB00D269FE /* Debug configuration for PBXProject "Fignyagram" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+					"WEBRTC_IOS=1",
+					"WEBRTC_POSIX=1",
+					"WEBRTC_MAC=1",
+					"LIBYUV_DISABLE_NEON=1",
+					"LIBYUV_DISABLE_SVE=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8480857F308210CB00D269FE /* Release configuration for PBXProject "Fignyagram" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		84808581308210CB00D269FE /* Debug configuration for PBXNativeTarget "Fignyagram" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CODE_SIGN_ENTITLEMENTS = Telegram/Fignyagram.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 19;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/admin/WebRTC_Telegram,
+					/Users/admin/WebRTC_Telegram/sdk/objc,
+					/Users/admin/WebRTC_Telegram/sdk/objc/base,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/api/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_frame_buffer,
+					/Users/admin/WebRTC_Telegram/sdk/objc/helpers,
+					"/Users/admin/WebRTC_Telegram/third_party/abseil-cpp",
+					/Users/admin/WebRTC_Telegram/third_party/libyuv,
+					/Users/admin/WebRTC_Telegram/third_party/libyuv/libyuv,
+					"$(SRCROOT)/ThirdParty/tgcalls",
+					"$(SRCROOT)/ThirdParty/tgcalls/tgcalls",
+				);
+				INFOPLIST_FILE = Telegram/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID используется для разблокировки Fignyagram.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Сохранение фото и видео из чатов в приложение «Фото».";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Доступ к фото нужен для сохранения медиа из чатов.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos*]" = 15;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Telegram/Bridging-Header.h";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84808582308210CB00D269FE /* Release configuration for PBXNativeTarget "Fignyagram" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
+				CODE_SIGN_ENTITLEMENTS = Telegram/Fignyagram.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 19;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				ENABLE_PREVIEWS = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					/Users/admin/WebRTC_Telegram,
+					/Users/admin/WebRTC_Telegram/sdk/objc,
+					/Users/admin/WebRTC_Telegram/sdk/objc/base,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/api/video_codec,
+					/Users/admin/WebRTC_Telegram/sdk/objc/components/video_frame_buffer,
+					/Users/admin/WebRTC_Telegram/sdk/objc/helpers,
+					"/Users/admin/WebRTC_Telegram/third_party/abseil-cpp",
+					/Users/admin/WebRTC_Telegram/third_party/libyuv,
+					/Users/admin/WebRTC_Telegram/third_party/libyuv/libyuv,
+					"$(SRCROOT)/ThirdParty/tgcalls",
+					"$(SRCROOT)/ThirdParty/tgcalls/tgcalls",
+				);
+				INFOPLIST_FILE = Telegram/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = fignyagram;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Камера нужна для записи видеосообщений.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID используется для разблокировки Fignyagram.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Микрофон нужен для голосовых и видеосообщений.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Сохранение фото и видео из чатов в приложение «Фото».";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Доступ к фото нужен для сохранения медиа из чатов.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos*]" = 15;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.7.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = all;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "Telegram/Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Osize";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AA100000000000000000000C /* Debug configuration for PBXNativeTarget "FignyagramShare" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.5.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AA100000000000000000000D /* Release configuration for PBXNativeTarget "FignyagramShare" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.5.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		84808570308210CA00D269FE /* Build configuration list for PBXProject "Fignyagram" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8480857E308210CB00D269FE /* Debug configuration for PBXProject "Fignyagram" */,
+				8480857F308210CB00D269FE /* Release configuration for PBXProject "Fignyagram" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		84808580308210CB00D269FE /* Build configuration list for PBXNativeTarget "Fignyagram" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84808581308210CB00D269FE /* Debug configuration for PBXNativeTarget "Fignyagram" */,
+				84808582308210CB00D269FE /* Release configuration for PBXNativeTarget "Fignyagram" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AA100000000000000000000B /* Build configuration list for PBXNativeTarget "FignyagramShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA100000000000000000000C /* Debug configuration for PBXNativeTarget "FignyagramShare" */,
+				AA100000000000000000000D /* Release configuration for PBXNativeTarget "FignyagramShare" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		849E0115308A83FA008B5F4E /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		849E0116308A83FA008B5F4E /* TDLibKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = TDLibKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 8480856D308210CA00D269FE /* Project object */;
+	validationLevel = 1;
+}

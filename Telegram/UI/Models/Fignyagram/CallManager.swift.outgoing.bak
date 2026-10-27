@@ -1,0 +1,201 @@
+import Foundation
+import Combine
+import UIKit
+import TDLibKit
+
+/// Call signaling + media bridge. TDLib provides the signaling and the
+/// encryption key/endpoints; VoIPBridge (tgcalls) carries audio/video.
+@MainActor
+final class CallManager: ObservableObject {
+    static let shared = CallManager()
+
+    @Published private(set) var currentCall: Call?
+    @Published private(set) var stateText = ""
+    @Published private(set) var audioStarted = false
+    @Published private(set) var isMuted = false
+    @Published private(set) var isVideoEnabled = true
+    @Published private(set) var speakerOn = false
+    @Published private(set) var durationText = "00:00"
+    @Published private(set) var needsRetry = false
+    @Published private(set) var peerTitle = ""
+    @Published private(set) var isIncoming = false
+
+    /// Video canvases owned by CallView (local camera / remote peer).
+    @Published var localView: UIView?
+    @Published var remoteView: UIView?
+
+    func setStatus(_ text: String) { stateText = text }
+
+    private var keyExchangeWatchdog: Task<Void, Never>?
+
+    /// TDLib stays in callStateExchangingKeys until the media engine answers.
+    /// Without the linked tgcalls/WebRTC module the call can hang there, so we
+    /// surface a clear message instead of an endless "Обмен ключами…".
+    private func watchKeyExchange() {
+        keyExchangeWatchdog?.cancel()
+        keyExchangeWatchdog = Task { [weak self] in
+            // One early retry of acceptCall: key exchange stalls when the
+            // protocol handshake was not acknowledged by the server.
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            guard !Task.isCancelled, let strongSelf = self else { return }
+            if case .callStateExchangingKeys = strongSelf.currentCall?.state,
+               strongSelf.currentCall?.isOutgoing == false {
+                await TelegramClient.shared.acceptCall()
+            }
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            guard !Task.isCancelled, let strongSelf = self else { return }
+            if case .callStateExchangingKeys = strongSelf.currentCall?.state {
+                strongSelf.needsRetry = true
+                strongSelf.stateText = "Соединение не установлено"
+            }
+        }
+    }
+
+    private func cancelWatchdog() {
+        keyExchangeWatchdog?.cancel()
+        keyExchangeWatchdog = nil
+    }
+
+    func handleSignalingData(callId: Int, data: Data) {
+        guard currentCall?.id == callId else { return }
+        VoIPBridge.shared().receiveSignalingData(data)
+    }
+
+    func handle(_ update: Update) {
+        guard case .updateCall(let u) = update else { return }
+        currentCall = u.call
+        isIncoming = !u.call.isOutgoing
+        if let user = ChatStore.shared.users[u.call.userId] {
+            peerTitle = [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " ")
+        }
+        if u.call.state is CallState {
+            stateText = Self.text(u.call.state)
+        }
+        if case .callStateExchangingKeys = u.call.state {
+            watchKeyExchange()
+        } else {
+            cancelWatchdog()
+        }
+        if case .callStateReady(let ready) = u.call.state {
+            startAudio(ready, outgoing: u.call.isOutgoing)
+        }
+        if case .callStateDiscarded = u.call.state {
+            tearDown()
+        }
+        if case .callStateError = u.call.state {
+            tearDown()
+        }
+    }
+
+    /// Feeds TDLib CallStateReady into tgcalls through VoIPBridge.
+    private func startAudio(_ ready: CallStateReady, outgoing: Bool) {
+        guard !audioStarted else { return }
+
+        // SOCKS5 proxy (optional): external proxy configured in Settings.
+        // The built-in local listener (1443) is MTProto/WS, NOT SOCKS5.
+        let defaults = UserDefaults.standard
+        let host = defaults.string(forKey: "socksProxyHost") ?? ""
+        let port = UInt16(defaults.integer(forKey: "socksProxyPort"))
+        let user = defaults.string(forKey: "socksProxyUser") ?? ""
+        let pass = defaults.string(forKey: "socksProxyPassword") ?? ""
+        if !host.isEmpty, port > 0 {
+            VoIPBridge.shared().configureProxy(withHost: host, port: port,
+                                             username: user, password: pass)
+        }
+
+        var servers: [[String: Any]] = []
+        for server in ready.servers {
+            var dict: [String: Any] = [:]
+            dict["ipv4"] = server.ipAddress
+            dict["ipv6"] = server.ipv6Address
+            dict["port"] = server.port
+            switch server.type {
+            case .callServerTypeTelegramReflector(let reflector):
+                dict["tcp"] = reflector.isTcp
+                dict["peerTag"] = reflector.peerTag
+            case .callServerTypeWebrtc(let rtc):
+                dict["rtc"] = true
+                dict["username"] = rtc.username
+                dict["password"] = rtc.password
+            }
+            servers.append(dict)
+        }
+
+        let started = VoIPBridge.shared().startCall(
+            withKey: ready.encryptionKey,
+            isOutgoing: outgoing,
+            isVideo: currentCall?.isVideo ?? false,
+            servers: servers,
+            localView: localView,
+            remoteView: remoteView
+        )
+        audioStarted = started
+        if started {
+            stateText = VoIPBridge.shared().stateText
+        }
+    }
+
+    private func tearDown() {
+        VoIPBridge.shared().stopCall()
+        audioStarted = false
+        currentCall = nil
+        stateText = ""
+    }
+
+    private var durationTimer: Task<Void, Never>?
+
+    private func startDurationTimer() {
+        durationTimer?.cancel()
+        let started = Date()
+        durationTimer = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard let strongSelf = self, !Task.isCancelled else { return }
+                let seconds = Int(Date().timeIntervalSince(started))
+                let text = String(format: "%02d:%02d", seconds / 60, seconds % 60)
+                if strongSelf.durationText != text { strongSelf.durationText = text }
+            }
+        }
+    }
+
+    private func stopDurationTimer() {
+        durationTimer?.cancel()
+        durationTimer = nil
+        durationText = "00:00"
+    }
+
+    func retryConnection() {
+        needsRetry = false
+        stateText = "Соединение…"
+        Task {
+            await TelegramClient.shared.acceptCall()
+            watchKeyExchange()
+        }
+    }
+
+    func toggleSpeaker() {
+        speakerOn.toggle()
+    }
+
+    func toggleVideo() {
+        isVideoEnabled.toggle()
+        VoIPBridge.shared().setVideoEnabled(isVideoEnabled)
+    }
+
+    func toggleMute() {
+        isMuted.toggle()
+        VoIPBridge.shared().setMicMute(isMuted)
+    }
+
+    static func text(_ state: CallState) -> String {
+        switch state {
+        case .callStatePending: return "Соединение…"
+        case .callStateExchangingKeys: return "Обмен ключами…"
+        case .callStateReady: return "Соединение…"
+        case .callStateHangingUp: return "Завершение…"
+        case .callStateDiscarded: return "Завершено"
+        case .callStateError: return "Ошибка звонка"
+        default: return "…"
+        }
+    }
+}
