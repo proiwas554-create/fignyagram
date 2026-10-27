@@ -10,8 +10,16 @@ import TDLibKit
 nonisolated enum ImageCache {
     private static let cache: NSCache<NSString, UIImage> = {
         let cache = NSCache<NSString, UIImage>()
-        cache.totalCostLimit = 64 * 1024 * 1024
-        cache.countLimit = 400
+        if DevicePerformance.isVeryLowMemory {
+            cache.totalCostLimit = 24 * 1024 * 1024
+            cache.countLimit = 150
+        } else if DevicePerformance.isLowMemory {
+            cache.totalCostLimit = 40 * 1024 * 1024
+            cache.countLimit = 250
+        } else {
+            cache.totalCostLimit = 96 * 1024 * 1024
+            cache.countLimit = 600
+        }
         return cache
     }()
 
@@ -21,7 +29,7 @@ nonisolated enum ImageCache {
         let queue = OperationQueue()
         queue.name = "ImageCache.decode"
         queue.qualityOfService = .userInitiated
-        queue.maxConcurrentOperationCount = 2
+        queue.maxConcurrentOperationCount = DevicePerformance.isVeryLowMemory ? 1 : 2
         return queue
     }()
 

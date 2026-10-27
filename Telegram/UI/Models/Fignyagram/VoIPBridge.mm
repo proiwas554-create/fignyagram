@@ -93,7 +93,13 @@ static CIContext *FignyagramVideoContext(void) {
     static CIContext *context;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer: @NO}];
+        context = [CIContext contextWithOptions:@{
+            kCIContextUseSoftwareRenderer: @NO,
+            kCIContextWorkingColorSpace: [NSNull null],
+            kCIContextOutputColorSpace: [NSNull null],
+            kCIContextCacheIntermediates: @NO,
+            kCIContextHighQualityDownsample: @NO
+        }];
     });
     return context;
 }
@@ -118,6 +124,7 @@ static CIContext *FignyagramVideoContext(void) {
 - (void)renderFrame:(CallVideoFrameData *)frame {
     // Skip work for hidden views and throttle decoding on slower devices.
     if (self.window == nil) { return; }
+    if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) { return; }
     CFTimeInterval now = CACurrentMediaTime();
     if (now - _lastRenderTime < _minimumFrameInterval) { return; }
     _lastRenderTime = now;
@@ -140,6 +147,14 @@ static CIContext *FignyagramVideoContext(void) {
     image = [image imageByApplyingOrientation:orientation];
     if (_flip) {
         image = [image imageByApplyingTransform:CGAffineTransformMakeScale(-1, 1)];
+    }
+    // Render at the display size instead of the camera resolution: on a phone
+    // the extra pixels are invisible but cost a lot of GPU time.
+    CGRect extent = image.extent;
+    CGFloat target = MAX(CGRectGetWidth(self.bounds), CGRectGetHeight(self.bounds)) * 2.0;
+    if (target > 0 && extent.size.width > target) {
+        CGFloat scale = target / extent.size.width;
+        image = [image imageByApplyingTransform:CGAffineTransformMakeScale(scale, scale)];
     }
     CGImageRef cgImage = [FignyagramVideoContext() createCGImage:image fromRect:image.extent];
     if (cgImage == NULL) { return; }
