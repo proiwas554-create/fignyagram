@@ -172,6 +172,14 @@ struct SettingsView: View {
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
+                    Toggle("Невидимый просмотр историй", isOn: Binding(
+                        get: { privacy.storyGhostMode },
+                        set: { privacy.storyGhostMode = $0 }
+                    ))
+                    Toggle("Игнорировать запрет копирования", isOn: Binding(
+                        get: { privacy.ignoreCopyProtection },
+                        set: { privacy.ignoreCopyProtection = $0 }
+                    ))
                     Toggle("Блокировка Face ID / Touch ID", isOn: Binding(
                         get: { AppLock.shared.isEnabled },
                         set: { value in

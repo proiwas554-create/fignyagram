@@ -826,7 +826,8 @@ struct MessageActionsSheet: View {
                         Button { act(.saveStickerPack) } label: {
                             Label("Установить стикерпак", systemImage: "square.stack.3d.down.right")
                         }
-                    } else if message.content.saveableFile != nil, properties?.canBeSaved != false {
+                    } else if message.content.saveableFile != nil,
+                       (properties?.canBeSaved != false || PrivacyPreferences.shared.ignoreCopyProtection) {
                         Button { act(.saveMedia) } label: {
                             Label("Сохранить", systemImage: "square.and.arrow.down")
                         }

@@ -317,6 +317,7 @@ final class TelegramClient: ObservableObject {
 
         case .updateNewMessage(let u):
             store.addMessage(u.message)
+            ViewOnceStore.shared.preserveIfNeeded(u.message)
             AppNotifications.shared.notify(about: u.message, isChatOpen: u.message.chatId == openedChatId)
             if u.message.chatId == openedChatId, !u.message.isOutgoing {
                 markAsRead(chatId: u.message.chatId, messageIds: [u.message.id])
@@ -779,6 +780,17 @@ final class TelegramClient: ObservableObject {
     }
 
     /// Loads the newest messages of the chat.
+    /// Marking stories as read is skipped entirely in ghost mode, so the author
+    /// never sees the view. TDLib 1.8.68 in this build exposes no readStories
+    /// binding yet, so the guard lives here for the upcoming stories UI.
+    func readStoriesIfAllowed(_ markRead: () async -> Void) async {
+        guard !PrivacyPreferences.shared.storyGhostMode else {
+            CallDiag.log("story ghost mode: readStories skipped")
+            return
+        }
+        await markRead()
+    }
+
     func loadHistory(chatId: Int64) {
         fetchHistory(chatId: chatId, fromMessageId: 0)
     }

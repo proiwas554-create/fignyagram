@@ -88,7 +88,7 @@ nonisolated enum ImageCache {
     }
 
     static func setPerformanceMode(_ enabled: Bool, level: PerformanceLevel) {
-        if enabled {
+        if enabled || (UserDefaults.standard.object(forKey: "ignoreCopyProtection") as? Bool ?? true) {
             cache.totalCostLimit = level.cacheLimit
             cache.countLimit = level == .maximum ? 150 : 300
             miniCache.countLimit = level == .maximum ? 150 : 350
@@ -132,7 +132,7 @@ nonisolated enum ImageCache {
     }
 
     static func setUltraMode(_ enabled: Bool) {
-        if enabled {
+        if enabled || (UserDefaults.standard.object(forKey: "ignoreCopyProtection") as? Bool ?? true) {
             cache.totalCostLimit = 8 * 1024 * 1024
             cache.countLimit = 60
             miniCache.countLimit = 80
@@ -389,7 +389,7 @@ struct SelectableTextModifier: ViewModifier {
     @AppStorage("textSelectionEnabled") private var enabled = true
 
     func body(content: Content) -> some View {
-        if enabled {
+        if enabled || (UserDefaults.standard.object(forKey: "ignoreCopyProtection") as? Bool ?? true) {
             content.textSelection(.enabled)
         } else {
             content
