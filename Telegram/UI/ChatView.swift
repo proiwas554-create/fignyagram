@@ -68,6 +68,8 @@ struct ChatView: View {
     @State private var tagUserId: Int64?
     @State private var quoteMessage: TDLibKit.Message?
     @State private var translationTarget: TranslationTarget?
+    @State private var showRoundVideoPicker = false
+    @State private var appleTranslateText: AppleTranslationTarget?
     @State private var replyQuote: String?
     @State private var replyQuotePosition = 0
     @State private var previewStickerSetId: TdInt64?
@@ -284,6 +286,16 @@ struct ChatView: View {
         .sheet(item: Binding(get: { forwardMessage.map(Identified.init) }, set: { forwardMessage = $0?.message })) { item in
             ChatPickerView(title: "Переслать") { target in
                 client.forward(item.message, to: target)
+            }
+        }
+        .sheet(isPresented: $showRoundVideoPicker) {
+            RoundVideoPicker { url in
+                sendRoundVideo(url)
+            }
+        }
+        .sheet(item: $appleTranslateText) { target in
+            if #available(iOS 18.0, *) {
+                AppleTranslateSheet(text: target.text)
             }
         }
         .sheet(isPresented: $showAttachmentDialog, onDismiss: applyPendingAttachment) {
@@ -943,6 +955,16 @@ struct ChatView: View {
             }
             if editing == nil {
                 Button {
+                    showRoundVideoPicker = true
+                } label: {
+                    Image(systemName: "circle.dashed")
+                        .font(.system(size: 20))
+                        .classicIconButton()
+                }
+                .accessibilityLabel("Кружок из галереи")
+            }
+            if editing == nil {
+                Button {
                     showAttachmentDialog = true
                 } label: {
                     Group {
@@ -1079,6 +1101,20 @@ struct ChatView: View {
         }
     }
 
+    private func sendRoundVideo(_ url: URL) {
+        preparingMedia += 1
+        Task {
+            do {
+                let result = try await RoundVideoConverter.convert(url)
+                client.sendVideoNote(result.url, duration: result.duration, length: 640,
+                                     to: chatId, replyTo: takeReply())
+            } catch {
+                client.errorMessage = "Не удалось подготовить кружок: \(error.localizedDescription)"
+            }
+            preparingMedia -= 1
+        }
+    }
+
     private func sendText() {
         if editing == nil,
            autoTextFileThreshold > 0,
@@ -1182,6 +1218,8 @@ struct ChatView: View {
             quoteMessage = message
         case .translate(let text):
             translationTarget = TranslationTarget(text: text)
+        case .translateOnDevice(let text):
+            appleTranslateText = AppleTranslationTarget(text: text)
         case .saveGif:
             if case .messageAnimation(let animation) = message.content {
                 Task {
@@ -1936,3 +1974,9 @@ struct HideTabBarModifier: ViewModifier {
 
 
 
+
+
+private struct AppleTranslationTarget: Identifiable {
+    let id = UUID()
+    let text: String
+}

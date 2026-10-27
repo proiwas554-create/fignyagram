@@ -180,6 +180,11 @@ struct SettingsView: View {
                         Text("2000 символов").tag(2000)
                         Text("4000 символов").tag(4000)
                     }
+                    Button {
+                        GuestMode.shared.enter()
+                    } label: {
+                        Label("Активировать гостевой режим (двойное дно)", systemImage: "theatermasks")
+                    }
                     Toggle("Вкладка «Музыка» в нижнем баре", isOn: $showMusicTab)
                     Toggle("Вкладка «Новости» в нижнем баре", isOn: $showNewsTab)
                     Toggle("Невидимый просмотр историй", isOn: Binding(

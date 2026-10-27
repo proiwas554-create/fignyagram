@@ -128,6 +128,11 @@ struct DeveloperTerminalView: View {
             return
         }
 
+        if cmd == "/guest" {
+            GuestMode.shared.enter()
+            lines.append("guest mode enabled; unlock with biometrics to return")
+            return
+        }
         if cmd == "/cachelimit" {
             let limit = UserDefaults.standard.integer(forKey: "autoCleanCacheLimitMB")
             lines.append(limit > 0 ? "auto clean limit=\(limit)MB" : "auto clean off")

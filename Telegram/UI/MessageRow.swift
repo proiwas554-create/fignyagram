@@ -718,6 +718,7 @@ enum MessageAction {
     case setMemberTag(userId: Int64)
     case quote(String)
     case translate(String)
+    case translateOnDevice(String)
     case stickerSet(TdInt64)
     case call(phoneNumber: String)
     case block(userId: Int64, isBlocked: Bool)
@@ -807,6 +808,13 @@ struct MessageActionsSheet: View {
                             act(.translate(text))
                         } label: {
                             Label("Перевести", systemImage: "character.bubble")
+                        }
+                        if #available(iOS 18.0, *) {
+                            Button {
+                                act(.translateOnDevice(text))
+                            } label: {
+                                Label("Перевести на устройстве", systemImage: "lock.shield")
+                            }
                         }
                     }
                     if case .messageAnimation = message.content {
