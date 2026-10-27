@@ -118,6 +118,9 @@ struct DeveloperSettingsView: View {
                 }
 
                 Section("Служебное") {
+                    NavigationLink("Автоматизация (макросы)") {
+                        MacroSettingsView()
+                    }
                     Button("Очистить весь кэш", role: .destructive) {
                         cache.clearAll()
                     }

@@ -109,3 +109,74 @@ final class AutomationEngine: ObservableObject {
         return ""
     }
 }
+
+
+import SwiftUI
+
+/// UI for the local macro engine (same rules as the terminal commands).
+struct MacroSettingsView: View {
+    @ObservedObject private var engine = AutomationEngine.shared
+    @State private var keyword = ""
+    @State private var chatIdText = ""
+    @State private var action: AutomationEngine.Rule.Action = .sendSnippet
+    @State private var value = ""
+
+    var body: some View {
+        Form {
+            Section("Новое правило") {
+                TextField("Слово в сообщении", text: $keyword)
+                    .textInputAutocapitalization(.never)
+                TextField("ID чата (пусто = любой)", text: $chatIdText)
+                    .keyboardType(.numberPad)
+                Picker("Действие", selection: $action) {
+                    ForEach(AutomationEngine.Rule.Action.allCases, id: \.self) { item in
+                        Text(item.title).tag(item)
+                    }
+                }
+                if action == .sendSnippet {
+                    TextField("Текст автоответа", text: $value)
+                }
+                Button("Добавить") {
+                    let chatId = Int64(chatIdText.trimmingCharacters(in: .whitespaces))
+                    engine.addRule(chatId: chatId, keyword: keyword, action: action, value: value)
+                    keyword = ""
+                    chatIdText = ""
+                    value = ""
+                }
+                .disabled(keyword.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+
+            Section("Правила") {
+                if engine.rules.isEmpty {
+                    Text("Пока нет макросов").foregroundColor(.secondary)
+                }
+                ForEach(Array(engine.rules.enumerated()), id: \.element.id) { index, rule in
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(rule.keyword).font(.appBody.bold())
+                        Text("чат: \(rule.chatId.map(String.init) ?? "любой") · \(rule.action.title)")
+                            .font(.appFootnote)
+                            .foregroundColor(.secondary)
+                        if !rule.value.isEmpty {
+                            Text(rule.value).font(.appFootnote)
+                        }
+                    }
+                    .swipeActions {
+                        Button(role: .destructive) {
+                            engine.removeRule(at: index)
+                        } label: {
+                            Label("Удалить", systemImage: "trash")
+                        }
+                    }
+                }
+            }
+
+            Section {
+                Text("Правила работают локально: при входящем сообщении с нужным словом выполняется выбранное действие.")
+                    .font(.appFootnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Автоматизация")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}

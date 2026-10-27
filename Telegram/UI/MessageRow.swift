@@ -65,7 +65,9 @@ struct MessageRow: View {
     @State private var showTagEditor = false
     @State private var myTagDraft = ""
     @State private var longTextPayload: LongTextPayload?
-    @State private var secretMediaURL: URL?
+    @State private var showSecretMedia = false
+    @State private var secretMediaPath: String?
+    @ObservedObject private var viewOnceStore = ViewOnceStore.shared
 
     @AppStorage("showAdminAuthors") private var showAdminAuthors = true
     @AppStorage("hideSenderNames") private var hideSenderNames = false
@@ -87,6 +89,34 @@ struct MessageRow: View {
     }
 
     var body: some View {
+        messageBody
+            .overlay(alignment: .topTrailing) {
+                if let path = viewOnceStore.savedPath(for: message) {
+                    Button {
+                        secretMediaPath = path
+                        showSecretMedia = true
+                    } label: {
+                        Label("Сохранено", systemImage: "eye.fill")
+                            .font(.appCaption2)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Capsule().fill(Color.black.opacity(0.55)))
+                            .foregroundColor(.white)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(6)
+                }
+            }
+            .sheet(isPresented: $showSecretMedia) {
+                if let path = secretMediaPath {
+                    SecretMediaPreview(url: URL(fileURLWithPath: path))
+                        .ignoresSafeArea()
+                }
+            }
+    }
+
+    @ViewBuilder
+    private var messageBody: some View {
         if let service = message.cachedServiceText {
             Text(service)
                 .font(.appCaption)
