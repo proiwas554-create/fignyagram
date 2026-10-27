@@ -35,10 +35,7 @@ extern void CallDiagLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
 
 - (void)setFillsScreen:(BOOL)fill {
     _fillsScreen = fill;
-    AVSampleBufferDisplayLayer *layer = [self displayLayer];
-    layer.videoGravity = AVLayerVideoGravityResize;
-    [self setNeedsLayout];
-    [self applyVideoTransform];
+    self.layer.contentsGravity = fill ? kCAGravityResize : kCAGravityResizeAspect;
 }
 
 - (void)setFlip:(BOOL)flip {
@@ -61,59 +58,10 @@ extern void CallDiagLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
 /// Rotates the whole view (not its layer) and compensates the scale so the
 /// rotated video still fills its container without being cropped.
 - (void)applyVideoTransform {
-    CGFloat width = self.bounds.size.width;
-    CGFloat height = self.bounds.size.height;
-    if (width <= 0 || height <= 0) { return; }
-    // Guard: changing layer bounds inside layoutSubviews re-triggers layout.
-    // Applying only when something actually changed breaks that feedback loop,
-    // which was starving the UI even though the main thread was not blocked.
-    if (CGSizeEqualToSize(_lastAppliedSize, self.bounds.size)
-        && _lastAppliedOrientation == _videoOrientation
-        && _lastAppliedMirror == _videoMirror
-        && _lastAppliedFlip == _flip
-        && fabs(_lastAppliedScale - _appliedScale) < 0.001) {
-        return;
-    }
-    _lastAppliedSize = self.bounds.size;
-    _lastAppliedOrientation = _videoOrientation;
-    _lastAppliedMirror = _videoMirror;
-    _lastAppliedFlip = _flip;
-    _lastAppliedScale = _appliedScale;
-    CGFloat angle = 0;
-    switch ((_videoOrientation + _rotationOffset) % 4) {
-        case 1: angle = -M_PI_2; break;
-        case 2: angle = M_PI; break;
-        case 3: angle = M_PI_2; break;
-        default: angle = 0; break;
-    }
-    CGAffineTransform transform = CGAffineTransformMakeRotation(angle);
-    if (_videoMirror) {
-        transform = CGAffineTransformConcat(CGAffineTransformMakeScale(-1, 1), transform);
-    }
-    (void)transform;
-    // Rotate the layer inside fixed bounds and let videoGravity fill it. No
-    // bounds swap and no mirroring: the swap cropped the image and the extra
-    // horizontal flip made it look mirrored/"upside down".
-    self.transform = CGAffineTransformIdentity;
-    AVSampleBufferDisplayLayer *displayLayer = [self displayLayer];
-    // Both streams arrive rotated by 180 degrees on this device.
-    if (_rotationOffset == 0) {
-        angle += M_PI;
-    }
-    if (!_fillsScreen) {
-        _appliedScale = 1.0;
-    }
-    CATransform3D layerTransform = CATransform3DMakeRotation(angle, 0, 0, 1);
-    layerTransform = CATransform3DScale(layerTransform, _appliedScale, _appliedScale, 1);
-    if (_flip) {
-        layerTransform = CATransform3DScale(layerTransform, -1, 1, 1);
-    }
-    [CATransaction begin];
-    [CATransaction setDisableActions:YES];
-    displayLayer.bounds = CGRectMake(0, 0, width, height);
-    displayLayer.position = CGPointMake(width / 2.0, height / 2.0);
-    displayLayer.transform = layerTransform;
-    [CATransaction commit];
+    // Orientation is baked into the rendered bitmap, so the layer itself must
+    // stay unrotated; it only decides how the image fills the view.
+    self.layer.transform = CATransform3DIdentity;
+    self.layer.contentsGravity = _fillsScreen ? kCAGravityResize : kCAGravityResizeAspect;
 }
 
 - (void)layoutSubviews {
@@ -126,95 +74,74 @@ extern void CallDiagLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
     if (self != nil) {
         self.userInteractionEnabled = NO;
         _renderQueue = dispatch_queue_create("fignyagram.video.render", DISPATCH_QUEUE_SERIAL);
-        AVSampleBufferDisplayLayer *layer = [self displayLayer];
-        layer.videoGravity = AVLayerVideoGravityResize;
+        CALayer *layer = self.layer;
+        layer.contentsGravity = kCAGravityResize;
+        layer.masksToBounds = YES;
         layer.backgroundColor = [UIColor blackColor].CGColor;
     }
     return self;
 }
 
-+ (Class)layerClass {
-    return [AVSampleBufferDisplayLayer class];
+- (CALayer *)displayLayer {
+    return self.layer;
 }
 
-- (AVSampleBufferDisplayLayer *)displayLayer {
-    return (AVSampleBufferDisplayLayer *)self.layer;
+static CIContext *FignyagramVideoContext(void) {
+    static CIContext *context;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        context = [CIContext contextWithOptions:@{kCIContextUseSoftwareRenderer: @NO}];
+    });
+    return context;
+}
+
+- (void)applyCIImage:(CIImage *)image {
+    CGImageRef cgImage = [FignyagramVideoContext() createCGImage:image fromRect:image.extent];
+    if (cgImage == NULL) { return; }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.layer.contents = (__bridge id)cgImage;
+        CGImageRelease(cgImage);
+    });
+}
+
+- (NSInteger)_videoRotationOrientationForFrame:(CallVideoFrameData *)frame {
+    return ((NSInteger)frame.orientation + _rotationOffset) % 4;
 }
 
 - (void)renderFrame:(CallVideoFrameData *)frame {
-    AVSampleBufferDisplayLayer *display = [self displayLayer];
-    if (display.status == AVQueuedSampleBufferRenderingStatusFailed) {
-        [display flush];
-        _frameIndex = 0;
-    }
-    // Dropping frames keeps latency low: the display layer is the bottleneck.
-    if (!display.isReadyForMoreMediaData) {
-        return;
-    }
     id buffer = frame.buffer;
     CVPixelBufferRef pixelBuffer = NULL;
     if ([buffer isKindOfClass:[CallVideoFrameNativePixelBuffer class]]) {
         pixelBuffer = ((CallVideoFrameNativePixelBuffer *)buffer).pixelBuffer;
     }
-    if (pixelBuffer == NULL) {
-        static BOOL logged = NO;
-        if (!logged) {
-            logged = YES;
-            CallDiagLog(@"video frame buffer type unsupported: %@", NSStringFromClass(((NSObject *)buffer).class));
-        }
-        return;
-    }
-    AVSampleBufferDisplayLayer *layer = [self displayLayer];
-    CMVideoFormatDescriptionRef format = NULL;
-    if (CMVideoFormatDescriptionCreateForImageBuffer(kCFAllocatorDefault, pixelBuffer, &format) != noErr || format == NULL) {
-        CallDiagLog(@"video render: cannot create format description");
-        return;
-    }
-    _frameIndex += 1;
-    CMTime pts = CMTimeMake(_frameIndex, 30);
-    CMSampleTimingInfo timing = { CMTimeMake(1, 30), pts, kCMTimeInvalid };
-    CMSampleBufferRef sample = NULL;
-    OSStatus status = CMSampleBufferCreateReadyWithImageBuffer(kCFAllocatorDefault, pixelBuffer, format, &timing, &sample);
-    CFRelease(format);
-    if (status != noErr || sample == NULL) {
-        CallDiagLog(@"video render: cannot create sample buffer status=%d", (int)status);
-        return;
-    }
-    CGFloat bufferAspect = (CGFloat)CVPixelBufferGetWidth(pixelBuffer) /
-                           (CGFloat)MAX(1, CVPixelBufferGetHeight(pixelBuffer));
-    BOOL quarterTurn = (frame.orientation == OngoingCallVideoOrientation90 ||
-                        frame.orientation == OngoingCallVideoOrientation270);
-    CGFloat contentAspect = quarterTurn ? 1.0 / bufferAspect : bufferAspect;
-    CGFloat viewport = self.bounds.size.height > 0 ? self.bounds.size.width / self.bounds.size.height : 0;
-    CGFloat requiredZoom = 1.0;
-    if (contentAspect > 0 && viewport > 0) {
-        requiredZoom = MAX(viewport / contentAspect, contentAspect / viewport);
-    }
-    // The layer stretches the frame to its bounds, so no extra zoom is needed.
-    (void)requiredZoom;
-    _appliedScale = 1.0;
+    if (pixelBuffer == NULL) { return; }
 
-    // Orientation is applied to the view itself (see applyVideoTransform),
-    // rotating the CALayer inside fixed bounds cropped the picture and made it
-    // look rotated by 90 degrees.
-    NSInteger orientation = (NSInteger)frame.orientation;
-    BOOL mirror = _mirrorAllowed && frame.mirrorHorizontally;
-    if (orientation != _videoOrientation || mirror != _videoMirror) {
-        _videoOrientation = orientation;
-        _videoMirror = mirror;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self setNeedsLayout];
-        });
+    CIImage *image = [CIImage imageWithCVPixelBuffer:pixelBuffer];
+    NSInteger step = ((NSInteger)frame.orientation + _rotationOffset) % 4;
+    CGImagePropertyOrientation orientation = kCGImagePropertyOrientationUp;
+    switch (step) {
+        case 1: orientation = kCGImagePropertyOrientationRight; break;
+        case 2: orientation = kCGImagePropertyOrientationDown; break;
+        case 3: orientation = kCGImagePropertyOrientationLeft; break;
+        default: break;
     }
-    [layer enqueueSampleBuffer:sample];
+    image = [image imageByApplyingOrientation:orientation];
+    if (_flip) {
+        image = [image imageByApplyingTransform:CGAffineTransformMakeScale(-1, 1)];
+    }
+    CGImageRef cgImage = [FignyagramVideoContext() createCGImage:image fromRect:image.extent];
+    if (cgImage == NULL) { return; }
+    _frameIndex += 1;
     if (_frameIndex == 1) {
-        CallDiagLog(@"video render: first frame size=%dx%d view=%.0fx%.0f layer=%.0fx%.0f orientation=%ld",
+        CallDiagLog(@"video render: first frame size=%dx%d view=%.0fx%.0f step=%ld",
                     frame.width, frame.height,
                     self.bounds.size.width, self.bounds.size.height,
-                    layer.bounds.size.width, layer.bounds.size.height,
-                    (long)frame.orientation);
+                    (long)step);
     }
-    CFRelease(sample);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.layer.contents = (__bridge id)cgImage;
+        CGImageRelease(cgImage);
+    });
 }
 
 @end

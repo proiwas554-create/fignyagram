@@ -34,10 +34,16 @@ final class CallManager: ObservableObject {
     @Published private(set) var peerMuted = false
     @Published private(set) var poorConnection = false
     @Published private(set) var signalBars = 4
+    /// Stays true after the first remote frame, so a reconnect does not hide
+    /// the running video behind the avatar placeholder.
+    @Published private(set) var hasRemoteVideoShown = false
     @Published private(set) var remoteVideoActive = false {
         didSet {
             guard remoteVideoActive != oldValue else { return }
-            DispatchQueue.main.async { [weak self] in self?.refreshVideoHosts() }
+            DispatchQueue.main.async { [weak self] in
+                self?.refreshVideoHosts()
+                if self?.currentCall?.isVideo == true { CallWindows.shared.layoutVideo() }
+            }
         }
     }
     @Published private(set) var localPreviewActive = false
@@ -311,11 +317,14 @@ final class CallManager: ObservableObject {
         VoIPBridge.shared().remoteVideoFirstFrameHandler = { [weak self] in
             guard let self else { return }
             self.remoteVideoActive = true
+            self.hasRemoteVideoShown = true
             CallDiag.log("remote video first frame")
         }
         VoIPBridge.shared().localVideoFirstFrameHandler = { [weak self] in
             guard let self else { return }
             self.localPreviewActive = true
+            CallDiag.log("local preview active, video=\(self.currentCall?.isVideo == true)")
+            if self.currentCall?.isVideo == true { CallWindows.shared.show(video: true) }
             CallDiag.log("local video first frame")
         }
         VoIPBridge.shared().remoteAudioHandler = { [weak self] muted in
@@ -541,8 +550,11 @@ final class CallManager: ObservableObject {
         isTearingDown = true
         defer { isTearingDown = false }
         removeFullScreenVideoHost()
+        CallWindows.shared.hide()
         let callId = currentCall?.id
         CallDiag.log("teardown callId=\(callId ?? -1)")
+        localView?.layer.contents = nil
+        remoteView?.layer.contents = nil
         localView = nil
         remoteView = nil
         hasAccepted = false
@@ -688,6 +700,7 @@ final class CallManager: ObservableObject {
 
     func swapVideoStreams() {
         showSelfAsMain.toggle()
+        CallWindows.shared.layoutVideo()
         CallDiag.log("video swapped selfAsMain=\(showSelfAsMain)")
     }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import TDLibKit
 
 struct ContentView: View {
     @ObservedObject private var client = TelegramClient.shared
@@ -79,7 +80,7 @@ struct ContentView: View {
             }
         }
         .overlay {
-            if calls.currentCall != nil {
+            if calls.currentCall != nil && calls.currentCall?.isVideo != true {
                 CallView()
             } else {
                 GroupCallOverlay()

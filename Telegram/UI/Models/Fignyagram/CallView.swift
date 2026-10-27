@@ -62,6 +62,9 @@ struct VideoCanvas: UIViewRepresentable {
 }
 
 struct CallView: View {
+    /// When hosted in the call window the video lives in a separate window
+    /// below, so the screen background must stay transparent.
+    var windowHosted: Bool = false
     @ObservedObject private var call = CallManager.shared
     @ObservedObject private var client = TelegramClient.shared
 
@@ -298,7 +301,7 @@ struct CallView: View {
             }
         }
         .ignoresSafeArea()
-        .background(Color.black.ignoresSafeArea())
+        .background((windowHosted ? Color.clear : Color.black).ignoresSafeArea())
     }
 
     /// Single-row controls used for video calls; horizontally scrollable so
@@ -402,20 +405,11 @@ struct CallView: View {
     /// Full-screen video: the selected stream fills the screen, the other one
     /// sits in a corner. Tapping either side swaps them.
     private var videoStage: some View {
-        let screen = UIScreen.main.bounds.size
-        return ZStack {
-                Color.black
-
-                // The main stream is hosted from the start so its container has a
-                // real full-screen size; otherwise it is attached to a 0x0 frame
-                // and stays tiny forever.
-                VideoCanvas(uiView: call.showSelfAsMain ? $call.localView : $call.remoteView,
-                            fullscreen: true)
-                    .frame(width: screen.width, height: screen.height)
-                    .contentShape(Rectangle())
-                    .onTapGesture { call.swapVideoStreams() }
-
-                if !call.remoteVideoActive {
+        // The video itself is rendered in a dedicated window (CallWindows);
+        // this layer only catches taps and draws the placeholder.
+        GeometryReader { geo in
+            ZStack {
+                if !call.hasRemoteVideoShown && !call.localPreviewActive {
                     VStack(spacing: 12) {
                         if let userId = call.currentCall?.userId {
                             AvatarView(id: userId, title: displayName, photo: call.peerPhoto, size: 110)
@@ -428,27 +422,13 @@ struct CallView: View {
                             .font(.appFootnote)
                             .foregroundColor(.white.opacity(0.65))
                     }
+                    .frame(width: geo.size.width, height: geo.size.height)
                 }
-
-                VStack {
-                    HStack {
-                        Spacer()
-                        VideoCanvas(uiView: call.showSelfAsMain ? $call.remoteView : $call.localView)
-                            .frame(width: 104, height: 148)
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.white.opacity(0.22), lineWidth: 1)
-                            )
-                            .padding(.top, 96)
-                            .padding(.trailing, 14)
-                            .opacity(call.isVideoEnabled ? 1 : 0.35)
-                            .onTapGesture { call.swapVideoStreams() }
-                    }
-                    Spacer()
-                }
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture { call.swapVideoStreams() }
+            }
         }
-        .frame(width: screen.width, height: screen.height, alignment: .topLeading)
         .ignoresSafeArea()
     }
 
