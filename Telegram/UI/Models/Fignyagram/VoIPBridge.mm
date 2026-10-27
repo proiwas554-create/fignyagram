@@ -21,6 +21,8 @@ extern void CallDiagLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
     BOOL _flip;
     BOOL _fillsScreen;
     CGFloat _appliedScale;
+    CFTimeInterval _lastRenderTime;
+    CGFloat _minimumFrameInterval;
     CGSize _lastAppliedSize;
     NSInteger _lastAppliedOrientation;
     BOOL _lastAppliedMirror;
@@ -74,6 +76,7 @@ extern void CallDiagLog(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
     if (self != nil) {
         self.userInteractionEnabled = NO;
         _renderQueue = dispatch_queue_create("fignyagram.video.render", DISPATCH_QUEUE_SERIAL);
+        _minimumFrameInterval = 1.0 / 24.0;
         CALayer *layer = self.layer;
         layer.contentsGravity = kCAGravityResize;
         layer.masksToBounds = YES;
@@ -108,7 +111,16 @@ static CIContext *FignyagramVideoContext(void) {
     return ((NSInteger)frame.orientation + _rotationOffset) % 4;
 }
 
+- (void)setMaximumFramesPerSecond:(NSInteger)fps {
+    _minimumFrameInterval = 1.0 / MAX(8, MIN(60, fps));
+}
+
 - (void)renderFrame:(CallVideoFrameData *)frame {
+    // Skip work for hidden views and throttle decoding on slower devices.
+    if (self.window == nil) { return; }
+    CFTimeInterval now = CACurrentMediaTime();
+    if (now - _lastRenderTime < _minimumFrameInterval) { return; }
+    _lastRenderTime = now;
     id buffer = frame.buffer;
     CVPixelBufferRef pixelBuffer = NULL;
     if ([buffer isKindOfClass:[CallVideoFrameNativePixelBuffer class]]) {
@@ -970,6 +982,11 @@ static NSString *VoIPHexString(NSData *data) {
 
 - (void)setMicMute:(BOOL)mute {
     [_context setIsMuted:mute];
+}
+
+- (void)setVideoMaximumFramesPerSecond:(NSInteger)fps {
+    [_localRenderView setMaximumFramesPerSecond:fps];
+    [_remoteRenderView setMaximumFramesPerSecond:fps];
 }
 
 - (void)setVideoFillsScreen:(BOOL)fill {

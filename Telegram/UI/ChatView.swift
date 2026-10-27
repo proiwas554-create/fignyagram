@@ -45,7 +45,7 @@ struct ChatView: View {
     @State private var composerPayload: MediaComposerPayload?
     @State private var showPollComposer = false
     @State private var showAttachmentDialog = false
-    @AppStorage("messageListCollection") private var useCollectionMessageList = true
+    @AppStorage("messageListCollection") private var useCollectionMessageList = false
     @State private var sendMediaAsFiles = false
     @State private var registeredChatPresentation = false
     @State private var showScheduleComposer = false
@@ -233,6 +233,7 @@ struct ChatView: View {
             client.openChat(chatId)
             if let userId = chat?.privateUserId {
                 RecentContactsStore.shared.record(userId)
+                ContactsSync.shared.scheduleSync()
             }
             ChatStore.shared.applyDeletedArchive(chatId: chatId)
             focusOnSearchResultIfNeeded()

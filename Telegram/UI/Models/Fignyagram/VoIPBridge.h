@@ -101,6 +101,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setVideoFlip:(BOOL)flip;
 /// YES fills the screen (crops edges), NO fits the whole frame.
 - (void)setVideoFillsScreen:(BOOL)fill;
+/// Caps the video render rate (useful on older devices).
+- (void)setVideoMaximumFramesPerSecond:(NSInteger)fps;
 /// Switches between the front and the back camera.
 - (void)switchCamera;
 /// YES when the back camera is currently selected.

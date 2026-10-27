@@ -7,10 +7,27 @@ struct SearchHistoryView: View {
     @ObservedObject private var history = SearchHistory.shared
     @ObservedObject private var store = ChatStore.shared
     @ObservedObject private var recent = RecentContactsStore.shared
+    @ObservedObject private var contacts = ContactsSync.shared
+    @AppStorage("recentContactsEnabled") private var contactsEnabledFromServer = true
     @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @Environment(\.dismiss) private var dismiss
     var onPick: (String) -> Void
     var onOpenContact: ((Int64) -> Void)? = nil
+
+    /// Server contacts minus the ones already listed as recent.
+    private var serverContacts: [Int64] {
+        let recentIds = Set(recent.userIds)
+        return contacts.serverContactIds
+            .filter { !recentIds.contains($0) && store.users[$0] != nil }
+            .prefix(120)
+            .map { $0 }
+    }
+
+    private static func displayName(_ user: TDLibKit.User) -> String {
+        let name = [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " ")
+        if !name.isEmpty { return name }
+        return user.usernames?.activeUsernames.first ?? "Контакт"
+    }
 
     var body: some View {
         NavigationView {
@@ -47,6 +64,33 @@ struct SearchHistoryView: View {
                                         recent.remove(userId)
                                     } label: {
                                         Label("Убрать из недавних", systemImage: "person.badge.minus")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if recentContactsEnabled, contactsEnabledFromServer, !serverContacts.isEmpty {
+                    Section("Контакты Telegram") {
+                        ForEach(serverContacts, id: \.self) { userId in
+                            if let user = store.users[userId] {
+                                Button {
+                                    onOpenContact?(userId)
+                                    dismiss()
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        LegacyAvatarView(
+                                            id: userId,
+                                            title: Self.displayName(user),
+                                            file: user.profilePhoto?.big,
+                                            size: 34
+                                        )
+                                        Text(Self.displayName(user))
+                                            .foregroundColor(.primary)
+                                        Spacer()
+                                        Image(systemName: "checkmark.seal")
+                                            .font(.caption2)
+                                            .foregroundColor(.secondary)
                                     }
                                 }
                             }

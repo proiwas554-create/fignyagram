@@ -26,6 +26,7 @@ struct ChatListView: View {
     @State private var confirmLogout = false
     @State private var showSettings = false
     @State private var showProxy = false
+    @State private var showNewsFeed = false
     @State private var showVisitHistory = false
     @State private var showSearchHistory = false
     @State private var showProfile = false
@@ -209,6 +210,9 @@ struct ChatListView: View {
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         HStack(spacing: 16) {
+                            Button { showNewsFeed = true } label: {
+                                Image(systemName: "newspaper")
+                            }
                             composeMenu
                             profileMenu
                         }
@@ -218,6 +222,7 @@ struct ChatListView: View {
 
             .onChange(of: search) { _ in scheduleSearch() }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showNewsFeed) { NewsFeedView() }
             .sheet(isPresented: $showProfile) { ProfileSettingsView() }
             .sheet(isPresented: $showAccounts) { AccountsView() }
             .sheet(item: $createKind) { kind in

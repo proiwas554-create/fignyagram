@@ -345,8 +345,8 @@ final class TelegramClient: ObservableObject {
                 CallDiag.log("reconnects in 120s=\(recentConnects.count) proxyEnabled=\(BuiltInProxyManager.shared.isEnabled)")
             }
             if case .connectionStateReady = u.state {
-                // ContactsSync is disabled: bulk imports could hit FloodWait and
-                // stall the whole connection.
+                // Account-wide recent contacts: throttled, capped imports.
+                Task { await ContactsSync.shared.syncIfNeeded() }
             }
         case .updateNewCallSignalingData(let u):
             CallDiag.log("updateNewCallSignalingData callId=\(u.callId) bytes=\(u.data.count)")
