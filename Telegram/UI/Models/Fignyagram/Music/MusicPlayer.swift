@@ -105,6 +105,25 @@ final class MusicPlayer: ObservableObject {
         updateNowPlaying()
     }
 
+    func setVolume(_ volume: Float) {
+        player?.volume = max(0, min(1, volume))
+    }
+
+    /// Smooth fade-out used by the sleep timer, then pause.
+    func fadeOutAndPause(seconds: Double = 12) {
+        guard let player else { return }
+        let steps = 24
+        let stepDuration = max(0.1, seconds / Double(steps))
+        Task { [weak self] in
+            for step in 0...steps {
+                try? await Task.sleep(nanoseconds: UInt64(stepDuration * 1_000_000_000))
+                player.volume = 1.0 - Float(step) / Float(steps)
+            }
+            self?.pauseIfPlaying()
+            player.volume = 1.0
+        }
+    }
+
     func pauseIfPlaying() {
         guard isPlaying else { return }
         player?.pause()
@@ -388,5 +407,52 @@ final class MusicPlayer: ObservableObject {
         guard let url = MusicLibrary.shared.artworkURL(for: track),
               let image = UIImage(contentsOfFile: url.path) else { return nil }
         return MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+    }
+}
+
+
+/// "Засыпаю под музыку": fades the player out after 15/30/60 minutes.
+@MainActor
+final class SleepTimer: ObservableObject {
+    static let shared = SleepTimer()
+
+    @Published private(set) var selectedMinutes = 0
+    @Published private(set) var remaining: TimeInterval = 0
+
+    private var task: Task<Void, Never>?
+
+    var isActive: Bool { selectedMinutes > 0 }
+
+    var remainingText: String {
+        guard remaining > 0 else { return "" }
+        let total = Int(remaining.rounded())
+        return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
+    func set(minutes: Int) {
+        cancel()
+        selectedMinutes = minutes
+        guard minutes > 0 else { return }
+        remaining = TimeInterval(minutes * 60)
+        task = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard let self else { return }
+                if self.remaining <= 1 {
+                    self.remaining = 0
+                    self.selectedMinutes = 0
+                    MusicPlayer.shared.fadeOutAndPause()
+                    return
+                }
+                self.remaining -= 1
+            }
+        }
+    }
+
+    func cancel() {
+        task?.cancel()
+        task = nil
+        remaining = 0
+        if selectedMinutes != 0 { selectedMinutes = 0 }
     }
 }

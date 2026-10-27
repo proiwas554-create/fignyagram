@@ -719,6 +719,7 @@ enum MessageAction {
     case quote(String)
     case translate(String)
     case translateOnDevice(String)
+    case decryptNote
     case stickerSet(TdInt64)
     case call(phoneNumber: String)
     case block(userId: Int64, isBlocked: Bool)
@@ -815,6 +816,14 @@ struct MessageActionsSheet: View {
                             } label: {
                                 Label("Перевести на устройстве", systemImage: "lock.shield")
                             }
+                        }
+                    }
+                    if case .messageDocument(let document) = message.content,
+                       document.document.fileName.hasSuffix(".fgn.enc") {
+                        Button {
+                            act(.decryptNote)
+                        } label: {
+                            Label("Расшифровать заметку", systemImage: "lock.open")
                         }
                     }
                     if case .messageAnimation = message.content {

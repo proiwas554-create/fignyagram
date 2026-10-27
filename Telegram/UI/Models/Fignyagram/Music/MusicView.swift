@@ -23,6 +23,8 @@ struct MusicView: View {
     }
 
     @State private var showFilePicker = false
+    @ObservedObject private var sleepTimer = SleepTimer.shared
+    @State private var shareItem: ShareAudioFile?
     @State private var showFullPlayer = false
     @State private var filter: LibraryFilter = .main
     @State private var showChatPicker = false
@@ -224,6 +226,9 @@ struct MusicView: View {
             .overlay { importOverlay }
             .overlay(alignment: .top) { errorOverlay }
         }
+        .sheet(item: $shareItem) { item in
+            ActivityView(items: [item.url])
+        }
         .navigationViewStyle(.stack)
     }
 
@@ -424,6 +429,24 @@ struct MusicView: View {
 
                 if !library.tracks.isEmpty {
                     Menu {
+                        if let current = player.current {
+                            Button {
+                                shareItem = ShareAudioFile(url: library.url(for: current))
+                            } label: {
+                                Label("Сохранить в файлы", systemImage: "square.and.arrow.up")
+                            }
+                        }
+                        Menu {
+                            Button("Выключен") { SleepTimer.shared.set(minutes: 0) }
+                            Button("15 минут") { SleepTimer.shared.set(minutes: 15) }
+                            Button("30 минут") { SleepTimer.shared.set(minutes: 30) }
+                            Button("60 минут") { SleepTimer.shared.set(minutes: 60) }
+                        } label: {
+                            Label(SleepTimer.shared.isActive
+                                  ? "Таймер сна (\\(SleepTimer.shared.remainingText))"
+                                  : "Таймер сна",
+                                  systemImage: "moon.zzz")
+                        }
                         Button {
                             Task { await library.importSavedMessagesMusic() }
                         } label: {
@@ -1182,4 +1205,20 @@ struct FullMusicPlayerView: View {
         let total = Int(seconds)
         return String(format: "%d:%02d", total / 60, total % 60)
     }
+}
+
+
+struct ShareAudioFile: Identifiable {
+    let id = UUID()
+    let url: URL
+}
+
+struct ActivityView: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ controller: UIActivityViewController, context: Context) {}
 }

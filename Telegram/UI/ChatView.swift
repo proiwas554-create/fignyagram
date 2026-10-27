@@ -70,6 +70,12 @@ struct ChatView: View {
     @State private var translationTarget: TranslationTarget?
     @State private var showRoundVideoPicker = false
     @State private var appleTranslateText: AppleTranslationTarget?
+    @State private var showEncryptPrompt = false
+    @State private var decryptRequest: DecryptRequest?
+    @State private var decryptedNote: DecryptedNote?
+    @State private var summaryText: String?
+    @State private var showSummary = false
+    @ObservedObject private var snippets = SnippetsStore.shared
     @State private var replyQuote: String?
     @State private var replyQuotePosition = 0
     @State private var previewStickerSetId: TdInt64?
@@ -186,6 +192,12 @@ struct ChatView: View {
 
                 Menu {
                     Button {
+                        summaryText = ConversationSummary.summarize(messages: Array(visibleMessages.suffix(120)))
+                        showSummary = true
+                    } label: {
+                        Label("Кратко о переписке", systemImage: "text.append")
+                    }
+                    Button {
                         showChatInfo = true
                     } label: {
                         Label("Информация о чате", systemImage: "info.circle")
@@ -292,6 +304,43 @@ struct ChatView: View {
             RoundVideoPicker { url in
                 sendRoundVideo(url)
             }
+        }
+        .sheet(isPresented: $showEncryptPrompt) {
+            PassphrasePrompt(title: "Ключ шифрования") { key in
+                sendEncryptedNote(key: key)
+            }
+        }
+        .sheet(item: $decryptRequest) { request in
+            PassphrasePrompt(title: "Ключ для расшифровки") { key in
+                decryptNote(request, key: key)
+            }
+        }
+        .sheet(isPresented: $showSummary) {
+            NavigationView {
+                ScrollView {
+                    Text((summaryText ?? "").isEmpty ? "Недостаточно текста для выжимки." : (summaryText ?? ""))
+                        .font(.appBody)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+                .navigationTitle("Кратко")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+            .navigationViewStyle(.stack)
+        }
+        .sheet(item: $decryptedNote) { note in
+            NavigationView {
+                ScrollView {
+                    Text(note.text)
+                        .font(.appBody)
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding()
+                }
+                .navigationTitle("Расшифрованная заметка")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+            .navigationViewStyle(.stack)
         }
         .sheet(item: $appleTranslateText) { target in
             if #available(iOS 18.0, *) {
@@ -946,6 +995,7 @@ struct ChatView: View {
                     Button("Перевернуть") { text = TextTransformers.reversed(text) }
                     Button("SpongeBob") { text = TextTransformers.spongebob(text) }
                     Button("Убрать лишние пробелы") { text = TextTransformers.collapsedSpaces(text) }
+                    Button("Зашифровать и отправить") { showEncryptPrompt = true }
                 } label: {
                     Image(systemName: "wand.and.stars")
                         .font(.system(size: 19))
@@ -992,6 +1042,19 @@ struct ChatView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(RoundedRectangle(cornerRadius: classic.isEnabled ? 14 : 22).fill(Color(.secondarySystemBackground)))
+            .contextMenu {
+                ForEach(snippets.snippets, id: \.self) { snippet in
+                    Button(snippet) { text = snippet }
+                }
+                if !snippets.snippets.isEmpty {
+                    Divider()
+                }
+                if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button("Сохранить как шаблон") {
+                        snippets.add(text)
+                    }
+                }
+            }
             .onChange(of: text) { newValue in
                 if !newValue.isEmpty && editing == nil { client.sendChatAction(.chatActionTyping, chatId: chatId) }
                 if editing == nil { drafts.save(newValue, for: chatId) }
@@ -1098,6 +1161,37 @@ struct ChatView: View {
             text = ""
         } catch {
             client.errorMessage = "Не удалось создать файл: \(error.localizedDescription)"
+        }
+    }
+
+    private func sendEncryptedNote(key: String) {
+        let content = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !content.isEmpty else { return }
+        do {
+            let payload = try CryptoNotes.encrypt(content, passphrase: key)
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent("note-\(Int(Foundation.Date().timeIntervalSince1970)).fgn.enc")
+            try payload.write(to: url, atomically: true, encoding: .utf8)
+            client.sendDocument(url, caption: "Зашифрованная заметка", to: chatId, replyTo: takeReply())
+            text = ""
+        } catch {
+            client.errorMessage = "Не удалось зашифровать: \(error.localizedDescription)"
+        }
+    }
+
+    private func decryptNote(_ request: DecryptRequest, key: String) {
+        Task {
+            guard let client = TelegramClient.shared.tdClient else { return }
+            do {
+                let file = try await client.downloadFile(fileId: request.fileId,
+                                                        limit: 0, offset: 0, priority: 32,
+                                                        synchronous: true)
+                let payload = try String(contentsOfFile: file.local.path, encoding: .utf8)
+                let plain = try CryptoNotes.decrypt(payload, passphrase: key)
+                decryptedNote = DecryptedNote(id: request.id, text: plain)
+            } catch {
+                TelegramClient.shared.errorMessage = "Не удалось расшифровать: неверный ключ или повреждённый файл"
+            }
         }
     }
 
@@ -1220,6 +1314,12 @@ struct ChatView: View {
             translationTarget = TranslationTarget(text: text)
         case .translateOnDevice(let text):
             appleTranslateText = AppleTranslationTarget(text: text)
+        case .decryptNote:
+            if case .messageDocument(let document) = message.content {
+                decryptRequest = DecryptRequest(id: message.id,
+                                                fileId: document.document.document.id,
+                                                fileName: document.document.fileName)
+            }
         case .saveGif:
             if case .messageAnimation(let animation) = message.content {
                 Task {
@@ -1980,3 +2080,16 @@ private struct AppleTranslationTarget: Identifiable {
     let id = UUID()
     let text: String
 }
+
+
+private struct DecryptRequest: Identifiable {
+    let id: Int64
+    let fileId: Int
+    let fileName: String
+}
+
+private struct DecryptedNote: Identifiable {
+    let id: Int64
+    let text: String
+}
+
