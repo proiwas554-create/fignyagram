@@ -173,6 +173,12 @@ struct ChatListView: View {
                     if !query.isEmpty && (globalSearch.isEnabled || !contactResults.isEmpty) {
                         searchSection
                     }
+                    if store.chats.isEmpty && client.isLoadingChats {
+                        ForEach(0..<8, id: \.self) { _ in
+                            ChatRowSkeleton()
+                                .listRowSeparator(.hidden)
+                        }
+                    }
                     ForEach(displayedChatIds, id: \.self) { chatId in
                         if let chat = store.chats[chatId] {
                             chatRow(chat)
@@ -195,7 +201,12 @@ struct ChatListView: View {
                     }
                 }
                 .listStyle(.plain)
-                .transaction { transaction in transaction.animation = nil }
+                .transaction { transaction in
+                    // Keep scrolling jank-free, but animate the initial load.
+                    if transaction.animation == nil && store.chats.isEmpty {
+                        transaction.animation = .easeInOut(duration: 0.25)
+                    }
+                }
             }
             .searchable(text: $search, prompt: "Поиск чатов, каналов, контактов")
             .navigationBarHidden(classic.isEnabled)
@@ -850,5 +861,28 @@ struct ChatPickerView: View {
             }
         }
         .navigationViewStyle(.stack)
+    }
+}
+
+
+/// Lightweight placeholder shown while the first page of chats is loading.
+private struct ChatRowSkeleton: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            Circle()
+                .fill(Color.secondary.opacity(0.15))
+                .frame(width: 52, height: 52)
+            VStack(alignment: .leading, spacing: 8) {
+                Capsule()
+                    .fill(Color.secondary.opacity(0.15))
+                    .frame(width: 140, height: 12)
+                Capsule()
+                    .fill(Color.secondary.opacity(0.10))
+                    .frame(height: 10)
+            }
+        }
+        .padding(.vertical, 6)
+        .redacted(reason: .placeholder)
+        .allowsHitTesting(false)
     }
 }

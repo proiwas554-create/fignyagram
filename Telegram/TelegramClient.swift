@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import AVFoundation
 import Combine
 import TDLibKit
@@ -811,7 +812,15 @@ final class TelegramClient: ObservableObject {
                         fromId = fresh.map(\.id).min() ?? fromId
                     }
                 }
-                self.store.setHistory(chatId: chatId, messages: collected)
+                // Preparation stays off the main thread: only the ready array is
+                // handed back for a single @Published assignment.
+                let raw = collected
+                let prepared = await Task.detached(priority: .userInitiated) {
+                    raw.sorted { $0.id < $1.id }
+                }.value
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    self.store.setHistory(chatId: chatId, messages: prepared)
+                }
                 if reachedStart {
                     self.store.fullyLoadedChats.insert(chatId)
                 }
