@@ -204,6 +204,14 @@ struct SettingsView: View {
                             Text(item.title).tag(item.code)
                         }
                     }
+                    if autoTranslation.mode != .disabled {
+                        Button {
+                            AutoTranslationManager.shared.requestLanguagePreparation()
+                            activateTranslationSheet()
+                        } label: {
+                            Label(L10n.t("Settings.ActivateTranslator"), systemImage: "arrow.down.circle")
+                        }
+                    }
                     Toggle(L10n.t("Settings.GhostStories"), isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }
