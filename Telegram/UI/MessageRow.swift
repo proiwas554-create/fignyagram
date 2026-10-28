@@ -979,7 +979,12 @@ extension MessageRow: Equatable {
     /// Closures are intentionally ignored: they only capture the message and
     /// mutate the same parent state, so equal messages render identically.
     static func == (lhs: MessageRow, rhs: MessageRow) -> Bool {
-        lhs.message == rhs.message &&
+        // Only visual inputs. Background metadata (views, edits counters, file
+        // progress, online/ghost flags) must never invalidate a visible row.
+        lhs.message.id == rhs.message.id &&
+        lhs.message.content == rhs.message.content &&
+        lhs.message.isOutgoing == rhs.message.isOutgoing &&
+        lhs.message.interactionInfo?.reactions == rhs.message.interactionInfo?.reactions &&
         lhs.showSender == rhs.showSender &&
         lhs.isRead == rhs.isRead &&
         lhs.senderName == rhs.senderName &&

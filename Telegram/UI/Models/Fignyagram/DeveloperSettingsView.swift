@@ -110,7 +110,7 @@ struct DeveloperSettingsView: View {
                     }
                 }
 
-                Section("TDLib") {
+                Section(L10n.t("Dev.TDLib")) {
                     Stepper("Log verbosity: \(Int(verbosity))", value: $verbosity, in: 0...5)
                     Button(L10n.t("Dev.ApplyLogLevel")) {
                         client.setLogVerbosity(Int(verbosity))

@@ -855,7 +855,16 @@ struct ChatRow: View {
 
 extension ChatRow: Equatable {
     static func == (lhs: ChatRow, rhs: ChatRow) -> Bool {
-        lhs.chat == rhs.chat && lhs.actionText == rhs.actionText &&
+        // Flat visual identity only: positions/unread counters/typing metadata in
+        // the full Chat object must not trigger a redraw of a visible row.
+        lhs.chat.id == rhs.chat.id &&
+        lhs.chat.title == rhs.chat.title &&
+        lhs.chat.lastMessage?.id == rhs.chat.lastMessage?.id &&
+        lhs.chat.lastMessage?.content == rhs.chat.lastMessage?.content &&
+        lhs.chat.lastMessage?.date == rhs.chat.lastMessage?.date &&
+        lhs.chat.unreadCount == rhs.chat.unreadCount &&
+        lhs.chat.photo == rhs.chat.photo &&
+        lhs.actionText == rhs.actionText &&
         lhs.senderName == rhs.senderName && lhs.isPinned == rhs.isPinned &&
         lhs.hidesLastMessage == rhs.hidesLastMessage && lhs.isRecent == rhs.isRecent &&
         lhs.isSaved == rhs.isSaved && lhs.isLastOpened == rhs.isLastOpened &&
