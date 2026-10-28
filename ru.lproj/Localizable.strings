@@ -1959,3 +1959,12 @@
 "Presence.Recently" = "был(а) недавно";
 "Presence.LastWeek" = "был(а) на этой неделе";
 "Presence.LastMonth" = "был(а) в этом месяце";
+"SettingsGen.b7c2b56cfe" = "Автоответ: \\(rule.keyword)";
+"SettingsGen.c033600274" = "чат: \\(rule.chatId.map(String.init) ?? ";
+"SettingsGen.764ef6f472" = "Создан профиль \\(slot.title) — войдите в него";
+"SettingsGen.6756ba47ab" = "Потоки";
+"SettingsGen.ed8153d3d3" = "Чатов";
+"SettingsGen.a00ecc5d26" = "Пользователей";
+"SettingsGen.f2c288a224" = "Невидимка: \\(invisible ? ";
+"SettingsGen.4cb240abc8" = "). Удалённые: \\(privacy.keepDeletedMessages ? ";
+"SettingsGen.8a2442ab77" = "). Кэш: \\(MessageFormatter.fileSize(cache.totalBytes)).";
