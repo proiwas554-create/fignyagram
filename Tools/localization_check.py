@@ -31,4 +31,6 @@ for lang in ["ru", "en", "es", "de", "zh"]:
     for key in missing[:12]:
         print(f"   - {key}")
 print("total gaps:", missing_total)
+if missing_total == 0:
+    print("ПОЛНАЯ ЛОКАЛИЗАЦИЯ ИНТЕРФЕЙСА ЗАВЕРШЕНА")
 sys.exit(0 if missing_total == 0 else 1)

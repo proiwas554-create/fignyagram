@@ -1532,3 +1532,7 @@
 "AutoT.c52b4c5cbc" = "Чат";
 "AutoT.507d9e0c15" = "Открепить";
 "AutoT.f5f8df901c" = "Закрепить";
+"Settings.RecentContactsHint" = "Недавние контакты показываются в истории поиска в списке чатов.";
+"Dev.DecodeThreads" = "Потоков декодирования: %@";
+"Music.SendCount" = "Отправить %@";
+"Music.SleepTimerRemaining" = "Таймер сна (%@)";

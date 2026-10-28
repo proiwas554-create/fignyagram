@@ -53,7 +53,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Fignyagram")
                 } footer: {
-                    Text("Недавние контакты показываются в истории поиска (\(Image(systemName: "clock.arrow.circlepath")) в списке чатов).")
+                    Text(L10n.t("Settings.RecentContactsHint"))
                         .font(.appFootnote)
                 }
 

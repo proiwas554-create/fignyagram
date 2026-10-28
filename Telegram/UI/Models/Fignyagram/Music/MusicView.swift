@@ -392,7 +392,7 @@ struct MusicView: View {
                 Button {
                     showForwardPicker = true
                 } label: {
-                    Label("Отправить \(selectedTrackIDs.count)", systemImage: "paperplane")
+                    Label(String(format: L10n.t("Music.SendCount"), selectedTrackIDs.count), systemImage: "paperplane")
                 }
                 .disabled(selectedTrackIDs.isEmpty)
             } else {

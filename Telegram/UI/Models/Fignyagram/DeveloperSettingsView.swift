@@ -88,7 +88,7 @@ struct DeveloperSettingsView: View {
                         get: { UserDefaults.standard.object(forKey: "renderBatchingEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "renderBatchingEnabled") }
                     ))
-                    Stepper("Потоков декодирования: \(decodeConcurrency)", value: $decodeConcurrency, in: 1...4)
+                    Stepper(String(format: L10n.t("Dev.DecodeThreads"), decodeConcurrency), value: $decodeConcurrency, in: 1...4)
                         .onChange(of: decodeConcurrency) { value in
                             ImageCache.setDecodeConcurrency(value)
                         }
