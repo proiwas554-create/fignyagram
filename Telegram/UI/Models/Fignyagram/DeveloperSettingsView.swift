@@ -117,8 +117,8 @@ struct DeveloperSettingsView: View {
                     }
                 }
 
-                Section("Служебное") {
-                    NavigationLink("Автоматизация (макросы)") {
+                Section(L10n.t("Settings.Developer.Terminal")) {
+                    NavigationLink(L10n.t("Settings.Automation.Macros")) {
                         MacroSettingsView()
                     }
                     Button("Очистить весь кэш", role: .destructive) {

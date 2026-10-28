@@ -137,7 +137,7 @@ struct SettingsView: View {
                     row("Память и кэш", icon: "externaldrive", value: .cache)
                     row("Ограничения отображения", icon: "slider.horizontal.3", value: .limits)
                     row("Оптимизация", icon: "bolt.batteryblock", value: .optimization)
-                    row("Производительность и нагрев", icon: "cpu", value: .hardware)
+                    row(L10n.t("Settings.Performance.Profile"), icon: "cpu", value: .hardware)
                 }
 
                 Section {
@@ -161,7 +161,7 @@ struct SettingsView: View {
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
-                    Picker(L10n.t("Settings.AutoFile"), selection: $autoTextFileThreshold) {
+                    Picker(L10n.t("Settings.SendTextAsFile"), selection: $autoTextFileThreshold) {
                         Text(L10n.t("Common.Never")).tag(0)
                         Text(L10n.string("2000 символов", "2000 characters")).tag(2000)
                         Text(L10n.string("4000 символов", "4000 characters")).tag(4000)
@@ -169,16 +169,16 @@ struct SettingsView: View {
                     NavigationLink(L10n.t("Settings.QuickReplies")) {
                         SnippetsSettingsView()
                     }
-                    NavigationLink(L10n.t("Settings.Profiles")) {
+                    NavigationLink(L10n.t("Settings.ProfilesAndPin")) {
                         ProfilesSecurityView()
                     }
                     Button {
                         GuestMode.shared.enter()
                     } label: {
-                        Label(L10n.t("Settings.GuestMode"), systemImage: "theatermasks")
+                        Label(L10n.t("Settings.EnterGuestMode"), systemImage: "theatermasks")
                     }
-                    Toggle(L10n.t("Settings.Tabs.Music"), isOn: $showMusicTab)
-                    Toggle(L10n.t("Settings.Tabs.News"), isOn: $showNewsTab)
+                    Toggle(L10n.t("Settings.MusicTab"), isOn: $showMusicTab)
+                    Toggle(L10n.t("Settings.NewsTab"), isOn: $showNewsTab)
                     Picker(L10n.t("Translation.Mode"), selection: Binding(
                         get: { autoTranslation.mode },
                         set: { value in
@@ -191,7 +191,7 @@ struct SettingsView: View {
                         }
                     }
                     .disabled(!autoTranslation.isSupported)
-                    Picker(L10n.t("Settings.Translate.Language"), selection: Binding(
+                    Picker(L10n.t("Settings.TranslationLanguage"), selection: Binding(
                         get: { autoTranslation.targetLanguage },
                         set: { value in
                             autoTranslation.setTargetLanguage(value)
@@ -300,7 +300,7 @@ struct SettingsView: View {
         .navigationViewStyle(.stack)
     }
 
-    private func row(_ title: LocalizedStringKey, icon: String, value: SettingsDestination) -> some View {
+    private func row(_ title: String, icon: String, value: SettingsDestination) -> some View {
         Button {
             destination = value
         } label: {

@@ -74,7 +74,7 @@ final class CacheManager: ObservableObject {
             let stat = groups[key] ?? (0, 0)
             return Category(id: key, title: title, icon: icon, bytes: stat.bytes, count: stat.count)
         }
-        categories.append(Category(id: "feed", title: "Кэш ленты новостей",
+        categories.append(Category(id: "feed", title: L10n.t("Settings.Cache.NewsFeed"),
                                    icon: "newspaper",
                                    bytes: 0,
                                    count: NewsFeedDataManager.shared.posts.count))

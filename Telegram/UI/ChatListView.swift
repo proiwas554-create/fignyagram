@@ -754,6 +754,20 @@ struct ChatTarget: Identifiable, Equatable {
     var id: String { "\(chatId)-\(messageId ?? 0)" }
 }
 
+/// Reactive chat title: shows the cached translation and requests it on appear.
+struct TranslatedChatTitle: View {
+    @StateObject private var model: ChatRowViewModel
+
+    init(chatId: Int64, title: String) {
+        _model = StateObject(wrappedValue: ChatRowViewModel(chatId: chatId, title: title))
+    }
+
+    var body: some View {
+        Text(model.translatedTitle)
+            .onAppear { model.start() }
+    }
+}
+
 struct ChatRow: View {
     let chat: ChatItem
     let actionText: String?
@@ -773,7 +787,9 @@ struct ChatRow: View {
                 HStack(spacing: 4) {
                     if chat.isChannel { Image(systemName: "megaphone.fill").font(.appCaption).foregroundColor(.secondary) }
                     else if chat.isGroup { Image(systemName: "person.2.fill").font(.appCaption).foregroundColor(.secondary) }
-                    Text(chat.title).font(.appHeadline).lineLimit(1)
+                    TranslatedChatTitle(chatId: chat.id, title: chat.title)
+                        .font(.appHeadline)
+                        .lineLimit(1)
                     if isSaved {
                         Text("Избранное").font(.appCaption2.bold()).padding(.horizontal, 5)
                             .background(Capsule().fill(Color.accentColor.opacity(0.16)))
