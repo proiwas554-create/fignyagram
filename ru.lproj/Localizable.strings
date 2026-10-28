@@ -1937,3 +1937,6 @@
 "Generated.3529334f9b10" = "Профиль скрыт за ложным PIN";
 "Generated.7acaf374c44f" = "Удалить";
 "Generated.cb003fa740a4" = "Профиль удалён";
+"Feed.Tab.Added" = "Добавленные";
+"Feed.Tab.ForYou" = "Для вас";
+"Feed.Tab.Important" = "Важное";

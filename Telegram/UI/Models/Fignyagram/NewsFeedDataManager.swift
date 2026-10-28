@@ -39,9 +39,18 @@ struct NewsFeedPost: Identifiable, Equatable {
 @MainActor
 final class NewsFeedDataManager: ObservableObject {
     enum Tab: String, CaseIterable {
-        case added = "Добавленные"
-        case forYou = "Для вас"
-        case important = "Важное"
+        case added
+        case forYou
+        case important
+
+        /// Localized tab title; the case itself is the stable identifier.
+        var title: String {
+            switch self {
+            case .added: return L10n.t("Feed.Tab.Added")
+            case .forYou: return L10n.t("Feed.Tab.ForYou")
+            case .important: return L10n.t("Feed.Tab.Important")
+            }
+        }
     }
 
     enum Sorting {
@@ -260,7 +269,7 @@ struct NewsFeedView: View {
             VStack(spacing: 0) {
                 Picker("", selection: $tab) {
                     ForEach(NewsFeedDataManager.Tab.allCases, id: \.self) { item in
-                        Text(item.rawValue).tag(item)
+                        Text(item.title).tag(item)
                     }
                 }
                 .pickerStyle(.segmented)
