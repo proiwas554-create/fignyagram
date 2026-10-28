@@ -164,7 +164,7 @@ struct PINRouterView: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 42))
                 .foregroundColor(.secondary)
-            Text(L10n.string("Введите код-пароль", "Enter passcode"))
+            Text(NSLocalizedString("Profiles.Passcode", comment: ""))
                 .font(.title3.bold())
             SecureField("PIN", text: $pin)
                 .keyboardType(.numberPad)
@@ -177,13 +177,13 @@ struct PINRouterView: View {
             if let error {
                 Text(error).font(.appFootnote).foregroundColor(.red)
             }
-            Button(L10n.string("Открыть", "Open")) {
+            Button(NSLocalizedString("Common.Open", comment: "")) {
                 let entered = pin
                 pin = ""
                 Task {
                     let destination = await router.unlock(pin: entered)
                     if destination == .invalid {
-                        error = L10n.string("Неверный код", "Wrong passcode")
+                        error = NSLocalizedString("Profiles.Wrong", comment: "")
                     } else {
                         error = nil
                     }
@@ -239,7 +239,7 @@ struct ProfilesSecurityView: View {
             }
 
             Section(L10n.string("Профили (контейнеры TDLib)", "Profiles (TDLib containers)")) {
-                Button(L10n.string("Добавить профиль", "Add profile")) {
+                Button(NSLocalizedString("Profiles.Add", comment: "")) {
                     guard accounts.accounts.count < 10 else { status = "Максимум 10 профилей"; return }
                     let slot = accounts.addAccount()
                     status = "Создан профиль \(slot.title) — войдите в него"
@@ -260,12 +260,12 @@ struct ProfilesSecurityView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                         HStack(spacing: 12) {
-                            Button(L10n.string("Сделать секретным", "Mark as secret")) {
+                            Button(NSLocalizedString("Profiles.Secret", comment: "")) {
                                 manager.setSecret(account.id, isSecret: true)
                                 status = "Профиль скрыт за ложным PIN"
                             }
                             .font(.appCaption)
-                            Button(L10n.string("Открыть", "Open")) {
+                            Button(NSLocalizedString("Common.Open", comment: "")) {
                                 Task { await manager.activate(id: account.id) }
                             }
                             .font(.appCaption)
@@ -290,7 +290,7 @@ struct ProfilesSecurityView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle(L10n.string("Профили и PIN", "Profiles & PIN"))
+        .navigationTitle(NSLocalizedString("Profiles.Title", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

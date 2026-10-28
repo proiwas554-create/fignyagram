@@ -123,18 +123,18 @@ struct MacroSettingsView: View {
 
     var body: some View {
         Form {
-            Section(L10n.string("Новое правило", "New rule")) {
-                TextField(L10n.string("Слово в сообщении", "Keyword"), text: $keyword)
+            Section(NSLocalizedString("Macros.New", comment: "")) {
+                TextField(NSLocalizedString("Macros.Keyword", comment: ""), text: $keyword)
                     .textInputAutocapitalization(.never)
-                TextField(L10n.string("ID чата (пусто = любой)", "Chat ID (empty = any)"), text: $chatIdText)
+                TextField(NSLocalizedString("Macros.ChatId", comment: ""), text: $chatIdText)
                     .keyboardType(.numberPad)
-                Picker(L10n.string("Действие", "Action"), selection: $action) {
+                Picker(NSLocalizedString("Macros.Action", comment: ""), selection: $action) {
                     ForEach(AutomationEngine.Rule.Action.allCases, id: \.self) { item in
                         Text(item.title).tag(item)
                     }
                 }
                 if action == .sendSnippet {
-                    TextField(L10n.string("Текст автоответа", "Auto-reply text"), text: $value)
+                    TextField(NSLocalizedString("Macros.Reply", comment: ""), text: $value)
                 }
                 Button("Добавить") {
                     let chatId = Int64(chatIdText.trimmingCharacters(in: .whitespaces))
@@ -146,9 +146,9 @@ struct MacroSettingsView: View {
                 .disabled(keyword.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
-            Section(L10n.string("Правила", "Rules")) {
+            Section(NSLocalizedString("Macros.Rules", comment: "")) {
                 if engine.rules.isEmpty {
-                    Text(L10n.string("Пока нет макросов", "No macros yet")).foregroundColor(.secondary)
+                    Text(NSLocalizedString("Macros.Empty", comment: "")).foregroundColor(.secondary)
                 }
                 ForEach(Array(engine.rules.enumerated()), id: \.element.id) { index, rule in
                     VStack(alignment: .leading, spacing: 4) {
@@ -176,7 +176,7 @@ struct MacroSettingsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle(L10n.string("Автоматизация", "Automation"))
+        .navigationTitle(NSLocalizedString("Macros.Title", comment: ""))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -372,23 +372,23 @@ struct NewsFeedFiltersView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Скрывать посты со словами") {
+                Section(NSLocalizedString("Feed.StopWords", comment: "")) {
                     TextEditor(text: $stopWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
                 }
-                Section("Важное: показывать только со словами") {
+                Section(NSLocalizedString("Feed.ImportantWords", comment: "")) {
                     TextEditor(text: $importantWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
                 }
                 Section {
-                    Text("Слова указываются через запятую, регистр не важен. Пустой список «Важное» скрывает вкладку.")
+                    Text(NSLocalizedString("Feed.FiltersHint", comment: ""))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Фильтры ленты")
+            .navigationTitle(NSLocalizedString("Feed.Filters", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

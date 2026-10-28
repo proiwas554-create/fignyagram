@@ -56,16 +56,16 @@ struct GuestModeView: View {
             Image(systemName: "person.crop.circle.badge.questionmark")
                 .font(.system(size: 52))
                 .foregroundColor(.secondary)
-            Text(L10n.string("Добро пожаловать", "Welcome"))
+            Text(NSLocalizedString("Guest.Welcome", comment: ""))
                 .font(.title3.bold())
-            Text(L10n.string("В этом профиле пока нет данных.", "This profile has no data yet."))
+            Text(NSLocalizedString("Guest.Empty", comment: ""))
                 .font(.appFootnote)
                 .foregroundColor(.secondary)
             Spacer()
             Button {
                 Task { await guest.requestExit() }
             } label: {
-                Text(L10n.string("Разблокировать профиль", "Unlock profile"))
+                Text(NSLocalizedString("Guest.Unlock", comment: ""))
                     .font(.appFootnote)
             }
             .padding(.bottom, 30)

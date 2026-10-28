@@ -86,6 +86,9 @@
 		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
 		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
 		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
+		AABBCCDD00000000000000E4 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AABBCCDD00000000000000E5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		AABBCCDD00000000000000E6 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -261,6 +264,9 @@
 				en,
 				Base,
 				ru,
+				es,
+				de,
+				zh,
 			);
 			mainGroup = 8480856C308210CA00D269FE;
 			minimizedProjectReferenceProxies = 1;
@@ -334,6 +340,9 @@
 			children = (
 				AABBCCDD00000000000000E2 /* en */,
 				AABBCCDD00000000000000E3 /* ru */,
+				AABBCCDD00000000000000E4 /* es */,
+				AABBCCDD00000000000000E5 /* de */,
+				AABBCCDD00000000000000E6 /* zh */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

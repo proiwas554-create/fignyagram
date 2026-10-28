@@ -59,26 +59,11 @@ struct SettingsView: View {
                         get: { UserDefaults.standard.object(forKey: "textSelectionEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "textSelectionEnabled") }
                     ))
-                    Toggle("Переводить интерфейс на английский", isOn: Binding(
-                        get: { translation.isEnabled },
-                        set: { value in
-                            UserDefaults.standard.set(true, forKey: "translationUserOverride")
-                            translation.isEnabled = value
-                            if value { translation.autoTranslateMessages = true }
-                        }
-                    ))
-                    Toggle("Переводить сообщения", isOn: Binding(
-                        get: { translation.autoTranslateMessages },
-                        set: { value in
-                            UserDefaults.standard.set(true, forKey: "translationUserOverride")
-                            translation.autoTranslateMessages = value
-                        }
-                    ))
                     row("Шрифт", icon: "textformat", value: .fonts)
                 } header: {
                     Text("Оформление")
                 } footer: {
-                    Text("Перевод интерфейса выполняется локальными строками приложения. Перевод сообщений использует онлайн-сервис MyMemory и требует интернет.")
+                    Text("Интерфейс переводится системной локализацией iOS. Сообщения переводятся на устройстве через Apple Translation — без интернета и без сторонних сервисов.")
                         .font(.appFootnote)
                 }
 
@@ -172,36 +157,36 @@ struct SettingsView: View {
                             }
                         }
                     ))
-                    Toggle(L10n.string("Блокировать скриншоты и запись экрана", "Block screenshots and screen recording"), isOn: Binding(
+                    Toggle(NSLocalizedString("Settings.BlockShots", comment: ""), isOn: Binding(
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
-                    Picker(L10n.string("Текст файлом длиннее", "Send text as file when longer than"), selection: $autoTextFileThreshold) {
-                        Text(L10n.string("Никогда", "Never")).tag(0)
+                    Picker(NSLocalizedString("Settings.AutoFile", comment: ""), selection: $autoTextFileThreshold) {
+                        Text(NSLocalizedString("Common.Never", comment: "")).tag(0)
                         Text(L10n.string("2000 символов", "2000 characters")).tag(2000)
                         Text(L10n.string("4000 символов", "4000 characters")).tag(4000)
                     }
-                    NavigationLink(L10n.string("Быстрые шаблоны", "Quick replies")) {
+                    NavigationLink(NSLocalizedString("Settings.QuickReplies", comment: "")) {
                         SnippetsSettingsView()
                     }
-                    NavigationLink(L10n.string("Профили и PIN (двойное дно)", "Profiles & PIN (duress)")) {
+                    NavigationLink(NSLocalizedString("Settings.Profiles", comment: "")) {
                         ProfilesSecurityView()
                     }
                     Button {
                         GuestMode.shared.enter()
                     } label: {
-                        Label(L10n.string("Активировать гостевой режим (двойное дно)", "Enter guest mode (duress)"), systemImage: "theatermasks")
+                        Label(NSLocalizedString("Settings.GuestMode", comment: ""), systemImage: "theatermasks")
                     }
-                    Toggle(L10n.string("Вкладка «Музыка» в нижнем баре", "Music tab in the bottom bar"), isOn: $showMusicTab)
-                    Toggle(L10n.string("Вкладка «Новости» в нижнем баре", "News tab in the bottom bar"), isOn: $showNewsTab)
-                    Toggle(L10n.string("Автоперевод сообщений (на устройстве)", "Auto-translate messages (on device)"), isOn: Binding(
+                    Toggle(NSLocalizedString("Settings.Tabs.Music", comment: ""), isOn: $showMusicTab)
+                    Toggle(NSLocalizedString("Settings.Tabs.News", comment: ""), isOn: $showNewsTab)
+                    Toggle(NSLocalizedString("Settings.Translate.Title", comment: ""), isOn: Binding(
                         get: { autoTranslation.isEnabled },
                         set: { value in
                             autoTranslation.isEnabled = value && autoTranslation.isSupported
                         }
                     ))
                     .disabled(!autoTranslation.isSupported)
-                    Picker(L10n.string("Язык перевода", "Translation language"), selection: Binding(
+                    Picker(NSLocalizedString("Settings.Translate.Language", comment: ""), selection: Binding(
                         get: { autoTranslation.targetLanguage },
                         set: { autoTranslation.targetLanguage = $0 }
                     )) {
@@ -209,11 +194,11 @@ struct SettingsView: View {
                             Text(item.title).tag(item.code)
                         }
                     }
-                    Toggle(L10n.string("Невидимый просмотр историй", "Ghost story views"), isOn: Binding(
+                    Toggle(NSLocalizedString("Settings.GhostStories", comment: ""), isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }
                     ))
-                    Toggle(L10n.string("Игнорировать запрет копирования", "Ignore copy protection"), isOn: Binding(
+                    Toggle(NSLocalizedString("Settings.IgnoreCopy", comment: ""), isOn: Binding(
                         get: { privacy.ignoreCopyProtection },
                         set: { privacy.ignoreCopyProtection = $0 }
                     ))

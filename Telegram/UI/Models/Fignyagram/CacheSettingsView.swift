@@ -23,11 +23,11 @@ struct CacheSettingsView: View {
                 }
 
                 Section {
-                    Picker("Автоочистка при превышении", selection: Binding(
+                    Picker(NSLocalizedString("Cache.AutoClean", comment: ""), selection: Binding(
                         get: { UserDefaults.standard.integer(forKey: "autoCleanCacheLimitMB") },
                         set: { UserDefaults.standard.set($0, forKey: "autoCleanCacheLimitMB") }
                     )) {
-                        Text("Выключена").tag(0)
+                        Text(NSLocalizedString("Cache.AutoCleanOff", comment: "")).tag(0)
                         Text("500 МБ").tag(500)
                         Text("1 ГБ").tag(1024)
                         Text("2 ГБ").tag(2048)
