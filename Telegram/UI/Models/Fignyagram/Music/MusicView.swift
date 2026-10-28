@@ -219,7 +219,7 @@ struct MusicView: View {
                 Button(L10n.t("Auto.771287d667")) { startImport(toMain: false) }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Все аудио из «\(pendingImportTitle)» будут скачаны в приложение.")
+                Text(String(format: L10n.t("AutoI.ba1703efad"), String(describing: pendingImportTitle)))
             }
             .overlay { importOverlay }
             .overlay(alignment: .top) { errorOverlay }

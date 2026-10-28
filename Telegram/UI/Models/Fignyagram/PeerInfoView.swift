@@ -94,7 +94,7 @@ struct PeerInfoView: View {
                             }
 
                             if let count = info.memberCount {
-                                Text("\(count) участников")
+                                Text(String(format: L10n.t("AutoI.82e6a2dead"), String(describing: count)))
                                     .font(.appFootnote)
                                     .foregroundColor(.secondary)
                             }

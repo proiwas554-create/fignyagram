@@ -652,7 +652,7 @@ struct ChatView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.up")
-                            Text("Показать ещё \(min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count))")
+                            Text(String(format: L10n.t("AutoI.2719f28771"), ))
                         }
                         .font(.appFootnote)
                     }

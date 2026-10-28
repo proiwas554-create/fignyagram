@@ -216,7 +216,7 @@ struct AuthView: View {
     private func codeForm(_ info: TDLibKit.AuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
             Text(L10n.t("Auto.3c41d442de")).font(.appHeadline)
-            Text("\(Self.codeDestination(info.type)) на номер \(info.phoneNumber)")
+            Text(String(format: L10n.t("AutoI.1ff4cb5e19"), String(describing: info.phoneNumber)))
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
             TextField(L10n.t("Auto.3f34a617ce"), text: $code)
                 .textFieldStyle(.roundedBorder)
@@ -231,7 +231,7 @@ struct AuthView: View {
             .disabled(code.isEmpty || client.isBusy)
 
             if let next = info.nextType {
-                Button("Отправить код \(Self.codeDestination(next).lowercased())") { client.resendCode() }
+                Button(String(format: L10n.t("AutoI.025becfb75"), )) { client.resendCode() }
                     .disabled(client.isBusy)
             }
             Button(L10n.t("Auto.e74fdbe75f")) { editingPhone = true }
@@ -261,7 +261,7 @@ struct AuthView: View {
     private func emailCodeForm(_ info: TDLibKit.EmailAddressAuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
             Text(L10n.t("Auto.0e6ee45cf3")).font(.appHeadline)
-            Text("Отправлен на \(info.emailAddressPattern)")
+            Text(String(format: L10n.t("AutoI.d59688cd95"), String(describing: info.emailAddressPattern)))
                 .font(.appFootnote).foregroundColor(.secondary)
             TextField(L10n.t("Auto.3f34a617ce"), text: $emailCode)
                 .textFieldStyle(.roundedBorder)

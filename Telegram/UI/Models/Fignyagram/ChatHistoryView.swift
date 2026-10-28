@@ -30,7 +30,7 @@ struct ChatHistoryView: View {
                                             .font(.subheadline.bold())
                                             .foregroundColor(.primary)
                                             .lineLimit(1)
-                                        Text("Заходов: \(visit.visits) · \(dateText(visit.lastVisited))")
+                                        Text(String(format: L10n.t("AutoI.0c8cd78c7b"), String(describing: visit.visits)))
                                             .font(.appCaption)
                                             .foregroundColor(.secondary)
                                     }

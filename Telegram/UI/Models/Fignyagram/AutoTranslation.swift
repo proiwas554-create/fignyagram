@@ -66,6 +66,7 @@ final class AutoTranslationSettings: ObservableObject {
     func setTargetLanguage(_ value: String) {
         targetLanguage = value
         UserDefaults.standard.set(value, forKey: Keys.language)
+        AutoTranslationManager.shared.resetPackCache()
     }
 
     func reloadFromDefaults() {
@@ -156,6 +157,7 @@ final class AutoTranslationManager: ObservableObject {
     var pendingPreparation = false
     private var preparedLanguages: Set<String> = []
     private var packStatus: [String: Bool] = [:]
+    private var packCheckedAt: [String: Foundation.Date] = [:]
     private var packChecks: Set<String> = []
 
     private init() {
@@ -175,9 +177,9 @@ final class AutoTranslationManager: ObservableObject {
     /// The session is therefore never started for a missing pack from a chat.
     private func enqueue(request: Request, target: String) {
         if let installed = packStatus[target] {
-            guard installed else { return }
-            commit(request)
-            return
+            if installed { commit(request); return }
+            let last = packCheckedAt[target]
+            if let last, Foundation.Date().timeIntervalSince(last) < 45 { return }
         }
         guard !packChecks.contains(target) else { return }
         packChecks.insert(target)
@@ -187,6 +189,7 @@ final class AutoTranslationManager: ObservableObject {
             let installed = await Self.isPackInstalled(text: request.text, target: target)
             await MainActor.run {
                 self.packStatus[target] = installed
+                self.packCheckedAt[target] = Foundation.Date()
                 self.packChecks.remove(target)
                 if installed {
                     self.commit(request)
@@ -251,6 +254,10 @@ final class AutoTranslationManager: ObservableObject {
         guard AutoTranslationSettings.shared.isSupported else { return }
         // Settings screen only: attaches the session so the user can download
         // the pack through Apple's own sheet. Chats never call this.
+        let target = AutoTranslationSettings.shared.targetLanguage
+        packStatus.removeValue(forKey: target)
+        packCheckedAt.removeValue(forKey: target)
+        packChecks.remove(target)
         pendingPreparation = true
         requestGeneration += 1
         attachHostIfNeeded()
@@ -265,6 +272,13 @@ final class AutoTranslationManager: ObservableObject {
         }
         if let message { requestIfNeeded(message: message, text: text, role: role) }
         return text
+    }
+
+    func resetPackCache() {
+        packStatus.removeAll()
+        packCheckedAt.removeAll()
+        packChecks.removeAll()
+        CallDiag.log("translation pack cache reset")
     }
 
     func purgePending() {

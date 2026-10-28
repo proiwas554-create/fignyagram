@@ -46,7 +46,7 @@ struct CacheSettingsView: View {
                                 .frame(width: 26)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(category.title)
-                                Text("\(category.count) файлов")
+                                Text(String(format: L10n.t("AutoI.4171bb73a1"), String(describing: category.count)))
                                     .font(.appCaption)
                                     .foregroundColor(.secondary)
                             }

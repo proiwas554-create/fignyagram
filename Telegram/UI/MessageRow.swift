@@ -257,7 +257,7 @@ struct MessageRow: View {
                 }
             }
             if let forwardedFrom, !hideSenderNames {
-                Text("Переслано от \(forwardedFrom)")
+                Text(String(format: L10n.t("AutoI.c78f17d761"), String(describing: forwardedFrom)))
                     .font(.appCaption2).italic().opacity(0.85)
             }
             replyHeader
@@ -566,7 +566,7 @@ struct PollMessageView: View {
             }
 
             HStack(spacing: 8) {
-                Text("\(poll.totalVoterCount) голосов")
+                Text(String(format: L10n.t("AutoI.e45eafa8aa"), String(describing: poll.totalVoterCount)))
                 if poll.isAnonymous { Text(L10n.t("Auto.e0502502c5")) }
                 if poll.isClosed { Text(L10n.t("Auto.1c4ad3217f")) }
                 if let reason = poll.voteRestrictionReason {
@@ -693,7 +693,7 @@ struct SpoilerTextView: View {
                 Text(preview)
                     .modifier(SelectableTextModifier())
                     .fixedSize(horizontal: false, vertical: true)
-                Text("… ещё \(formatted.text.count - Self.inlineLimit) символов")
+                Text(String(format: L10n.t("AutoI.9291dbebab"), String(describing: formatted.text.count - Self.inlineLimit)))
                     .font(.appCaption)
                     .foregroundColor(.secondary)
                 Button(L10n.t("Auto.94225430c8")) { showFullText = true }

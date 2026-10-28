@@ -75,7 +75,7 @@ struct CloudPasswordView: View {
                     .foregroundColor(state.hasPassword ? .green : .secondary)
             }
             if state.hasPassword, !state.passwordHint.isEmpty {
-                Text("Подсказка: \(state.passwordHint)")
+                Text(String(format: L10n.t("AutoI.b2c131d71b"), String(describing: state.passwordHint)))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
             }
@@ -140,7 +140,7 @@ struct CloudPasswordView: View {
                         }
                     }
                 } else {
-                    Text("Код отправлен на \(resetEmailPattern)")
+                    Text(String(format: L10n.t("AutoI.233e9cd9ed"), String(describing: resetEmailPattern)))
                         .font(.appFootnote)
                     TextField(L10n.t("Auto.0e6ee45cf3"), text: $resetCode)
                         .keyboardType(.numberPad)

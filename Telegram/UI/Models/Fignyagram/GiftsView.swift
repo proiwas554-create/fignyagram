@@ -53,11 +53,11 @@ struct GiftsView: View {
                 titleVisibility: .visible
             ) {
                 if let gift = confirmGift {
-                    Button("Отправить за \(gift.gift.starCount) ⭐") { send(gift) }
+                    Button(String(format: L10n.t("AutoI.d253ba767e"), String(describing: gift.gift.starCount))) { send(gift) }
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) { confirmGift = nil }
             } message: {
-                Text("Подарок будет отправлен в «\(title)» и спишет звёзды с баланса.")
+                Text(String(format: L10n.t("AutoI.9c76e03101"), String(describing: title)))
             }
             .alert(L10n.t("Auto.c484149947"), isPresented: Binding(
                 get: { message != nil }, set: { if !$0 { message = nil } }
