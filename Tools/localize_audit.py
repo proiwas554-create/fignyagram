@@ -23,7 +23,7 @@ MAP = {
 CALLS = r'(Text|Label|Button|Section|Toggle|Picker|navigationTitle|alert|confirmationDialog|TextField)'
 pattern = re.compile(CALLS + r'\(\s*"([^"\\]+)"')
 
-def audit():
+def audit(deep=False):
     count = 0
     for path in SWIFT:
         text = path.read_text()
@@ -31,6 +31,9 @@ def audit():
             value = m.group(2)
             if re.search(r'[А-Яа-яЁё]', value):
                 count += 1
+                if deep:
+                    line = text[:m.start()].count("\n") + 1
+                    print(f"{path.relative_to(ROOT)}:{line}: {m.group(0)}")
     print(f"remaining user-facing Russian literals: {count}")
 
 def apply():
@@ -53,4 +56,4 @@ def apply():
     print(f"wrapped {changed} literals")
 
 if __name__ == "__main__":
-    apply() if "--apply" in sys.argv else audit()
+    apply() if "--apply" in sys.argv else audit(deep="--deep" in sys.argv)

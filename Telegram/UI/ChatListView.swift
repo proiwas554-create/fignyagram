@@ -47,15 +47,17 @@ struct ChatListView: View {
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
 
+    /// Keys are localized at render time; keywords keep RU+EN so search works
+    /// in every language.
     private static let settingsSearchItems: [(String, [String])] = [
-        ("Прокси", ["прокси", "proxy", "сеть"]),
-        ("Настройки", ["настройки", "settings"]),
-        ("Уведомления", ["уведомления", "notification"]),
-        ("Память и кэш", ["кэш", "память", "очистка", "cache"]),
-        ("Оптимизация", ["оптимизация", "батарея", "энергия"]),
-        ("Приватность", ["приватность", "невидимка"]),
-        ("Лимиты отображения", ["лимиты", "limits"]),
-        ("Для разработчиков", ["разработчик", "debug", "терминал"])
+        ("Settings.Row.Proxy", ["прокси", "proxy", "сеть", "network"]),
+        ("Settings.Row.General", ["настройки", "settings"]),
+        ("Settings.Row.Notifications", ["уведомления", "notification"]),
+        ("Settings.Row.Cache", ["кэш", "память", "очистка", "cache", "memory"]),
+        ("Settings.Row.Optimization", ["оптимизация", "батарея", "энергия", "optimization", "battery"]),
+        ("Settings.Row.Privacy", ["приватность", "невидимка", "privacy"]),
+        ("Settings.Row.Limits", ["лимиты", "limits"]),
+        ("Settings.Row.Developer", ["разработчик", "debug", "терминал", "developer", "terminal"])
     ]
 
     private var matchedSettings: [String] {
@@ -169,11 +171,11 @@ struct ChatListView: View {
                             ForEach(matchedSettings, id: \.self) { name in
                                 Button {
                                     switch name {
-                                    case "Прокси": showProxy = true
+                                    case "Settings.Row.Proxy": showProxy = true
                                     default: showSettings = true
                                     }
                                 } label: {
-                                    Label(name, systemImage: "gearshape")
+                                    Label(L10n.t(name), systemImage: "gearshape")
                                 }
                             }
                         }

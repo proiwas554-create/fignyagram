@@ -1536,3 +1536,11 @@
 "Dev.DecodeThreads" = "Потоков декодирования: %@";
 "Music.SendCount" = "Отправить %@";
 "Music.SleepTimerRemaining" = "Таймер сна (%@)";
+"Settings.Row.Proxy" = "Прокси";
+"Settings.Row.General" = "Настройки";
+"Settings.Row.Notifications" = "Уведомления";
+"Settings.Row.Cache" = "Память и кэш";
+"Settings.Row.Optimization" = "优化";
+"Settings.Row.Privacy" = "隐私";
+"Settings.Row.Limits" = "显示限制";
+"Settings.Row.Developer" = "对于开发商";
