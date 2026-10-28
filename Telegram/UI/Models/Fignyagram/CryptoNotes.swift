@@ -96,3 +96,45 @@ struct PassphrasePrompt: View {
         .navigationViewStyle(.stack)
     }
 }
+
+
+/// Manage quick-reply templates.
+struct SnippetsSettingsView: View {
+    @ObservedObject private var store = SnippetsStore.shared
+    @State private var draft = ""
+
+    var body: some View {
+        Form {
+            Section("Новый шаблон") {
+                TextField("Текст быстрого ответа", text: $draft)
+                Button("Добавить") {
+                    store.add(draft)
+                    draft = ""
+                }
+                .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+            Section("Шаблоны") {
+                if store.snippets.isEmpty {
+                    Text("Пока нет шаблонов").foregroundColor(.secondary)
+                }
+                ForEach(store.snippets, id: \.self) { snippet in
+                    Text(snippet)
+                        .swipeActions {
+                            Button(role: .destructive) {
+                                store.remove(snippet)
+                            } label: {
+                                Label("Удалить", systemImage: "trash")
+                            }
+                        }
+                }
+            }
+            Section {
+                Text("Шаблоны доступны по долгому нажатию на поле ввода.")
+                    .font(.appFootnote)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Быстрые шаблоны")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}

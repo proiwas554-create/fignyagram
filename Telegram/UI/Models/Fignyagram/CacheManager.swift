@@ -74,6 +74,10 @@ final class CacheManager: ObservableObject {
             let stat = groups[key] ?? (0, 0)
             return Category(id: key, title: title, icon: icon, bytes: stat.bytes, count: stat.count)
         }
+        categories.append(Category(id: "feed", title: "Кэш ленты новостей",
+                                   icon: "newspaper",
+                                   bytes: 0,
+                                   count: NewsFeedDataManager.shared.posts.count))
         autoCleanIfNeeded()
     }
 
@@ -82,6 +86,8 @@ final class CacheManager: ObservableObject {
         isWorking = true
         Task {
             switch category.id {
+            case "feed":
+                NewsFeedDataManager.shared.clearCachedPosts()
             case "gifs":
                 for gif in GifLibrary.shared.items {
                     GifLibrary.shared.delete(gif)
