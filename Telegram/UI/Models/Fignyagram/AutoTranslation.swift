@@ -135,6 +135,28 @@ final class AutoTranslationManager: ObservableObject {
                                                          role: role)
     }
 
+    /// Manual translation from the message menu: works even when auto mode is
+    /// off, still using the selected target language and the same cache.
+    @discardableResult
+    func requestManual(message: TDLibKit.Message, text: String, role: String = "body") -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return false }
+        let settings = AutoTranslationSettings.shared
+        let key = "\(message.chatId):\(message.id):\(message.editDate):\(role)"
+        guard TranslatedMessageCache.shared.translation(chatId: message.chatId,
+                                                        messageId: message.id,
+                                                        editDate: Int32(message.editDate),
+                                                        language: settings.targetLanguage,
+                                                        role: role) == nil else { return true }
+        guard !inFlight.contains(key) else { return true }
+        inFlight.insert(key)
+        pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
+                               editDate: Int32(message.editDate), text: trimmed, role: role))
+        attachHostIfNeeded()
+        CallDiag.log("manual translation queued: message=\(message.id) target=\(settings.targetLanguage)")
+        return true
+    }
+
     func requestIfNeeded(message: TDLibKit.Message, text: String, role: String = "body") {
         let settings = AutoTranslationSettings.shared
         guard settings.isEnabled, settings.isSupported else { return }
@@ -259,7 +281,7 @@ struct AutoTranslatedMessageText: View {
 
     var body: some View {
         Group {
-            if settings.isEnabled, let translated {
+            if let translated {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(translated)
                         .modifier(SelectableTextModifier())
@@ -277,7 +299,7 @@ struct AutoTranslatedMessageText: View {
             request()
         }
         .onChange(of: settings.isEnabled) { _ in
-            translated = nil
+            translated = manager.translation(for: message, text: formatted.text, role: role)
             request()
         }
         .onChange(of: settings.targetLanguage) { _ in

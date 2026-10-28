@@ -47,6 +47,7 @@ private extension TDLibKit.Message {
 }
 
 struct MessageRow: View {
+
     let message: TDLibKit.Message
     let showSender: Bool
     let isRead: Bool
@@ -845,6 +846,14 @@ struct MessageActionsSheet: View {
                             } label: {
                                 Label(L10n.keyed("Chat.TranslateOnDevice", ru: "Перевести на устройстве", en: "Translate on device"),
                                       systemImage: "lock.shield")
+                            }
+                            if !AutoTranslationSettings.shared.isEnabled {
+                                Button {
+                                    AutoTranslationManager.shared.requestManual(message: message, text: text)
+                                } label: {
+                                    Label("Перевести на " + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
+                                          systemImage: "globe")
+                                }
                             }
                         }
                     }

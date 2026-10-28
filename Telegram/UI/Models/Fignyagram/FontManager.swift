@@ -164,3 +164,20 @@ extension Font {
     static var appCaption: Font { FontManager.shared.font(size: 12) }
     static var appCaption2: Font { FontManager.shared.font(size: 11) }
 }
+
+
+/// Applies the selected font to every screen and rebuilds the tree when the
+/// selection changes, so lists, terminal, player and call menus update at once.
+struct FignyagramFontModifier: ViewModifier {
+    @ObservedObject private var fonts = FontManager.shared
+
+    func body(content: Content) -> some View {
+        content
+            .font(.appBody)
+            .id(fonts.revision)
+    }
+}
+
+extension View {
+    func fignyagramFont() -> some View { modifier(FignyagramFontModifier()) }
+}
