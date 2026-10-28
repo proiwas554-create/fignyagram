@@ -153,7 +153,7 @@ struct MusicView: View {
                 musicToolbar
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Готово") { dismissKeyboard() }
+                    Button(L10n.t("Common.Done")) { dismissKeyboard() }
                 }
             }
             .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
@@ -208,7 +208,7 @@ struct MusicView: View {
                     player.stop()
                     library.deleteAll()
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Будут удалены все треки. Это действие нельзя отменить.")
             }
@@ -219,7 +219,7 @@ struct MusicView: View {
             ) {
                 Button("В основную библиотеку") { startImport(toMain: true) }
                 Button("В отдельную вкладку «Из чатов»") { startImport(toMain: false) }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Все аудио из «\(pendingImportTitle)» будут скачаны в приложение.")
             }
@@ -286,7 +286,7 @@ struct MusicView: View {
                 }
             }
             if searchFocused || !search.isEmpty {
-                Button("Отмена") {
+                Button(L10n.t("Common.Cancel")) {
                     search = ""
                     searchFocused = false
                     dismissKeyboard()
@@ -437,7 +437,7 @@ struct MusicView: View {
                             }
                         }
                         Menu {
-                            Button("Выключен") { SleepTimer.shared.set(minutes: 0) }
+                            Button(L10n.t("Cache.AutoCleanOff")) { SleepTimer.shared.set(minutes: 0) }
                             Button("15 минут") { SleepTimer.shared.set(minutes: 15) }
                             Button("30 минут") { SleepTimer.shared.set(minutes: 30) }
                             Button("60 минут") { SleepTimer.shared.set(minutes: 60) }
@@ -1140,7 +1140,7 @@ struct FullMusicPlayerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if let track = player.current {
