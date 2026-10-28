@@ -22,6 +22,22 @@ struct CacheSettingsView: View {
                         .font(.appFootnote)
                 }
 
+                Section {
+                    Picker("Автоочистка при превышении", selection: Binding(
+                        get: { UserDefaults.standard.integer(forKey: "autoCleanCacheLimitMB") },
+                        set: { UserDefaults.standard.set($0, forKey: "autoCleanCacheLimitMB") }
+                    )) {
+                        Text("Выключена").tag(0)
+                        Text("500 МБ").tag(500)
+                        Text("1 ГБ").tag(1024)
+                        Text("2 ГБ").tag(2048)
+                        Text("5 ГБ").tag(5120)
+                    }
+                } footer: {
+                    Text("При превышении лимита раз в 10 минут очищаются две самые тяжёлые категории. Сообщения и аккаунт не затрагиваются.")
+                        .font(.appFootnote)
+                }
+
                 Section("Категории") {
                     ForEach(cache.categories) { category in
                         HStack(spacing: 12) {
