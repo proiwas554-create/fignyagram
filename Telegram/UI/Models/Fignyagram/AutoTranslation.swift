@@ -34,6 +34,16 @@ final class AutoTranslationSettings: ObservableObject {
         targetLanguage = UserDefaults.standard.string(forKey: Keys.language) ?? "ru"
     }
 
+    func setTargetLanguage(_ value: String) {
+        targetLanguage = value
+        UserDefaults.standard.set(value, forKey: Keys.language)
+    }
+
+    func reloadFromDefaults() {
+        isEnabled = UserDefaults.standard.bool(forKey: Keys.enabled)
+        targetLanguage = UserDefaults.standard.string(forKey: Keys.language) ?? "ru"
+    }
+
     static let supportedLanguages: [(code: String, title: String)] = [
         ("ru", "Русский"), ("en", "English"), ("de", "Deutsch"),
         ("fr", "Français"), ("es", "Español"), ("it", "Italiano"),

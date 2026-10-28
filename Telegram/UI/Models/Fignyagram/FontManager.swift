@@ -60,7 +60,37 @@ final class FontManager: ObservableObject {
         selection = value
         UserDefaults.standard.set(value, forKey: Self.selectionKey)
         revision += 1
-        applyGlobalAppearance()
+        if value == Builtin.system.rawValue {
+            // Back to factory typography: drop every UIKit override so no stale
+            // custom font survives in bars, menus or segmented controls.
+            applySystemTypography()
+        } else {
+            applyGlobalAppearance()
+        }
+        GlobalUI.bump()
+    }
+
+    /// Restores Apple's default typography for UIKit-backed chrome.
+    private func applySystemTypography() {
+        let nav = UINavigationBarAppearance()
+        nav.configureWithDefaultBackground()
+        UINavigationBar.appearance().standardAppearance = nav
+        UINavigationBar.appearance().compactAppearance = nav
+        UINavigationBar.appearance().scrollEdgeAppearance = nav
+        UINavigationBar.appearance().compactScrollEdgeAppearance = nav
+
+        let tab = UITabBarAppearance()
+        tab.configureWithDefaultBackground()
+        for item in [tab.stackedLayoutAppearance,
+                     tab.inlineLayoutAppearance,
+                     tab.compactInlineLayoutAppearance] {
+            item.normal.titleTextAttributes = [:]
+            item.selected.titleTextAttributes = [:]
+        }
+        UITabBar.appearance().standardAppearance = tab
+        UITabBar.appearance().scrollEdgeAppearance = tab
+        UIBarButtonItem.appearance().setTitleTextAttributes([:], for: .normal)
+        UISegmentedControl.appearance().setTitleTextAttributes([:], for: .normal)
     }
 
     /// Applies the chosen typeface to UIKit-backed bars, menus and alerts.

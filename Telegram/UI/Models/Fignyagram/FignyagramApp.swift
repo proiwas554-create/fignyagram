@@ -5,6 +5,7 @@ import UIKit
 struct FignyagramApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("app_ui_refresh_trigger") private var uiRefreshTrigger = 0
 
     init() {
         ConsoleCapture.install()
@@ -25,6 +26,7 @@ struct FignyagramApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .id(uiRefreshTrigger)
                 .onOpenURL { url in
                     ShareInbox.shared.handle(url)
                 }

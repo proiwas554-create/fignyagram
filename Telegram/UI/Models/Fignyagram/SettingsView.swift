@@ -188,7 +188,7 @@ struct SettingsView: View {
                     .disabled(!autoTranslation.isSupported)
                     Picker(L10n.t("Settings.Translate.Language"), selection: Binding(
                         get: { autoTranslation.targetLanguage },
-                        set: { autoTranslation.targetLanguage = $0 }
+                        set: { autoTranslation.setTargetLanguage($0) }
                     )) {
                         ForEach(AutoTranslationSettings.supportedLanguages, id: \.code) { item in
                             Text(item.title).tag(item.code)
@@ -245,6 +245,7 @@ struct SettingsView: View {
                 }
             }
             .navigationTitle("Настройки")
+        .onAppear { autoTranslation.reloadFromDefaults() }
             .modifier(GlassListModifier())
             .tint(.blue)
             .navigationBarTitleDisplayMode(.inline)
