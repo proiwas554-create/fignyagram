@@ -1954,3 +1954,8 @@
 "Feed.Settings.RefreshInterval" = "Auto refresh";
 "Feed.Settings.Hint" = "Automatic values adapt to the device. Stop-words and Important filters live on a separate screen.";
 "Settings.GhostMode" = "Ghost mode (no online status or read receipts)";
+"Presence.LastSeen" = "last seen %@";
+"Presence.Online" = "online";
+"Presence.Recently" = "last seen recently";
+"Presence.LastWeek" = "last seen this week";
+"Presence.LastMonth" = "last seen this month";

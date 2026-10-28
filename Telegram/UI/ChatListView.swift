@@ -539,10 +539,10 @@ struct ChatListView: View {
         guard let userId = chat.privateUserId, let user = store.users[userId] else { return nil }
         if case .userTypeBot = user.type { return nil }
         switch user.status {
-        case .userStatusOnline: return "в сети"
-        case .userStatusRecently: return "был(а) недавно"
-        case .userStatusLastWeek: return "был(а) на этой неделе"
-        case .userStatusLastMonth: return "был(а) в этом месяце"
+        case .userStatusOnline: return L10n.t("Presence.Online")
+        case .userStatusRecently: return L10n.t("Presence.Recently")
+        case .userStatusLastWeek: return L10n.t("Presence.LastWeek")
+        case .userStatusLastMonth: return L10n.t("Presence.LastMonth")
         default: return nil
         }
     }
@@ -831,12 +831,12 @@ struct ChatRow: View {
                 }
                 if let presence, actionText == nil {
                     HStack(spacing: 4) {
-                        if presence == "в сети" {
+                        if presence == L10n.t("Presence.Online") {
                             Circle().fill(Color.green).frame(width: 6, height: 6)
                         }
                         Text(presence)
                             .font(.appCaption2)
-                            .foregroundColor(presence == "в сети" ? .green : .secondary)
+                            .foregroundColor(presence == L10n.t("Presence.Online") ? .green : .secondary)
                             .lineLimit(1)
                     }
                 }

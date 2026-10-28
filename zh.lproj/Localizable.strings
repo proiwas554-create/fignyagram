@@ -1954,3 +1954,8 @@
 "Feed.Settings.RefreshInterval" = "自动刷新";
 "Feed.Settings.Hint" = "自动值适配设备。";
 "Settings.GhostMode" = "隐身模式";
+"Presence.LastSeen" = "上次在线 %@";
+"Presence.Online" = "在线";
+"Presence.Recently" = "最近在线";
+"Presence.LastWeek" = "本周在线";
+"Presence.LastMonth" = "本月在线";

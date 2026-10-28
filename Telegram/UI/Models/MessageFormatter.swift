@@ -174,7 +174,7 @@ enum MessageFormatter {
     static func userStatus(_ status: UserStatus) -> String {
         switch status {
         case .userStatusOnline: return L10n.t("AutoR.d9022f72ce")
-        case .userStatusOffline(let s): return L10n.t("AutoR.24969f8432")
+        case .userStatusOffline(let s): return String(format: L10n.t("Presence.LastSeen"), listDate(s.wasOnline))
         case .userStatusRecently: return L10n.t("AutoR.1d6716d62c")
         case .userStatusLastWeek: return L10n.t("AutoR.1c2d9fdaf4")
         case .userStatusLastMonth: return L10n.t("AutoR.303e34cf96")

@@ -1954,3 +1954,8 @@
 "Feed.Settings.RefreshInterval" = "Automatisch aktualisieren";
 "Feed.Settings.Hint" = "Automatische Werte passen sich an.";
 "Settings.GhostMode" = "Geistermodus";
+"Presence.LastSeen" = "zuletzt online %@";
+"Presence.Online" = "online";
+"Presence.Recently" = "kürzlich online";
+"Presence.LastWeek" = "diese Woche online";
+"Presence.LastMonth" = "diesen Monat online";

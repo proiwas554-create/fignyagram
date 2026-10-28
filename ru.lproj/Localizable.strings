@@ -1954,3 +1954,8 @@
 "Feed.Settings.RefreshInterval" = "Интервал автопрокрутки";
 "Feed.Settings.Hint" = "Значения «Автоматически» подбираются под устройство. Фильтры стоп-слов и «Важное» — в отдельном экране.";
 "Settings.GhostMode" = "Режим невидимки (без Online и прочтений)";
+"Presence.LastSeen" = "был(а) в сети %@";
+"Presence.Online" = "в сети";
+"Presence.Recently" = "был(а) недавно";
+"Presence.LastWeek" = "был(а) на этой неделе";
+"Presence.LastMonth" = "был(а) в этом месяце";

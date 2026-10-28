@@ -1954,3 +1954,8 @@
 "Feed.Settings.RefreshInterval" = "Actualizar cada";
 "Feed.Settings.Hint" = "Los valores automáticos se adaptan al dispositivo.";
 "Settings.GhostMode" = "Modo fantasma";
+"Presence.LastSeen" = "última vez %@";
+"Presence.Online" = "en línea";
+"Presence.Recently" = "visto recientemente";
+"Presence.LastWeek" = "visto esta semana";
+"Presence.LastMonth" = "visto este mes";
