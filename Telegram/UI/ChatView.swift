@@ -198,6 +198,18 @@ struct ChatView: View {
                         Label("Кратко о переписке", systemImage: "text.append")
                     }
                     Button {
+                        let texts = visibleMessages.suffix(120).compactMap { message -> String? in
+                            if case .messageText(let text) = message.content, !text.text.text.isEmpty {
+                                return text.text.text
+                            }
+                            return nil
+                        }
+                        summaryText = AIContextManager.summarize(messages: Array(texts))
+                        showSummary = true
+                    } label: {
+                        Label("AI-выжимка (на устройстве)", systemImage: "brain")
+                    }
+                    Button {
                         showChatInfo = true
                     } label: {
                         Label("Информация о чате", systemImage: "info.circle")

@@ -179,7 +179,7 @@ final class TelegramClient: ObservableObject {
                 apiId: Secrets.apiId,
                 applicationVersion: "Fignyagram \(version)",
                 databaseDirectory: account.databaseDirectory,
-                databaseEncryptionKey: nil,
+                databaseEncryptionKey: ProfileKeychain.databaseEncryptionKey(for: account),
                 deviceModel: UIDevice.current.model,
                 filesDirectory: account.filesDirectory,
                 systemLanguageCode: language,
@@ -508,6 +508,7 @@ final class TelegramClient: ObservableObject {
             self.manager = nil
             self.client = nil
             ChatStore.shared.reset()
+            ImageCache.clear()
             AccountStore.shared.switchTo(id: id)
         }
         // Give the manager a moment to release descriptors/sockets.

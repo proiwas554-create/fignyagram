@@ -239,6 +239,13 @@ struct ProfilesSecurityView: View {
             }
 
             Section("Профили (контейнеры TDLib)") {
+                Button("Добавить профиль") {
+                    guard accounts.accounts.count < 10 else { status = "Максимум 10 профилей"; return }
+                    let slot = accounts.addAccount()
+                    status = "Создан профиль \(slot.title) — войдите в него"
+                    Task { await manager.activate(id: slot.id) }
+                }
+                .disabled(accounts.accounts.count >= 10)
                 ForEach(accounts.accounts) { account in
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
@@ -262,6 +269,16 @@ struct ProfilesSecurityView: View {
                                 Task { await manager.activate(id: account.id) }
                             }
                             .font(.appCaption)
+                            if accounts.accounts.count > 1 {
+                                Button("Удалить", role: .destructive) {
+                                    ProfileKeychain.deleteKey(for: account.id)
+                                    try? FileManager.default.removeItem(atPath: account.databaseDirectory)
+                                    try? FileManager.default.removeItem(atPath: account.filesDirectory)
+                                    accounts.remove(id: account.id)
+                                    status = "Профиль удалён"
+                                }
+                                .font(.appCaption)
+                            }
                         }
                     }
                 }
