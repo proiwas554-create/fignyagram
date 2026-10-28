@@ -4,6 +4,7 @@ struct SettingsView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var privacy = PrivacyPreferences.shared
     @ObservedObject private var autoTranslation = AutoTranslationSettings.shared
+    @ObservedObject private var appSettings = AppSettings.shared
     @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
     @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0
@@ -157,36 +158,36 @@ struct SettingsView: View {
                             }
                         }
                     ))
-                    Toggle(NSLocalizedString("Settings.BlockShots", comment: ""), isOn: Binding(
+                    Toggle(L10n.t("Settings.BlockShots"), isOn: Binding(
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
-                    Picker(NSLocalizedString("Settings.AutoFile", comment: ""), selection: $autoTextFileThreshold) {
-                        Text(NSLocalizedString("Common.Never", comment: "")).tag(0)
+                    Picker(L10n.t("Settings.AutoFile"), selection: $autoTextFileThreshold) {
+                        Text(L10n.t("Common.Never")).tag(0)
                         Text(L10n.string("2000 символов", "2000 characters")).tag(2000)
                         Text(L10n.string("4000 символов", "4000 characters")).tag(4000)
                     }
-                    NavigationLink(NSLocalizedString("Settings.QuickReplies", comment: "")) {
+                    NavigationLink(L10n.t("Settings.QuickReplies")) {
                         SnippetsSettingsView()
                     }
-                    NavigationLink(NSLocalizedString("Settings.Profiles", comment: "")) {
+                    NavigationLink(L10n.t("Settings.Profiles")) {
                         ProfilesSecurityView()
                     }
                     Button {
                         GuestMode.shared.enter()
                     } label: {
-                        Label(NSLocalizedString("Settings.GuestMode", comment: ""), systemImage: "theatermasks")
+                        Label(L10n.t("Settings.GuestMode"), systemImage: "theatermasks")
                     }
-                    Toggle(NSLocalizedString("Settings.Tabs.Music", comment: ""), isOn: $showMusicTab)
-                    Toggle(NSLocalizedString("Settings.Tabs.News", comment: ""), isOn: $showNewsTab)
-                    Toggle(NSLocalizedString("Settings.Translate.Title", comment: ""), isOn: Binding(
+                    Toggle(L10n.t("Settings.Tabs.Music"), isOn: $showMusicTab)
+                    Toggle(L10n.t("Settings.Tabs.News"), isOn: $showNewsTab)
+                    Toggle(L10n.t("Settings.Translate.Title"), isOn: Binding(
                         get: { autoTranslation.isEnabled },
                         set: { value in
                             autoTranslation.isEnabled = value && autoTranslation.isSupported
                         }
                     ))
                     .disabled(!autoTranslation.isSupported)
-                    Picker(NSLocalizedString("Settings.Translate.Language", comment: ""), selection: Binding(
+                    Picker(L10n.t("Settings.Translate.Language"), selection: Binding(
                         get: { autoTranslation.targetLanguage },
                         set: { autoTranslation.targetLanguage = $0 }
                     )) {
@@ -194,11 +195,11 @@ struct SettingsView: View {
                             Text(item.title).tag(item.code)
                         }
                     }
-                    Toggle(NSLocalizedString("Settings.GhostStories", comment: ""), isOn: Binding(
+                    Toggle(L10n.t("Settings.GhostStories"), isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }
                     ))
-                    Toggle(NSLocalizedString("Settings.IgnoreCopy", comment: ""), isOn: Binding(
+                    Toggle(L10n.t("Settings.IgnoreCopy"), isOn: Binding(
                         get: { privacy.ignoreCopyProtection },
                         set: { privacy.ignoreCopyProtection = $0 }
                     ))

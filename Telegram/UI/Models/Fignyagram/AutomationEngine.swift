@@ -123,18 +123,18 @@ struct MacroSettingsView: View {
 
     var body: some View {
         Form {
-            Section(NSLocalizedString("Macros.New", comment: "")) {
-                TextField(NSLocalizedString("Macros.Keyword", comment: ""), text: $keyword)
+            Section(L10n.t("Macros.New")) {
+                TextField(L10n.t("Macros.Keyword"), text: $keyword)
                     .textInputAutocapitalization(.never)
-                TextField(NSLocalizedString("Macros.ChatId", comment: ""), text: $chatIdText)
+                TextField(L10n.t("Macros.ChatId"), text: $chatIdText)
                     .keyboardType(.numberPad)
-                Picker(NSLocalizedString("Macros.Action", comment: ""), selection: $action) {
+                Picker(L10n.t("Macros.Action"), selection: $action) {
                     ForEach(AutomationEngine.Rule.Action.allCases, id: \.self) { item in
                         Text(item.title).tag(item)
                     }
                 }
                 if action == .sendSnippet {
-                    TextField(NSLocalizedString("Macros.Reply", comment: ""), text: $value)
+                    TextField(L10n.t("Macros.Reply"), text: $value)
                 }
                 Button("Добавить") {
                     let chatId = Int64(chatIdText.trimmingCharacters(in: .whitespaces))
@@ -146,9 +146,9 @@ struct MacroSettingsView: View {
                 .disabled(keyword.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
-            Section(NSLocalizedString("Macros.Rules", comment: "")) {
+            Section(L10n.t("Macros.Rules")) {
                 if engine.rules.isEmpty {
-                    Text(NSLocalizedString("Macros.Empty", comment: "")).foregroundColor(.secondary)
+                    Text(L10n.t("Macros.Empty")).foregroundColor(.secondary)
                 }
                 ForEach(Array(engine.rules.enumerated()), id: \.element.id) { index, rule in
                     VStack(alignment: .leading, spacing: 4) {
@@ -176,7 +176,7 @@ struct MacroSettingsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle(NSLocalizedString("Macros.Title", comment: ""))
+        .navigationTitle(L10n.t("Macros.Title"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

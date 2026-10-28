@@ -372,23 +372,23 @@ struct NewsFeedFiltersView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(NSLocalizedString("Feed.StopWords", comment: "")) {
+                Section(L10n.t("Feed.StopWords")) {
                     TextEditor(text: $stopWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
                 }
-                Section(NSLocalizedString("Feed.ImportantWords", comment: "")) {
+                Section(L10n.t("Feed.ImportantWords")) {
                     TextEditor(text: $importantWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
                 }
                 Section {
-                    Text(NSLocalizedString("Feed.FiltersHint", comment: ""))
+                    Text(L10n.t("Feed.FiltersHint"))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle(NSLocalizedString("Feed.Filters", comment: ""))
+            .navigationTitle(L10n.t("Feed.Filters"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

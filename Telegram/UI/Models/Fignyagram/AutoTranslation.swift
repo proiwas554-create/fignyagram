@@ -51,6 +51,11 @@ final class TranslatedMessageCache {
 
     private init() { cache.countLimit = 600 }
 
+    func removeAll() {
+        cache.removeAllObjects()
+        CallDiag.log("translation cache cleared (target language changed)")
+    }
+
     static func key(chatId: Int64, messageId: Int64, editDate: Int32,
                     language: String, textHash: Int) -> NSString {
         "\(chatId):\(messageId):\(editDate):\(language):\(textHash)" as NSString
@@ -98,7 +103,27 @@ final class AutoTranslationManager: ObservableObject {
     private var inFlight: Set<String> = []
     private var host: UIViewController?
 
-    private init() {}
+    private var cancellables: Set<AnyCancellable> = []
+    /// Bumped when the target language changes so every visible cell re-requests.
+    @Published private(set) var cacheVersion = 0
+
+    private init() {
+        AutoTranslationSettings.shared.$targetLanguage
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                self?.handleTargetLanguageChange()
+            }
+            .store(in: &cancellables)
+    }
+
+    private func handleTargetLanguageChange() {
+        TranslatedMessageCache.shared.removeAll()
+        inFlight.removeAll()
+        pending.removeAll()
+        cacheVersion += 1
+        CallDiag.log("auto translation target changed to \(AutoTranslationSettings.shared.targetLanguage)")
+    }
 
     func translation(for message: TDLibKit.Message, text: String) -> String? {
         guard AutoTranslationSettings.shared.isEnabled else { return nil }
@@ -258,6 +283,10 @@ struct AutoTranslatedMessageText: View {
         }
         .onChange(of: manager.completedCount) { _ in
             translated = manager.translation(for: message, text: formatted.text)
+        }
+        .onChange(of: manager.cacheVersion) { _ in
+            translated = manager.translation(for: message, text: formatted.text)
+            request()
         }
     }
 

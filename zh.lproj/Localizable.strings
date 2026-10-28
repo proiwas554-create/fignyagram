@@ -53,3 +53,4 @@
 "Feed.StopWords" = "隐藏包含以下内容的帖子";
 "Feed.ImportantWords" = "重要：仅显示包含";
 "Feed.FiltersHint" = "用逗号分隔。";
+"Settings.UILanguage" = "界面语言";

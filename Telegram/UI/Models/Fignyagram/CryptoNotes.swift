@@ -105,17 +105,17 @@ struct SnippetsSettingsView: View {
 
     var body: some View {
         Form {
-            Section(NSLocalizedString("Snippets.New", comment: "")) {
-                TextField(NSLocalizedString("Snippets.Text", comment: ""), text: $draft)
-                Button(NSLocalizedString("Common.Add", comment: "")) {
+            Section(L10n.t("Snippets.New")) {
+                TextField(L10n.t("Snippets.Text"), text: $draft)
+                Button(L10n.t("Common.Add")) {
                     store.add(draft)
                     draft = ""
                 }
                 .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            Section(NSLocalizedString("Snippets.List", comment: "")) {
+            Section(L10n.t("Snippets.List")) {
                 if store.snippets.isEmpty {
-                    Text(NSLocalizedString("Snippets.Empty", comment: "")).foregroundColor(.secondary)
+                    Text(L10n.t("Snippets.Empty")).foregroundColor(.secondary)
                 }
                 ForEach(store.snippets, id: \.self) { snippet in
                     Text(snippet)
@@ -134,7 +134,7 @@ struct SnippetsSettingsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle(NSLocalizedString("Common.Save", comment: ""))
+        .navigationTitle(L10n.t("Common.Save"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

@@ -40,13 +40,25 @@ extension String {
 }
 
 extension L10n {
-    /// Resource-based localization with a guaranteed fallback: the .lproj table
-    /// is used when the project bundles it, otherwise the English literal is
-    /// returned for English system language so no Russian leaks through.
+    static let supported: Set<String> = ["ru", "en", "es", "de", "zh"]
+
+    /// Explicit-locale localization: reads the bundled `.lproj` for the language
+    /// selected in AppSettings, so the UI can change language without a restart.
+    static func t(_ key: String) -> String {
+        let language = MainActor.assumeIsolated { AppSettings.shared.resolvedLanguage }
+        if let path = Bundle.main.path(forResource: language, ofType: "lproj"),
+           let bundle = Bundle(path: path) {
+            let value = NSLocalizedString(key, tableName: "Localizable", bundle: bundle,
+                                          value: key, comment: "")
+            if value != key { return value }
+        }
+        return NSLocalizedString(key, comment: "")
+    }
+
+    /// Backward-compatible helper for call sites with explicit literals.
     static func keyed(_ key: String, ru: String, en: String) -> String {
-        let localized = NSLocalizedString(key, tableName: "Localizable", bundle: .main,
-                                          value: ru, comment: "")
-        if localized == ru, isEnglish { return en }
-        return localized
+        let value = t(key)
+        if value != key { return value }
+        return isEnglish ? en : ru
     }
 }

@@ -53,3 +53,4 @@
 "Feed.StopWords" = "Beiträge ausblenden mit";
 "Feed.ImportantWords" = "Wichtig: nur mit";
 "Feed.FiltersHint" = "Komma-getrennt.";
+"Settings.UILanguage" = "Sprache der Oberfläche";

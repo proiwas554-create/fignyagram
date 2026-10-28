@@ -877,3 +877,4 @@
 "Feed.StopWords" = "Hide posts containing";
 "Feed.ImportantWords" = "Important: show only with";
 "Feed.FiltersHint" = "Comma separated, case-insensitive. An empty Important list hides the tab.";
+"Settings.UILanguage" = "Interface language";

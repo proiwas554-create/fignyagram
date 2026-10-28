@@ -53,3 +53,4 @@
 "Feed.StopWords" = "Ocultar publicaciones con";
 "Feed.ImportantWords" = "Importante: mostrar solo con";
 "Feed.FiltersHint" = "Separados por comas.";
+"Settings.UILanguage" = "Idioma de la interfaz";
