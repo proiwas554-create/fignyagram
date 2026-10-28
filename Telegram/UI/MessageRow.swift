@@ -268,7 +268,7 @@ struct MessageRow: View {
                 AutoTranslatedMessageText(message: message, formatted: textContent.text)
             }
             if let caption = message.cachedCaption, !caption.text.isEmpty {
-                SpoilerTextView(formatted: caption)
+                AutoTranslatedMessageText(message: message, formatted: caption)
                 TranslatedTextView(
                     text: caption.text,
                     font: .appCaption2.italic()

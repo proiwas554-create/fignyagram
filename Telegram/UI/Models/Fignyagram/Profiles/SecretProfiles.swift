@@ -164,7 +164,7 @@ struct PINRouterView: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 42))
                 .foregroundColor(.secondary)
-            Text("Введите код-пароль")
+            Text(L10n.string("Введите код-пароль", "Enter passcode"))
                 .font(.title3.bold())
             SecureField("PIN", text: $pin)
                 .keyboardType(.numberPad)
@@ -177,13 +177,13 @@ struct PINRouterView: View {
             if let error {
                 Text(error).font(.appFootnote).foregroundColor(.red)
             }
-            Button("Открыть") {
+            Button(L10n.string("Открыть", "Open")) {
                 let entered = pin
                 pin = ""
                 Task {
                     let destination = await router.unlock(pin: entered)
                     if destination == .invalid {
-                        error = "Неверный код"
+                        error = L10n.string("Неверный код", "Wrong passcode")
                     } else {
                         error = nil
                     }
@@ -209,25 +209,25 @@ struct ProfilesSecurityView: View {
 
     var body: some View {
         Form {
-            Section("Код-пароль при запуске") {
-                Toggle("Запрашивать PIN", isOn: Binding(
+            Section(L10n.string("Код-пароль при запуске", "Launch passcode")) {
+                Toggle(L10n.string("Запрашивать PIN", "Ask for PIN"), isOn: Binding(
                     get: { PINVault.shared.isEnabled },
                     set: { value in
                         PINVault.shared.isEnabled = value
                         status = value ? "PIN включён" : "PIN выключен"
                     }
                 ))
-                SecureField("Основной PIN", text: $primaryPin)
+                SecureField(L10n.string("Основной PIN", "Primary PIN"), text: $primaryPin)
                     .keyboardType(.numberPad)
-                Button("Сохранить основной PIN") {
+                Button(L10n.string("Сохранить основной PIN", "Save primary PIN")) {
                     guard primaryPin.count >= 4 else { status = "Минимум 4 цифры"; return }
                     PINVault.shared.setPrimaryPin(primaryPin)
                     primaryPin = ""
                     status = "Основной PIN сохранён"
                 }
-                SecureField("Ложный PIN (двойное дно)", text: $duressPin)
+                SecureField(L10n.string("Ложный PIN (двойное дно)", "Duress PIN (double bottom)"), text: $duressPin)
                     .keyboardType(.numberPad)
-                Button("Сохранить ложный PIN") {
+                Button(L10n.string("Сохранить ложный PIN", "Save duress PIN")) {
                     guard duressPin.count >= 4 else { status = "Минимум 4 цифры"; return }
                     PINVault.shared.setDuressPin(duressPin)
                     duressPin = ""
@@ -238,8 +238,8 @@ struct ProfilesSecurityView: View {
                 }
             }
 
-            Section("Профили (контейнеры TDLib)") {
-                Button("Добавить профиль") {
+            Section(L10n.string("Профили (контейнеры TDLib)", "Profiles (TDLib containers)")) {
+                Button(L10n.string("Добавить профиль", "Add profile")) {
                     guard accounts.accounts.count < 10 else { status = "Максимум 10 профилей"; return }
                     let slot = accounts.addAccount()
                     status = "Создан профиль \(slot.title) — войдите в него"
@@ -260,22 +260,22 @@ struct ProfilesSecurityView: View {
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                         HStack(spacing: 12) {
-                            Button("Сделать секретным") {
+                            Button(L10n.string("Сделать секретным", "Mark as secret")) {
                                 manager.setSecret(account.id, isSecret: true)
                                 status = "Профиль скрыт за ложным PIN"
                             }
                             .font(.appCaption)
-                            Button("Открыть") {
+                            Button(L10n.string("Открыть", "Open")) {
                                 Task { await manager.activate(id: account.id) }
                             }
                             .font(.appCaption)
                             if accounts.accounts.count > 1 {
-                                Button("Удалить", role: .destructive) {
+                                Button(L10n.string("Удалить", "Delete"), role: .destructive) {
                                     ProfileKeychain.deleteKey(for: account.id)
                                     try? FileManager.default.removeItem(atPath: account.databaseDirectory)
                                     try? FileManager.default.removeItem(atPath: account.filesDirectory)
                                     accounts.remove(id: account.id)
-                                    status = "Профиль удалён"
+                                    status = L10n.string("Профиль удалён", "Profile deleted")
                                 }
                                 .font(.appCaption)
                             }
@@ -290,7 +290,7 @@ struct ProfilesSecurityView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Профили и PIN")
+        .navigationTitle(L10n.string("Профили и PIN", "Profiles & PIN"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

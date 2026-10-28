@@ -51,19 +51,24 @@ final class TranslatedMessageCache {
 
     private init() { cache.countLimit = 600 }
 
-    static func key(chatId: Int64, messageId: Int64, editDate: Int32, language: String) -> NSString {
-        "\(chatId):\(messageId):\(editDate):\(language)" as NSString
+    static func key(chatId: Int64, messageId: Int64, editDate: Int32,
+                    language: String, textHash: Int) -> NSString {
+        "\(chatId):\(messageId):\(editDate):\(language):\(textHash)" as NSString
     }
 
-    func translation(chatId: Int64, messageId: Int64, editDate: Int32, language: String) -> String? {
+    func translation(chatId: Int64, messageId: Int64, editDate: Int32,
+                     language: String, textHash: Int) -> String? {
         cache.object(forKey: Self.key(chatId: chatId, messageId: messageId,
-                                      editDate: editDate, language: language)) as String?
+                                      editDate: editDate, language: language,
+                                      textHash: textHash)) as String?
     }
 
-    func store(_ text: String, chatId: Int64, messageId: Int64, editDate: Int32, language: String) {
+    func store(_ text: String, chatId: Int64, messageId: Int64, editDate: Int32,
+               language: String, textHash: Int) {
         cache.setObject(text as NSString,
                         forKey: Self.key(chatId: chatId, messageId: messageId,
-                                         editDate: editDate, language: language))
+                                         editDate: editDate, language: language,
+                                         textHash: textHash))
     }
 }
 
@@ -100,7 +105,8 @@ final class AutoTranslationManager: ObservableObject {
         return TranslatedMessageCache.shared.translation(chatId: message.chatId,
                                                          messageId: message.id,
                                                          editDate: Int32(message.editDate),
-                                                         language: AutoTranslationSettings.shared.targetLanguage)
+                                                         language: AutoTranslationSettings.shared.targetLanguage,
+                                                         textHash: text.hashValue)
     }
 
     func requestIfNeeded(message: TDLibKit.Message, text: String) {
@@ -111,12 +117,13 @@ final class AutoTranslationManager: ObservableObject {
         // Skip text that is already in the target language.
         guard Self.language(of: trimmed) != settings.targetLanguage else { return }
 
-        let key = "\(message.chatId):\(message.id):\(message.editDate)"
+        let key = "\(message.chatId):\(message.id):\(message.editDate):\(trimmed.hashValue)"
         guard !inFlight.contains(key),
               TranslatedMessageCache.shared.translation(chatId: message.chatId,
                                                         messageId: message.id,
                                                         editDate: Int32(message.editDate),
-                                                        language: settings.targetLanguage) == nil else { return }
+                                                        language: settings.targetLanguage,
+                                                        textHash: trimmed.hashValue) == nil else { return }
         inFlight.insert(key)
         pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
                                editDate: Int32(message.editDate), text: trimmed))
@@ -132,7 +139,8 @@ final class AutoTranslationManager: ObservableObject {
                                                 chatId: request.chatId,
                                                 messageId: request.messageId,
                                                 editDate: request.editDate,
-                                                language: language)
+                                                language: language,
+                                                textHash: request.text.hashValue)
             completedCount += 1
         }
     }
@@ -185,6 +193,9 @@ struct TranslationHostView: View {
                     source: nil,
                     target: Locale.Language(identifier: settings.targetLanguage)
                 )
+            }
+            .onChange(of: manager.pending.count) { _ in
+                configuration?.invalidate()
             }
             .onChange(of: settings.targetLanguage) { value in
                 configuration = TranslationSession.Configuration(

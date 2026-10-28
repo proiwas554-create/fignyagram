@@ -105,17 +105,17 @@ struct SnippetsSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Новый шаблон") {
-                TextField("Текст быстрого ответа", text: $draft)
-                Button("Добавить") {
+            Section(L10n.string("Новый шаблон", "New quick reply")) {
+                TextField(L10n.string("Текст быстрого ответа", "Quick reply text"), text: $draft)
+                Button(L10n.string("Добавить", "Add")) {
                     store.add(draft)
                     draft = ""
                 }
                 .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            Section("Шаблоны") {
+            Section(L10n.string("Шаблоны", "Quick replies")) {
                 if store.snippets.isEmpty {
-                    Text("Пока нет шаблонов").foregroundColor(.secondary)
+                    Text(L10n.string("Пока нет шаблонов", "No quick replies yet")).foregroundColor(.secondary)
                 }
                 ForEach(store.snippets, id: \.self) { snippet in
                     Text(snippet)
@@ -134,7 +134,7 @@ struct SnippetsSettingsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Быстрые шаблоны")
+        .navigationTitle(L10n.string("Быстрые шаблоны", "Quick replies"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }

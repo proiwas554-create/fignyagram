@@ -172,36 +172,36 @@ struct SettingsView: View {
                             }
                         }
                     ))
-                    Toggle("Блокировать скриншоты и запись экрана", isOn: Binding(
+                    Toggle(L10n.string("Блокировать скриншоты и запись экрана", "Block screenshots and screen recording"), isOn: Binding(
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))
-                    Picker("Текст файлом длиннее", selection: $autoTextFileThreshold) {
-                        Text("Никогда").tag(0)
-                        Text("2000 символов").tag(2000)
-                        Text("4000 символов").tag(4000)
+                    Picker(L10n.string("Текст файлом длиннее", "Send text as file when longer than"), selection: $autoTextFileThreshold) {
+                        Text(L10n.string("Никогда", "Never")).tag(0)
+                        Text(L10n.string("2000 символов", "2000 characters")).tag(2000)
+                        Text(L10n.string("4000 символов", "4000 characters")).tag(4000)
                     }
-                    NavigationLink("Быстрые шаблоны") {
+                    NavigationLink(L10n.string("Быстрые шаблоны", "Quick replies")) {
                         SnippetsSettingsView()
                     }
-                    NavigationLink("Профили и PIN (двойное дно)") {
+                    NavigationLink(L10n.string("Профили и PIN (двойное дно)", "Profiles & PIN (duress)")) {
                         ProfilesSecurityView()
                     }
                     Button {
                         GuestMode.shared.enter()
                     } label: {
-                        Label("Активировать гостевой режим (двойное дно)", systemImage: "theatermasks")
+                        Label(L10n.string("Активировать гостевой режим (двойное дно)", "Enter guest mode (duress)"), systemImage: "theatermasks")
                     }
-                    Toggle("Вкладка «Музыка» в нижнем баре", isOn: $showMusicTab)
-                    Toggle("Вкладка «Новости» в нижнем баре", isOn: $showNewsTab)
-                    Toggle("Автоперевод сообщений (на устройстве)", isOn: Binding(
+                    Toggle(L10n.string("Вкладка «Музыка» в нижнем баре", "Music tab in the bottom bar"), isOn: $showMusicTab)
+                    Toggle(L10n.string("Вкладка «Новости» в нижнем баре", "News tab in the bottom bar"), isOn: $showNewsTab)
+                    Toggle(L10n.string("Автоперевод сообщений (на устройстве)", "Auto-translate messages (on device)"), isOn: Binding(
                         get: { autoTranslation.isEnabled },
                         set: { value in
                             autoTranslation.isEnabled = value && autoTranslation.isSupported
                         }
                     ))
                     .disabled(!autoTranslation.isSupported)
-                    Picker("Язык перевода", selection: Binding(
+                    Picker(L10n.string("Язык перевода", "Translation language"), selection: Binding(
                         get: { autoTranslation.targetLanguage },
                         set: { autoTranslation.targetLanguage = $0 }
                     )) {
@@ -209,11 +209,11 @@ struct SettingsView: View {
                             Text(item.title).tag(item.code)
                         }
                     }
-                    Toggle("Невидимый просмотр историй", isOn: Binding(
+                    Toggle(L10n.string("Невидимый просмотр историй", "Ghost story views"), isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }
                     ))
-                    Toggle("Игнорировать запрет копирования", isOn: Binding(
+                    Toggle(L10n.string("Игнорировать запрет копирования", "Ignore copy protection"), isOn: Binding(
                         get: { privacy.ignoreCopyProtection },
                         set: { privacy.ignoreCopyProtection = $0 }
                     ))

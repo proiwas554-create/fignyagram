@@ -123,18 +123,18 @@ struct MacroSettingsView: View {
 
     var body: some View {
         Form {
-            Section("Новое правило") {
-                TextField("Слово в сообщении", text: $keyword)
+            Section(L10n.string("Новое правило", "New rule")) {
+                TextField(L10n.string("Слово в сообщении", "Keyword"), text: $keyword)
                     .textInputAutocapitalization(.never)
-                TextField("ID чата (пусто = любой)", text: $chatIdText)
+                TextField(L10n.string("ID чата (пусто = любой)", "Chat ID (empty = any)"), text: $chatIdText)
                     .keyboardType(.numberPad)
-                Picker("Действие", selection: $action) {
+                Picker(L10n.string("Действие", "Action"), selection: $action) {
                     ForEach(AutomationEngine.Rule.Action.allCases, id: \.self) { item in
                         Text(item.title).tag(item)
                     }
                 }
                 if action == .sendSnippet {
-                    TextField("Текст автоответа", text: $value)
+                    TextField(L10n.string("Текст автоответа", "Auto-reply text"), text: $value)
                 }
                 Button("Добавить") {
                     let chatId = Int64(chatIdText.trimmingCharacters(in: .whitespaces))
@@ -146,9 +146,9 @@ struct MacroSettingsView: View {
                 .disabled(keyword.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
-            Section("Правила") {
+            Section(L10n.string("Правила", "Rules")) {
                 if engine.rules.isEmpty {
-                    Text("Пока нет макросов").foregroundColor(.secondary)
+                    Text(L10n.string("Пока нет макросов", "No macros yet")).foregroundColor(.secondary)
                 }
                 ForEach(Array(engine.rules.enumerated()), id: \.element.id) { index, rule in
                     VStack(alignment: .leading, spacing: 4) {
@@ -176,7 +176,7 @@ struct MacroSettingsView: View {
                     .foregroundColor(.secondary)
             }
         }
-        .navigationTitle("Автоматизация")
+        .navigationTitle(L10n.string("Автоматизация", "Automation"))
         .navigationBarTitleDisplayMode(.inline)
     }
 }
