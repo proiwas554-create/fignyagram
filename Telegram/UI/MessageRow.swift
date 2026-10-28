@@ -834,11 +834,13 @@ struct MessageActionsSheet: View {
                         } label: {
                             Label("Цитировать фрагмент", systemImage: "quote.bubble")
                         }
+                        if AutoTranslationSettings.shared.mode != .disabled {
                         Button {
                             act(.translate(text))
                         } label: {
                             Label(L10n.keyed("Chat.Translate", ru: "Перевести", en: "Translate"),
                               systemImage: "character.bubble")
+                        }
                         }
                         if #available(iOS 18.0, *) {
                             Button {
@@ -847,7 +849,7 @@ struct MessageActionsSheet: View {
                                 Label(L10n.keyed("Chat.TranslateOnDevice", ru: "Перевести на устройстве", en: "Translate on device"),
                                       systemImage: "lock.shield")
                             }
-                            if !AutoTranslationSettings.shared.isEnabled {
+                            if AutoTranslationSettings.shared.mode == .manual {
                                 Button {
                                     AutoTranslationManager.shared.requestManual(message: message, text: text)
                                 } label: {
@@ -857,7 +859,7 @@ struct MessageActionsSheet: View {
                             }
                         }
                     }
-                    if !AutoTranslationSettings.shared.isEnabled,
+                    if AutoTranslationSettings.shared.mode == .manual,
                        case .messageText(let body) = message.content,
                        !body.text.text.isEmpty,
                        #available(iOS 18.0, *) {

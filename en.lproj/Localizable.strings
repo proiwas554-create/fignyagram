@@ -878,3 +878,7 @@
 "Feed.ImportantWords" = "Important: show only with";
 "Feed.FiltersHint" = "Comma separated, case-insensitive. An empty Important list hides the tab.";
 "Settings.UILanguage" = "Interface language";
+"Translation.Mode" = "Translation mode";
+"Translation.Mode.Auto" = "Automatic (on the fly)";
+"Translation.Mode.Manual" = "Manual (button)";
+"Translation.Mode.Disabled" = "Disabled";

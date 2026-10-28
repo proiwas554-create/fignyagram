@@ -54,3 +54,7 @@
 "Feed.ImportantWords" = "Wichtig: nur mit";
 "Feed.FiltersHint" = "Komma-getrennt.";
 "Settings.UILanguage" = "Sprache der Oberfläche";
+"Translation.Mode" = "Übersetzungsmodus";
+"Translation.Mode.Auto" = "Automatisch";
+"Translation.Mode.Manual" = "Manuell";
+"Translation.Mode.Disabled" = "Deaktiviert";

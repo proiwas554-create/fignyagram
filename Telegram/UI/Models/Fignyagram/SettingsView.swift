@@ -179,12 +179,17 @@ struct SettingsView: View {
                     }
                     Toggle(L10n.t("Settings.Tabs.Music"), isOn: $showMusicTab)
                     Toggle(L10n.t("Settings.Tabs.News"), isOn: $showNewsTab)
-                    Toggle(L10n.t("Settings.Translate.Title"), isOn: Binding(
-                        get: { autoTranslation.isEnabled },
+                    Picker(L10n.t("Translation.Mode"), selection: Binding(
+                        get: { autoTranslation.mode },
                         set: { value in
-                            autoTranslation.isEnabled = value && autoTranslation.isSupported
+                            autoTranslation.mode = value
+                            if value == .auto { AutoTranslationManager.shared.requestLanguagePreparation() }
                         }
-                    ))
+                    )) {
+                        ForEach(AutoTranslationSettings.Mode.allCases) { item in
+                            Text(item.title).tag(item)
+                        }
+                    }
                     .disabled(!autoTranslation.isSupported)
                     Picker(L10n.t("Settings.Translate.Language"), selection: Binding(
                         get: { autoTranslation.targetLanguage },

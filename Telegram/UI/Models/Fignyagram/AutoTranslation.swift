@@ -10,14 +10,38 @@ import Translation
 final class AutoTranslationSettings: ObservableObject {
     static let shared = AutoTranslationSettings()
 
+    enum Mode: String, CaseIterable, Identifiable {
+        case auto, manual, disabled
+        var id: String { rawValue }
+
+        var title: String {
+            switch self {
+            case .auto: return L10n.t("Translation.Mode.Auto")
+            case .manual: return L10n.t("Translation.Mode.Manual")
+            case .disabled: return L10n.t("Translation.Mode.Disabled")
+            }
+        }
+    }
+
     private enum Keys {
         static let enabled = "isAutoTranslationEnabled"
         static let language = "targetTranslationLanguage"
+        static let mode = "translationMode"
     }
 
-    @Published var isEnabled: Bool {
-        didSet { UserDefaults.standard.set(isEnabled, forKey: Keys.enabled) }
+    @Published var mode: Mode {
+        didSet {
+            UserDefaults.standard.set(mode.rawValue, forKey: Keys.mode)
+            UserDefaults.standard.set(mode == .auto, forKey: Keys.enabled)
+            if mode == .disabled {
+                TranslatedMessageCache.shared.removeAll()
+                AutoTranslationManager.shared.purgePending()
+            }
+        }
     }
+
+    /// Kept for the existing call sites: true only in full auto mode.
+    var isEnabled: Bool { mode == .auto }
 
     @Published var targetLanguage: String {
         didSet { UserDefaults.standard.set(targetLanguage, forKey: Keys.language) }
@@ -30,7 +54,12 @@ final class AutoTranslationSettings: ObservableObject {
     }
 
     private init() {
-        isEnabled = UserDefaults.standard.bool(forKey: Keys.enabled)
+        if let raw = UserDefaults.standard.string(forKey: Keys.mode),
+           let stored = Mode(rawValue: raw) {
+            mode = stored
+        } else {
+            mode = UserDefaults.standard.bool(forKey: Keys.enabled) ? .auto : .manual
+        }
         targetLanguage = UserDefaults.standard.string(forKey: Keys.language) ?? "ru"
     }
 
@@ -40,7 +69,10 @@ final class AutoTranslationSettings: ObservableObject {
     }
 
     func reloadFromDefaults() {
-        isEnabled = UserDefaults.standard.bool(forKey: Keys.enabled)
+        if let raw = UserDefaults.standard.string(forKey: Keys.mode),
+           let stored = Mode(rawValue: raw) {
+            mode = stored
+        }
         targetLanguage = UserDefaults.standard.string(forKey: Keys.language) ?? "ru"
     }
 
@@ -136,7 +168,7 @@ final class AutoTranslationManager: ObservableObject {
 
     /// Chat/channel titles use the same cache with role "title".
     func translation(forChatId chatId: Int64, title: String) -> String? {
-        guard AutoTranslationSettings.shared.isEnabled else { return nil }
+        guard AutoTranslationSettings.shared.mode != .disabled else { return nil }
         return TranslatedMessageCache.shared.translation(chatId: chatId,
                                                          messageId: 0,
                                                          editDate: 0,
@@ -146,7 +178,7 @@ final class AutoTranslationManager: ObservableObject {
 
     func requestChatTitle(chatId: Int64, title: String) {
         let settings = AutoTranslationSettings.shared
-        guard settings.isEnabled, settings.isSupported else { return }
+        guard settings.mode == .auto, settings.isSupported else { return }
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else { return }
         guard Self.language(of: trimmed) != settings.targetLanguage else { return }
@@ -171,6 +203,12 @@ final class AutoTranslationManager: ObservableObject {
         requestGeneration += 1
     }
 
+    func purgePending() {
+        pending.removeAll()
+        inFlight.removeAll()
+        cacheVersion += 1
+    }
+
     private func handleTargetLanguageChange() {
         TranslatedMessageCache.shared.removeAll()
         inFlight.removeAll()
@@ -180,7 +218,7 @@ final class AutoTranslationManager: ObservableObject {
     }
 
     func translation(for message: TDLibKit.Message, text: String, role: String = "body") -> String? {
-        guard AutoTranslationSettings.shared.isEnabled else { return nil }
+        guard AutoTranslationSettings.shared.mode != .disabled else { return nil }
         return TranslatedMessageCache.shared.translation(chatId: message.chatId,
                                                          messageId: message.id,
                                                          editDate: Int32(message.editDate),
@@ -192,6 +230,7 @@ final class AutoTranslationManager: ObservableObject {
     /// off, still using the selected target language and the same cache.
     @discardableResult
     func requestManual(message: TDLibKit.Message, text: String, role: String = "body") -> Bool {
+        guard AutoTranslationSettings.shared.mode != .disabled else { return false }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else { return false }
         let settings = AutoTranslationSettings.shared
@@ -213,7 +252,7 @@ final class AutoTranslationManager: ObservableObject {
 
     func requestIfNeeded(message: TDLibKit.Message, text: String, role: String = "body") {
         let settings = AutoTranslationSettings.shared
-        guard settings.isEnabled, settings.isSupported else { return }
+        guard settings.mode == .auto, settings.isSupported else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else { return }
         // Skip text that is already in the target language.
@@ -253,7 +292,7 @@ final class AutoTranslationManager: ObservableObject {
         guard !isUnavailable else { return }
         isUnavailable = true
         if #available(iOS 18.0, *) {} else {
-            AutoTranslationSettings.shared.isEnabled = false
+            AutoTranslationSettings.shared.mode = .disabled
         }
         CallDiag.log("auto translation unavailable on this device")
     }
@@ -320,11 +359,26 @@ struct TranslationHostView: View {
 
         if manager.pendingPreparation {
             manager.pendingPreparation = false
-            // Triggers the system language download sheet at most once per tap
-            // on the language picker, never during list rendering.
+            // Only the settings screen sets this flag; chats never do.
             try? await session.prepareTranslation()
         }
         while let request = manager.pending.first {
+            // Never let Apple show its download sheet from a chat: translate
+            // only when the language pack is already installed.
+            if #available(iOS 18.0, *) {
+                let target = Locale.Language(identifier: AutoTranslationSettings.shared.targetLanguage)
+                var installed = false
+                if let code = AutoTranslationManager.language(of: request.text) {
+                    let source = Locale.Language(identifier: code)
+                    let status: LanguageAvailability.Status =
+                        await LanguageAvailability().status(from: source, to: target)
+                    installed = (status == LanguageAvailability.Status.installed)
+                }
+                if !installed {
+                    manager.finish(request, translation: nil)
+                    continue
+                }
+            }
             do {
                 let response = try await session.translate(request.text)
                 manager.finish(request, translation: response.targetText)

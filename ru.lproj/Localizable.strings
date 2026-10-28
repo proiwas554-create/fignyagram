@@ -878,3 +878,7 @@
 "Feed.ImportantWords" = "Важное: показывать только со словами";
 "Feed.FiltersHint" = "Слова указываются через запятую, регистр не важен. Пустой список «Важное» скрывает вкладку.";
 "Settings.UILanguage" = "Язык интерфейса";
+"Translation.Mode" = "Режим перевода";
+"Translation.Mode.Auto" = "Автоматически на лету";
+"Translation.Mode.Manual" = "Вручную по кнопке";
+"Translation.Mode.Disabled" = "Полностью выключен";
