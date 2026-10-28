@@ -4,7 +4,6 @@ struct SettingsView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var privacy = PrivacyPreferences.shared
     @ObservedObject private var autoTranslation = AutoTranslationSettings.shared
-    @ObservedObject private var appSettings = AppSettings.shared
     @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
     @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0

@@ -42,20 +42,12 @@ extension String {
 extension L10n {
     static let supported: Set<String> = ["ru", "en", "es", "de", "zh"]
 
-    /// Explicit-locale localization: reads the bundled `.lproj` for the language
-    /// selected in AppSettings, so the UI can change language without a restart.
+    /// System localization only: the .lproj table for the iPhone language is
+    /// chosen by iOS. No manual language override can create a mixed UI.
     static func t(_ key: String) -> String {
-        let language = MainActor.assumeIsolated { AppSettings.shared.resolvedLanguage }
-        if let path = Bundle.main.path(forResource: language, ofType: "lproj"),
-           let bundle = Bundle(path: path) {
-            let value = NSLocalizedString(key, tableName: "Localizable", bundle: bundle,
-                                          value: key, comment: "")
-            if value != key { return value }
-        }
-        return NSLocalizedString(key, comment: "")
+        NSLocalizedString(key, comment: "")
     }
 
-    /// Backward-compatible helper for call sites with explicit literals.
     static func keyed(_ key: String, ru: String, en: String) -> String {
         let value = t(key)
         if value != key { return value }

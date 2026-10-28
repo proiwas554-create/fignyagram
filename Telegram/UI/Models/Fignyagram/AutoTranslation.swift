@@ -57,23 +57,23 @@ final class TranslatedMessageCache {
     }
 
     static func key(chatId: Int64, messageId: Int64, editDate: Int32,
-                    language: String, textHash: Int) -> NSString {
-        "\(chatId):\(messageId):\(editDate):\(language):\(textHash)" as NSString
+                    language: String, role: String) -> NSString {
+        "\(chatId):\(messageId):\(editDate):\(language):\(role)" as NSString
     }
 
     func translation(chatId: Int64, messageId: Int64, editDate: Int32,
-                     language: String, textHash: Int) -> String? {
+                     language: String, role: String) -> String? {
         cache.object(forKey: Self.key(chatId: chatId, messageId: messageId,
                                       editDate: editDate, language: language,
-                                      textHash: textHash)) as String?
+                                      role: role)) as String?
     }
 
     func store(_ text: String, chatId: Int64, messageId: Int64, editDate: Int32,
-               language: String, textHash: Int) {
+               language: String, role: String) {
         cache.setObject(text as NSString,
                         forKey: Self.key(chatId: chatId, messageId: messageId,
                                          editDate: editDate, language: language,
-                                         textHash: textHash))
+                                         role: role))
     }
 }
 
@@ -93,6 +93,7 @@ final class AutoTranslationManager: ObservableObject {
         let messageId: Int64
         let editDate: Int32
         let text: String
+        let role: String
     }
 
     @Published private(set) var pending: [Request] = []
@@ -125,16 +126,16 @@ final class AutoTranslationManager: ObservableObject {
         CallDiag.log("auto translation target changed to \(AutoTranslationSettings.shared.targetLanguage)")
     }
 
-    func translation(for message: TDLibKit.Message, text: String) -> String? {
+    func translation(for message: TDLibKit.Message, text: String, role: String = "body") -> String? {
         guard AutoTranslationSettings.shared.isEnabled else { return nil }
         return TranslatedMessageCache.shared.translation(chatId: message.chatId,
                                                          messageId: message.id,
                                                          editDate: Int32(message.editDate),
                                                          language: AutoTranslationSettings.shared.targetLanguage,
-                                                         textHash: text.hashValue)
+                                                         role: role)
     }
 
-    func requestIfNeeded(message: TDLibKit.Message, text: String) {
+    func requestIfNeeded(message: TDLibKit.Message, text: String, role: String = "body") {
         let settings = AutoTranslationSettings.shared
         guard settings.isEnabled, settings.isSupported else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -142,16 +143,17 @@ final class AutoTranslationManager: ObservableObject {
         // Skip text that is already in the target language.
         guard Self.language(of: trimmed) != settings.targetLanguage else { return }
 
-        let key = "\(message.chatId):\(message.id):\(message.editDate):\(trimmed.hashValue)"
+        let key = "\(message.chatId):\(message.id):\(message.editDate):\(role)"
         guard !inFlight.contains(key),
               TranslatedMessageCache.shared.translation(chatId: message.chatId,
                                                         messageId: message.id,
                                                         editDate: Int32(message.editDate),
                                                         language: settings.targetLanguage,
-                                                        textHash: trimmed.hashValue) == nil else { return }
+                                                        role: role) == nil else { return }
         inFlight.insert(key)
         pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
-                               editDate: Int32(message.editDate), text: trimmed))
+                               editDate: Int32(message.editDate), text: trimmed, role: role))
+        CallDiag.log("auto translation queued: message=\(message.id) target=\(settings.targetLanguage) role=\(role)")
         attachHostIfNeeded()
     }
 
@@ -165,7 +167,7 @@ final class AutoTranslationManager: ObservableObject {
                                                 messageId: request.messageId,
                                                 editDate: request.editDate,
                                                 language: language,
-                                                textHash: request.text.hashValue)
+                                                role: request.role)
             completedCount += 1
         }
     }
@@ -249,6 +251,7 @@ struct TranslationHostView: View {
 struct AutoTranslatedMessageText: View {
     let message: TDLibKit.Message
     let formatted: TDLibKit.FormattedText
+    var role: String = "body"
 
     @ObservedObject private var settings = AutoTranslationSettings.shared
     @ObservedObject private var manager = AutoTranslationManager.shared
@@ -282,10 +285,10 @@ struct AutoTranslatedMessageText: View {
             request()
         }
         .onChange(of: manager.completedCount) { _ in
-            translated = manager.translation(for: message, text: formatted.text)
+            translated = manager.translation(for: message, text: formatted.text, role: role)
         }
         .onChange(of: manager.cacheVersion) { _ in
-            translated = manager.translation(for: message, text: formatted.text)
+            translated = manager.translation(for: message, text: formatted.text, role: role)
             request()
         }
     }
@@ -295,10 +298,10 @@ struct AutoTranslatedMessageText: View {
             translated = nil
             return
         }
-        if let cached = manager.translation(for: message, text: formatted.text) {
+        if let cached = manager.translation(for: message, text: formatted.text, role: role) {
             translated = cached
             return
         }
-        manager.requestIfNeeded(message: message, text: formatted.text)
+        manager.requestIfNeeded(message: message, text: formatted.text, role: role)
     }
 }
