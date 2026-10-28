@@ -40,6 +40,26 @@ nonisolated enum ImageCache {
         return cache
     }()
 
+    /// Decodes and pre-masks an avatar into a circular bitmap on a background
+    /// queue, so the main thread only blits a ready texture (no clipShape pass).
+    static func circularImageAsync(atPath path: String, maxPixel: CGFloat = 160) async -> UIImage? {
+        guard let image = await imageAsync(atPath: path, maxPixel: maxPixel) else { return nil }
+        return await withCheckedContinuation { continuation in
+            decodeQueue.addOperation {
+                let side = min(image.size.width, image.size.height)
+                let rect = CGRect(x: (image.size.width - side) / 2,
+                                  y: (image.size.height - side) / 2,
+                                  width: side, height: side)
+                let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side))
+                let rounded = renderer.image { context in
+                    UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: side, height: side)).addClip()
+                    image.draw(at: CGPoint(x: -rect.origin.x, y: -rect.origin.y))
+                }
+                continuation.resume(returning: rounded)
+            }
+        }
+    }
+
     static func image(atPath path: String, maxPixel: CGFloat = 1280) -> UIImage? {
         let effectiveMax = effectiveMaxPixel(maxPixel)
         let key = "\(path)#\(Int(effectiveMax))" as NSString
@@ -277,7 +297,7 @@ struct AvatarView: View {
                 return
             }
             let pixel: CGFloat = DevicePerformance.isLowMemory ? 120 : 160
-            let decoded = await ImageCache.imageAsync(atPath: path, maxPixel: pixel)
+            let decoded = await ImageCache.circularImageAsync(atPath: path, maxPixel: pixel)
             guard !Task.isCancelled else { return }
             image = decoded
         }

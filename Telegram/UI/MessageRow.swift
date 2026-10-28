@@ -222,6 +222,7 @@ struct MessageRow: View {
             }
         } else {
             bubble
+                .rasterizeOnScroll()
         }
     }
 
@@ -320,7 +321,7 @@ struct MessageRow: View {
         .foregroundColor(message.isOutgoing ? .white : .primary)
         .tint(message.isOutgoing ? .white : .accentColor)
         .background(
-            RoundedRectangle(cornerRadius: classic.isEnabled ? 14 : 20)
+            RoundedRectangle(cornerRadius: classic.isEnabled ? 14 : 20, style: .continuous)
                 .fill(message.isOutgoing ? Color.accentColor : Color(.secondarySystemBackground))
         )
     }

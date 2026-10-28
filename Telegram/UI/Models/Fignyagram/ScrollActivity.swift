@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import QuartzCore
 
 /// Tracks whether a list is being dragged, so expensive background work
 /// (translation prefetch, media decoding) is postponed until the finger stops.
@@ -12,9 +13,20 @@ final class ScrollActivity: ObservableObject {
 
     private init() {}
 
+    private var transactionOpen = false
+
     func begin() {
         resetTask?.cancel()
-        if !isScrolling { isScrolling = true }
+        if !isScrolling {
+            isScrolling = true
+            // Suppress implicit CoreAnimation animations for the duration of the
+            // drag: every frame is committed as one monolithic transaction.
+            if !transactionOpen {
+                transactionOpen = true
+                CATransaction.begin()
+                CATransaction.setDisableActions(true)
+            }
+        }
     }
 
     func end() {
@@ -23,6 +35,10 @@ final class ScrollActivity: ObservableObject {
             try? await Task.sleep(nanoseconds: 120_000_000)
             guard let self, !Task.isCancelled else { return }
             self.isScrolling = false
+            if self.transactionOpen {
+                self.transactionOpen = false
+                CATransaction.commit()
+            }
         }
     }
 
