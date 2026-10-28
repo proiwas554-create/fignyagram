@@ -221,9 +221,15 @@ final class AutoTranslationManager: ObservableObject {
         return false
     }
 
+    /// Title prefetch in the main list is disabled on old devices: it would
+    /// fire hundreds of times while scrolling and fight for the CPU.
+    var titlePrefetchEnabled: Bool {
+        AutoTranslationSettings.shared.mode == .auto && !DevicePerformance.isLowMemory
+    }
+
     /// Chat/channel titles use the same cache with role "title".
     func translation(forChatId chatId: Int64, title: String) -> String? {
-        guard AutoTranslationSettings.shared.mode != .disabled else { return nil }
+        guard AutoTranslationSettings.shared.mode == .auto else { return nil }
         return TranslatedMessageCache.shared.translation(chatId: chatId,
                                                          messageId: 0,
                                                          editDate: 0,
@@ -233,7 +239,7 @@ final class AutoTranslationManager: ObservableObject {
 
     func requestChatTitle(chatId: Int64, title: String) {
         let settings = AutoTranslationSettings.shared
-        guard settings.mode == .auto, settings.isSupported else { return }
+        guard titlePrefetchEnabled, settings.isSupported else { return }
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count >= 2 else { return }
         guard Self.language(of: trimmed) != settings.targetLanguage else { return }
@@ -495,6 +501,7 @@ struct AutoTranslatedMessageText: View {
     @ObservedObject private var settings = AutoTranslationSettings.shared
     @ObservedObject private var manager = AutoTranslationManager.shared
     @State private var translated: String?
+    @State private var requestTask: Task<Void, Never>?
 
     var body: some View {
         Group {
@@ -512,9 +519,8 @@ struct AutoTranslatedMessageText: View {
                 SpoilerTextView(formatted: formatted)
             }
         }
-        .onAppear {
-            request()
-        }
+        .onAppear { request() }
+        .onDisappear { cancelPendingRequest() }
         .onChange(of: settings.isEnabled) { _ in
             translated = manager.translation(for: message, text: formatted.text, role: role)
             request()
@@ -533,14 +539,26 @@ struct AutoTranslatedMessageText: View {
     }
 
     private func request() {
-        guard settings.isEnabled else {
-            translated = nil
+        guard settings.mode == .auto else {
+            translated = manager.translation(for: message, text: formatted.text, role: role)
             return
         }
         if let cached = manager.translation(for: message, text: formatted.text, role: role) {
             translated = cached
             return
         }
-        manager.requestIfNeeded(message: message, text: formatted.text, role: role)
+        // Debounce so fast scrolling never queues work for cells that pass by.
+        requestTask?.cancel()
+        let text = formatted.text
+        requestTask = Task { [message, role] in
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            guard !Task.isCancelled else { return }
+            manager.requestIfNeeded(message: message, text: text, role: role)
+        }
+    }
+
+    private func cancelPendingRequest() {
+        requestTask?.cancel()
+        requestTask = nil
     }
 }

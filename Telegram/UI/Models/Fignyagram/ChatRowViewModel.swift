@@ -28,9 +28,25 @@ final class ChatRowViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
+    private var requestTask: Task<Void, Never>?
+
     func start() {
         refresh()
-        AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
+        guard AutoTranslationManager.shared.translation(forChatId: chatId, title: originalTitle) == nil,
+              AutoTranslationManager.shared.titlePrefetchEnabled else { return }
+        // Debounce: while the list is scrolling fast, cells appear and vanish
+        // immediately; only cells that stay on screen get translated.
+        requestTask?.cancel()
+        requestTask = Task { [chatId, originalTitle] in
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            guard !Task.isCancelled else { return }
+            AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
+        }
+    }
+
+    func stop() {
+        requestTask?.cancel()
+        requestTask = nil
     }
 
     private func refresh() {

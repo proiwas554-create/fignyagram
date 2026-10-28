@@ -19,7 +19,6 @@ struct ChatListView: View {
     @ObservedObject private var proxy = BuiltInProxyManager.shared
     @ObservedObject private var recentContacts = RecentContactsStore.shared
     @ObservedObject private var hiddenChats = HiddenChats.shared
-    @ObservedObject private var autoTranslation = AutoTranslationManager.shared
     @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
@@ -131,12 +130,9 @@ struct ChatListView: View {
     }
 
     private func displayTitle(_ chat: ChatItem) -> String {
-        let base = aliases.chatAlias(chat.id) ?? chat.title
-        if let cached = autoTranslation.translation(forChatId: chat.id, title: base) {
-            return cached
-        }
-        autoTranslation.requestChatTitle(chatId: chat.id, title: base)
-        return base
+        // The row itself resolves the translated title (debounced, cached), so
+        // the whole list never re-renders when a translation arrives.
+        aliases.chatAlias(chat.id) ?? chat.title
     }
 
     private func isPinned(_ chat: ChatItem) -> Bool {
@@ -769,6 +765,7 @@ struct TranslatedChatTitle: View {
     var body: some View {
         Text(model.translatedTitle)
             .onAppear { model.start() }
+            .onDisappear { model.stop() }
     }
 }
 
