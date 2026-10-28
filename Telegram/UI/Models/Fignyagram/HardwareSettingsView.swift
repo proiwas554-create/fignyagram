@@ -27,10 +27,10 @@ struct HardwareSettingsView: View {
 
                 Section("Устройство") {
                     row("Модель", tuning.device.marketingName)
-                    row("Идентификатор", tuning.device.identifier)
-                    row("Класс", tuning.device.tier.title)
+                    row(L10n.t("Hw.Identifier"), tuning.device.identifier)
+                    row(L10n.t("Hw.Class"), tuning.device.tier.title)
                     row("Рекомендуемый профиль", tuning.device.recommendedProfile.title)
-                    row("Максимальная частота", "\(tuning.device.recommendedRefreshRate) Гц")
+                    row(L10n.t("Hw.MaxFreq"), "\(tuning.device.recommendedRefreshRate) Гц")
                 }
 
                 Section("Состояние устройства") {
@@ -40,7 +40,7 @@ struct HardwareSettingsView: View {
                 }
 
                 Section {
-                    Toggle("Максимальная производительность", isOn: Binding(
+                    Toggle(L10n.t("Hw.MaxPerf"), isOn: Binding(
                         get: { tuning.maxPerformance },
                         set: { enabled in
                             if enabled { confirmMax = true } else { tuning.maxPerformance = false }
@@ -55,7 +55,7 @@ struct HardwareSettingsView: View {
                 }
 
                 Section {
-                    Toggle("Авто-троттлинг при нагреве", isOn: $tuning.autoThrottle)
+                    Toggle(L10n.t("Hw.Throttle"), isOn: $tuning.autoThrottle)
                 } footer: {
                     Text("При сильном нагреве или включённом энергосбережении приложение автоматически перейдёт в экономичный профиль. Это не меняет функции, только качество декодирования и кэш.")
                         .font(.appFootnote)
@@ -65,11 +65,11 @@ struct HardwareSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
-            .confirmationDialog("Включить максимальную производительность?", isPresented: $confirmMax, titleVisibility: .visible) {
-                Button("Включить на свой страх и риск", role: .destructive) {
+            .confirmationDialog(L10n.t("Hw.MaxPerfConfirm"), isPresented: $confirmMax, titleVisibility: .visible) {
+                Button(L10n.t("Hw.Risk"), role: .destructive) {
                     tuning.maxPerformance = true
                 }
                 Button("Отмена", role: .cancel) {}

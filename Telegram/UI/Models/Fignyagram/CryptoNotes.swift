@@ -67,24 +67,24 @@ struct PassphrasePrompt: View {
         NavigationView {
             Form {
                 Section(title) {
-                    SecureField("Ключ", text: $value)
+                    SecureField(L10n.t("Snippets.Key"), text: $value)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
                 Section {
-                    Text("Ключ не передаётся на сервер: им шифруется текст на этом устройстве.")
+                    Text(L10n.t("Snippets.KeyHint"))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Зашифрованная заметка")
+            .navigationTitle(L10n.t("Snippets.EncTitle"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") {
+                    Button(L10n.t("Common.Done")) {
                         let key = value
                         dismiss()
                         onSubmit(key)
@@ -123,13 +123,13 @@ struct SnippetsSettingsView: View {
                             Button(role: .destructive) {
                                 store.remove(snippet)
                             } label: {
-                                Label("Удалить", systemImage: "trash")
+                                Label(L10n.t("Common.Delete"), systemImage: "trash")
                             }
                         }
                 }
             }
             Section {
-                Text("Шаблоны доступны по долгому нажатию на поле ввода.")
+                Text(L10n.t("Snippets.Hint"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
             }

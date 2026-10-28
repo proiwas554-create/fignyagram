@@ -15,10 +15,10 @@ final class AutomationEngine: ObservableObject {
 
             var title: String {
                 switch self {
-                case .clearCache: return "очистить кэш"
-                case .hideChat: return "скрыть чат"
-                case .sendSnippet: return "отправить текст"
-                case .markRead: return "отметить прочитанным"
+                case .clearCache: return L10n.t("Macros.Action.ClearCache")
+                case .hideChat: return L10n.t("Macros.Action.HideChat")
+                case .sendSnippet: return L10n.t("Macros.Action.SendText")
+                case .markRead: return L10n.t("Macros.Action.MarkRead")
                 }
             }
         }
@@ -136,7 +136,7 @@ struct MacroSettingsView: View {
                 if action == .sendSnippet {
                     TextField(L10n.t("Macros.Reply"), text: $value)
                 }
-                Button("Добавить") {
+                Button(L10n.t("Common.Add")) {
                     let chatId = Int64(chatIdText.trimmingCharacters(in: .whitespaces))
                     engine.addRule(chatId: chatId, keyword: keyword, action: action, value: value)
                     keyword = ""
@@ -164,14 +164,14 @@ struct MacroSettingsView: View {
                         Button(role: .destructive) {
                             engine.removeRule(at: index)
                         } label: {
-                            Label("Удалить", systemImage: "trash")
+                            Label(L10n.t("Common.Delete"), systemImage: "trash")
                         }
                     }
                 }
             }
 
             Section {
-                Text("Правила работают локально: при входящем сообщении с нужным словом выполняется выбранное действие.")
+                Text(L10n.t("Macros.Hint"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
             }

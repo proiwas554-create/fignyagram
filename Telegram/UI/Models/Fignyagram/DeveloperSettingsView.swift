@@ -22,19 +22,19 @@ struct DeveloperSettingsView: View {
         NavigationView {
             List {
                 Section("Сборка") {
-                    row("Версия", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                    row(L10n.t("Dev.Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     row("iOS", UIDevice.current.systemVersion)
                     row("TDLib API", "1.8.68")
-                    row("Аккаунт", client.me.map { "\($0.id)" } ?? "—")
+                    row(L10n.t("Dev.Account"), client.me.map { "\($0.id)" } ?? "—")
                 }
 
-                Section("Нагрузка приложения") {
+                Section(L10n.t("Dev.AppLoad")) {
                     row("Память", String(format: "%.1f МБ", monitor.memoryMB))
                     row("CPU", String(format: "%.1f%%", monitor.cpuPercent))
                     row("Потоки", "\(monitor.threadCount)")
-                    row("Загружено сообщений", "\(monitor.loadedMessages)")
-                    row("Загружено чатов", "\(monitor.loadedChats)")
-                    row("Кэш", MessageFormatter.fileSize(monitor.cacheBytes))
+                    row(L10n.t("Dev.LoadedMessages"), "\(monitor.loadedMessages)")
+                    row(L10n.t("Dev.LoadedChats"), "\(monitor.loadedChats)")
+                    row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(monitor.cacheBytes))
                     Button("Обновить сейчас") { monitor.sample() }
                 }
 
@@ -74,7 +74,7 @@ struct DeveloperSettingsView: View {
                 Section("Состояние") {
                     row("Чатов", "\(store.chats.count)")
                     row("Пользователей", "\(store.users.count)")
-                    row("Кэш", MessageFormatter.fileSize(cache.totalBytes))
+                    row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(cache.totalBytes))
                     row("Оптимизация", performance.isEnabled ? performance.level.title : "выключена")
                     Button(L10n.t("Dev.RefreshStats")) { cache.refresh() }
                 }
@@ -96,7 +96,7 @@ struct DeveloperSettingsView: View {
                         ImageCache.applyLegacyDeviceTuning()
                     }
                 } header: {
-                    Text("Графика и оптимизация")
+                    Text(L10n.t("Dev.Graphics"))
                 } footer: {
                     Text("Управление Metal/ProMotion, пакетной отрисовкой и числом потоков декодирования изображений.")
                         .font(.appFootnote)

@@ -114,7 +114,7 @@ struct CacheSettingsView: View {
                 titleVisibility: .visible
             ) {
                 if let category = pendingCategory {
-                    Button("Очистить «\(category.title)»", role: .destructive) {
+                    Button(String(format: L10n.t("Cache.ClearNamed"), category.title), role: .destructive) {
                         cache.clear(category)
                         pendingCategory = nil
                     }
@@ -126,7 +126,7 @@ struct CacheSettingsView: View {
                 isPresented: $showClearAll,
                 titleVisibility: .visible
             ) {
-                Button("Очистить всё", role: .destructive) {
+                Button(L10n.t("Cache.ClearEverything"), role: .destructive) {
                     cache.clearAll()
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
