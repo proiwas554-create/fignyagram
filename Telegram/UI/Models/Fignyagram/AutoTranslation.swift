@@ -198,11 +198,16 @@ final class AutoTranslationManager: ObservableObject {
 
     static func isPackInstalled(text: String, target: String) async -> Bool {
         if #available(iOS 18.0, *) {
-            let language = language(of: text) ?? "en"
-            let source = Locale.Language(identifier: language)
             let destination = Locale.Language(identifier: target)
-            let status = await LanguageAvailability().status(from: source, to: destination)
-            return status == LanguageAvailability.Status.installed
+            let availability = LanguageAvailability()
+            var sources: [String] = []
+            if let detected = language(of: text) { sources.append(detected) }
+            sources.append(contentsOf: ["en", "ru"])
+            for code in sources {
+                let status = await availability.status(from: Locale.Language(identifier: code), to: destination)
+                if status == LanguageAvailability.Status.installed { return true }
+            }
+            return false
         }
         return false
     }
@@ -238,8 +243,23 @@ final class AutoTranslationManager: ObservableObject {
     /// download the language pack, and that must happen only here.
     func requestLanguagePreparation() {
         guard AutoTranslationSettings.shared.isSupported else { return }
+        // The user explicitly picked this language on the settings screen, where
+        // Apple's download sheet is allowed to appear. From now on chats may use
+        // it silently.
+        packStatus[AutoTranslationSettings.shared.targetLanguage] = true
         pendingPreparation = true
         requestGeneration += 1
+    }
+
+    /// Silent translation entry point for cells: returns a cached translation,
+    /// queues a background one and otherwise yields the original text.
+    func translate(_ text: String, role: String = "body", message: TDLibKit.Message?) async -> String {
+        guard AutoTranslationSettings.shared.mode == .auto else { return text }
+        if let message, let cached = translation(for: message, text: text, role: role) {
+            return cached
+        }
+        if let message { requestIfNeeded(message: message, text: text, role: role) }
+        return text
     }
 
     func purgePending() {
