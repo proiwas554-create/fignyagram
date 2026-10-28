@@ -282,7 +282,7 @@ struct AvatarView: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .blur(radius: ScrollActivity.shared.isScrolling ? 0 : 2)
+                    .blur(radius: 2)
             } else {
                 ZStack {
                     LinearGradient(

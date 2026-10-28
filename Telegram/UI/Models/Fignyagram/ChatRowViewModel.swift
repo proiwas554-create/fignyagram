@@ -37,10 +37,10 @@ final class ChatRowViewModel: ObservableObject {
         // Debounce: while the list is scrolling fast, cells appear and vanish
         // immediately; only cells that stay on screen get translated.
         requestTask?.cancel()
-        requestTask = Task { [chatId, originalTitle] in
+        requestTask = Task.detached(priority: .background) { [chatId, originalTitle] in
             try? await Task.sleep(nanoseconds: 150_000_000)
             guard !Task.isCancelled else { return }
-            AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
+            await AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
         }
     }
 

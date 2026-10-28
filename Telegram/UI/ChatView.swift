@@ -701,11 +701,6 @@ struct ChatView: View {
             }
             .listStyle(.plain)
             .environment(\.defaultMinListRowHeight, 1)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 8)
-                    .onChanged { _ in ScrollActivity.shared.begin() }
-                    .onEnded { _ in ScrollActivity.shared.end() }
-            )
                 .coordinateSpace(name: Self.scrollSpace)
                 .overlay(alignment: .top) {
                     if let text = headerDateText, !isAtBottom {

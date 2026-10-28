@@ -4,8 +4,9 @@ import hashlib, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = [
- "Telegram/UI/Models/Fignyagram/SettingsView.swift",
+FILES = []
+FILES += [str(p.relative_to(ROOT)) for p in (ROOT / "Telegram/UI").rglob("*.swift")]
+FILES += [
  "Telegram/UI/Models/Fignyagram/CacheSettingsView.swift",
  "Telegram/UI/Models/Fignyagram/CryptoNotes.swift",
  "Telegram/UI/Models/Fignyagram/AutomationEngine.swift",

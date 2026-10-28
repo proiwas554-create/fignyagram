@@ -563,7 +563,6 @@ struct AutoTranslatedMessageText: View {
             try? await Task.sleep(nanoseconds: 200_000_000)
             guard !Task.isCancelled else { return }
             // Do not compete with active scrolling: wait for the finger to stop.
-            guard await ScrollActivity.shared.waitUntilIdle() else { return }
             manager.requestIfNeeded(message: message, text: text, role: role)
         }
     }
