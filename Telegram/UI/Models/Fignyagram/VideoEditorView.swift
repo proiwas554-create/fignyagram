@@ -76,7 +76,7 @@ struct VideoEditorView: View {
                     ), in: 0...max(duration, 0.3))
 
                     HStack {
-                        Text(String(format: L10n.t("AutoI.d32f8b64c3"), ))
+                        Text(String(format: L10n.t("VideoEditor.Duration"), time(end - start)))
                             .font(.appFootnote)
                         Spacer()
                         Toggle(L10n.t("Auto.9f63511c00"), isOn: $muted)

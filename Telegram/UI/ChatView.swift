@@ -616,7 +616,9 @@ struct ChatView: View {
     }
 
     private var earlierButtonTitle: String {
-        "Показать ещё \(min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count))"
+        String(format: L10n.t("ChatList.ShowMore"),
+               min(limits.effectiveMessagesPerChat,
+                   unblockedMessages.count - visibleMessages.count))
     }
 
     @ViewBuilder
@@ -652,7 +654,7 @@ struct ChatView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.up")
-                            Text(String(format: L10n.t("AutoI.2719f28771"), ))
+                            Text(String(format: L10n.t("ChatList.ShowMore"), min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count)))
                         }
                         .font(.appFootnote)
                     }

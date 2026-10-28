@@ -1940,3 +1940,7 @@
 "Feed.Tab.Added" = "Добавленные";
 "Feed.Tab.ForYou" = "Для вас";
 "Feed.Tab.Important" = "Важное";
+"ChatList.ShowMore" = "Показать ещё %@";
+"VideoEditor.Duration" = "Длительность: %@";
+"GroupCall.Participants" = "Участники: %@";
+"Auth.ResendCode" = "Отправить код %@";

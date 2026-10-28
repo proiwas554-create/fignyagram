@@ -33,7 +33,7 @@ struct GroupCallView: View {
                     .font(.appFootnote)
                     .foregroundColor(.white.opacity(0.7))
 
-                Text(String(format: L10n.t("AutoI.7a8c718c39"), ))
+                Text(String(format: L10n.t("GroupCall.Participants"), max(group.participants.count, 1)))
                     .font(.appSubheadline)
                     .foregroundColor(.white.opacity(0.85))
 

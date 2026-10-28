@@ -231,7 +231,7 @@ struct AuthView: View {
             .disabled(code.isEmpty || client.isBusy)
 
             if let next = info.nextType {
-                Button(String(format: L10n.t("AutoI.025becfb75"), )) { client.resendCode() }
+                Button(String(format: L10n.t("Auth.ResendCode"), Self.codeDestination(next).lowercased())) { client.resendCode() }
                     .disabled(client.isBusy)
             }
             Button(L10n.t("Auto.e74fdbe75f")) { editingPhone = true }

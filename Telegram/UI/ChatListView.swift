@@ -198,7 +198,9 @@ struct ChatListView: View {
                         HStack { Spacer(); ProgressView(); Spacer() }
                     }
                     if chatIds.count > displayedChatIds.count {
-                        Text(String(format: L10n.t("AutoI.1b53d12843"), ))
+                        Text(String(format: L10n.t("ChatList.ShowMore"),
+                                    min(max(10, limits.effectiveRenderedChats),
+                                        chatIds.count - displayedChatIds.count)))
                             .font(.appFootnote)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)

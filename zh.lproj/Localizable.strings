@@ -1940,3 +1940,7 @@
 "Feed.Tab.Added" = "已添加";
 "Feed.Tab.ForYou" = "为你推荐";
 "Feed.Tab.Important" = "重要";
+"ChatList.ShowMore" = "显示更多 %@";
+"VideoEditor.Duration" = "时长：%@";
+"GroupCall.Participants" = "参与者：%@";
+"Auth.ResendCode" = "发送代码 %@";
