@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import SwiftUI
 import TDLibKit
 
 /// A single feed entry: one channel post plus the context needed to render it.
@@ -69,9 +70,21 @@ final class NewsFeedDataManager: ObservableObject {
     @Published var sorting: Sorting = .recent
 
     /// Tuning knobs, kept here so the UI never hard-codes the limits.
-    var postsPerChannel = DevicePerformance.isLowMemory ? 5 : 8
+    @AppStorage("feedPostsPerChannel") var configuredPostsPerChannel = 0
+    @AppStorage("feedMaxPosts") var configuredMaxPosts = 0
+    @AppStorage("feedShowForYou") var showForYouTab = true
+    @AppStorage("feedShowImportant") var showImportantTab = true
+    @AppStorage("feedAutoRefreshSeconds") var autoRefreshSeconds = 0
+
+    var postsPerChannel: Int {
+        if configuredPostsPerChannel > 0 { return configuredPostsPerChannel }
+        return DevicePerformance.isLowMemory ? 5 : 8
+    }
     var maximumChannels = DevicePerformance.isLowMemory ? 60 : 150
-    var maximumPosts = DevicePerformance.isLowMemory ? 200 : 400
+    var maximumPosts: Int {
+        if configuredMaxPosts > 0 { return configuredMaxPosts }
+        return DevicePerformance.isLowMemory ? 200 : 400
+    }
     /// Concurrent history requests: TDLib handles a few in parallel well.
     var historyConcurrency = DevicePerformance.isLowMemory ? 3 : 6
     /// Number of posts the «Для вас» tab keeps after ranking.
@@ -263,13 +276,21 @@ struct NewsFeedView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var tab: NewsFeedDataManager.Tab = .added
     @State private var showFilters = false
+    @State private var showSettings = false
+    @AppStorage("feedShowForYou") private var showForYouTab = true
+    @AppStorage("feedShowImportant") private var showImportantTab = true
+    @AppStorage("feedAutoRefreshSeconds") private var autoRefreshSeconds = 0
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
                 Picker("", selection: $tab) {
-                    ForEach(NewsFeedDataManager.Tab.allCases, id: \.self) { item in
-                        Text(item.title).tag(item)
+                    Text(NewsFeedDataManager.Tab.added.title).tag(NewsFeedDataManager.Tab.added)
+                    if showForYouTab {
+                        Text(NewsFeedDataManager.Tab.forYou.title).tag(NewsFeedDataManager.Tab.forYou)
+                    }
+                    if showImportantTab {
+                        Text(NewsFeedDataManager.Tab.important.title).tag(NewsFeedDataManager.Tab.important)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -331,6 +352,9 @@ struct NewsFeedView: View {
                     Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
+                    Button { showSettings = true } label: {
+                        Image(systemName: "gearshape")
+                    }
                     Button { showFilters = true } label: {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
@@ -350,6 +374,17 @@ struct NewsFeedView: View {
             }
             .sheet(isPresented: $showFilters) {
                 NewsFeedFiltersView()
+            }
+            .sheet(isPresented: $showSettings) {
+                NewsFeedSettingsView()
+            }
+            .task(id: autoRefreshSeconds) {
+                guard autoRefreshSeconds > 0 else { return }
+                while !Task.isCancelled {
+                    try? await Task.sleep(nanoseconds: UInt64(autoRefreshSeconds) * 1_000_000_000)
+                    guard !Task.isCancelled else { return }
+                    await manager.refresh(force: true)
+                }
             }
             .task {
                 manager.tab = tab
@@ -398,6 +433,61 @@ struct NewsFeedFiltersView: View {
                 }
             }
             .navigationTitle(L10n.t("Feed.Filters"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(L10n.t("Common.Done")) { dismiss() }
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+    }
+}
+
+
+/// News feed preferences: limits, tabs and refresh cadence.
+struct NewsFeedSettingsView: View {
+    @ObservedObject private var manager = NewsFeedDataManager.shared
+    @Environment(\.dismiss) private var dismiss
+    @AppStorage("feedPostsPerChannel") private var postsPerChannel = 0
+    @AppStorage("feedMaxPosts") private var maxPosts = 0
+    @AppStorage("feedShowForYou") private var showForYou = true
+    @AppStorage("feedShowImportant") private var showImportant = true
+    @AppStorage("feedAutoRefreshSeconds") private var autoRefresh = 0
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(L10n.t("Feed.Settings.Content")) {
+                    Picker(L10n.t("Feed.Settings.PerChannel"), selection: $postsPerChannel) {
+                        Text(L10n.t("Feed.Settings.Auto")).tag(0)
+                        Text("5").tag(5); Text("8").tag(8); Text("12").tag(12); Text("20").tag(20)
+                    }
+                    Picker(L10n.t("Feed.Settings.MaxPosts"), selection: $maxPosts) {
+                        Text(L10n.t("Feed.Settings.Auto")).tag(0)
+                        Text("200").tag(200); Text("400").tag(400); Text("800").tag(800)
+                    }
+                }
+                Section(L10n.t("Feed.Settings.Tabs")) {
+                    Toggle(L10n.t("Feed.Tab.ForYou"), isOn: $showForYou)
+                    Toggle(L10n.t("Feed.Tab.Important"), isOn: $showImportant)
+                }
+                Section(L10n.t("Feed.Settings.Refresh")) {
+                    Picker(L10n.t("Feed.Settings.RefreshInterval"), selection: $autoRefresh) {
+                        Text(L10n.t("Settings.Never")).tag(0)
+                        Text("1 min").tag(60)
+                        Text("5 min").tag(300)
+                        Text("15 min").tag(900)
+                    }
+                }
+                Section {
+                    NavigationLink(L10n.t("Feed.Filters")) { NewsFeedFiltersView() }
+                    Text(L10n.t("Feed.Settings.Hint"))
+                        .font(.appFootnote)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .navigationTitle(L10n.t("Feed.Settings.Title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
