@@ -30,26 +30,26 @@ enum MessageFormatter {
     static func mediaLabel(_ content: MessageContent) -> String? {
         switch content {
         case .messageText: return nil
-        case .messagePhoto: return "📷 Фото"
-        case .messageVideo: return "🎥 Видео"
+        case .messagePhoto: return L10n.t("AutoR.4d07dfc39a")
+        case .messageVideo: return L10n.t("AutoR.20f948cf8c")
         case .messageDocument(let d): return "📄 \(d.document.fileName.isEmpty ? "Документ" : d.document.fileName)"
         case .messageAnimation: return "🎞 GIF"
         case .messageAudio(let a): return "🎵 \(a.audio.title.isEmpty ? "Аудио" : a.audio.title)"
-        case .messageSticker(let s): return "\(s.sticker.emoji) Стикер"
-        case .messageVoiceNote: return "🎤 Голосовое сообщение"
-        case .messageVideoNote: return "📹 Видеосообщение"
+        case .messageSticker(let s): return String(format: L10n.t("AutoR.1f430a6f5f"), String(describing: s.sticker.emoji))
+        case .messageVoiceNote: return L10n.t("AutoR.4a85e9768c")
+        case .messageVideoNote: return L10n.t("AutoR.57f1054b62")
         case .messagePoll(let p): return "📊 \(p.poll.question.text)"
-        case .messageLocation, .messageLiveLocation: return "📍 Геопозиция"
-        case .messageVenue: return "📍 Место"
+        case .messageLocation, .messageLiveLocation: return L10n.t("AutoR.94c9d17e6d")
+        case .messageVenue: return L10n.t("AutoR.1d6cbc3c72")
         case .messageContact(let c): return "👤 \([c.contact.firstName, c.contact.lastName].filter { !$0.isEmpty }.joined(separator: " "))"
         case .messageAnimatedEmoji(let e): return e.emoji
         case .messageDice(let d): return d.emoji
         case .messageCall(let c): return c.isVideo ? "📹 Видеозвонок" : "📞 Звонок"
-        case .messageStory: return "Сторис"
-        case .messageGame: return "🎮 Игра"
-        case .messageInvoice: return "🧾 Счёт"
-        case .messageExpiredPhoto: return "📷 Фото удалено"
-        case .messageExpiredVideo: return "🎥 Видео удалено"
+        case .messageStory: return L10n.t("AutoR.45eb04aa3a")
+        case .messageGame: return L10n.t("AutoR.bc398effad")
+        case .messageInvoice: return L10n.t("AutoR.6f952fa594")
+        case .messageExpiredPhoto: return L10n.t("AutoR.25766df95c")
+        case .messageExpiredVideo: return L10n.t("AutoR.ea1b4a0d9c")
         default: return serviceText(content) == nil ? "📎 Вложение" : nil
         }
     }
@@ -57,25 +57,25 @@ enum MessageFormatter {
     /// Text for service messages (rendered centered in a chat), nil for regular messages.
     static func serviceText(_ content: MessageContent) -> String? {
         switch content {
-        case .messageBasicGroupChatCreate(let c): return "Группа «\(c.title)» создана"
-        case .messageSupergroupChatCreate(let c): return "«\(c.title)» создан(а)"
-        case .messageChatChangeTitle(let c): return "Новое название: «\(c.title)»"
-        case .messageChatChangePhoto: return "Фото чата обновлено"
-        case .messageChatDeletePhoto: return "Фото чата удалено"
-        case .messageChatAddMembers: return "Новые участники"
-        case .messageChatJoinByLink, .messageChatJoinByRequest: return "Вступил(а) в чат"
-        case .messageChatDeleteMember: return "Участник покинул чат"
-        case .messagePinMessage: return "📌 Сообщение закреплено"
-        case .messageScreenshotTaken: return "Сделан скриншот"
-        case .messageContactRegistered: return "Присоединился(-ась) к Telegram"
-        case .messageChatUpgradeTo, .messageChatUpgradeFrom: return "Группа преобразована в супергруппу"
-        case .messageChatSetMessageAutoDeleteTime: return "Изменён таймер автоудаления"
-        case .messageForumTopicCreated: return "Создана тема"
-        case .messageVideoChatStarted: return "Видеочат начат"
-        case .messageVideoChatEnded: return "Видеочат завершён"
+        case .messageBasicGroupChatCreate(let c): return String(format: L10n.t("AutoR.f3c04ad3f6"), String(describing: c.title))
+        case .messageSupergroupChatCreate(let c): return String(format: L10n.t("AutoR.5bd621e6db"), String(describing: c.title))
+        case .messageChatChangeTitle(let c): return String(format: L10n.t("AutoR.39fac21183"), String(describing: c.title))
+        case .messageChatChangePhoto: return L10n.t("AutoR.d231644d88")
+        case .messageChatDeletePhoto: return L10n.t("AutoR.68ad8dd977")
+        case .messageChatAddMembers: return L10n.t("AutoR.868d7bd9b5")
+        case .messageChatJoinByLink, .messageChatJoinByRequest: return L10n.t("AutoR.0679f0de9e")
+        case .messageChatDeleteMember: return L10n.t("AutoR.fd81e90154")
+        case .messagePinMessage: return L10n.t("AutoR.6995491021")
+        case .messageScreenshotTaken: return L10n.t("AutoR.a4eb70da00")
+        case .messageContactRegistered: return L10n.t("AutoR.21bcda1c43")
+        case .messageChatUpgradeTo, .messageChatUpgradeFrom: return L10n.t("AutoR.c7deb47a74")
+        case .messageChatSetMessageAutoDeleteTime: return L10n.t("AutoR.8ad0f19b75")
+        case .messageForumTopicCreated: return L10n.t("AutoR.fb3e586a26")
+        case .messageVideoChatStarted: return L10n.t("AutoR.728d04e311")
+        case .messageVideoChatEnded: return L10n.t("AutoR.08fc7101ae")
         case .messageCustomServiceAction(let a): return a.text
-        case .messageGiftedPremium: return "🎁 Подарок: Telegram Premium"
-        case .messageGift: return "🎁 Подарок"
+        case .messageGiftedPremium: return L10n.t("AutoR.f78c1b4fb0")
+        case .messageGift: return L10n.t("AutoR.54e420c360")
         default: return nil
         }
     }
@@ -126,15 +126,15 @@ enum MessageFormatter {
 
     static func actionVerb(_ action: ChatAction) -> String {
         switch action {
-        case .chatActionRecordingVoiceNote: return "записывает голосовое…"
-        case .chatActionUploadingVoiceNote: return "отправляет голосовое…"
-        case .chatActionRecordingVideoNote: return "записывает видеосообщение…"
-        case .chatActionUploadingVideoNote: return "отправляет видеосообщение…"
-        case .chatActionUploadingPhoto: return "отправляет фото…"
-        case .chatActionRecordingVideo, .chatActionUploadingVideo: return "отправляет видео…"
-        case .chatActionUploadingDocument: return "отправляет файл…"
-        case .chatActionChoosingSticker: return "выбирает стикер…"
-        default: return "печатает…"
+        case .chatActionRecordingVoiceNote: return L10n.t("AutoR.7b1df61017")
+        case .chatActionUploadingVoiceNote: return L10n.t("AutoR.4b0a6d1e9e")
+        case .chatActionRecordingVideoNote: return L10n.t("AutoR.08d714d525")
+        case .chatActionUploadingVideoNote: return L10n.t("AutoR.fef228955e")
+        case .chatActionUploadingPhoto: return L10n.t("AutoR.0a9349721d")
+        case .chatActionRecordingVideo, .chatActionUploadingVideo: return L10n.t("AutoR.2b3785ed87")
+        case .chatActionUploadingDocument: return L10n.t("AutoR.6022802f39")
+        case .chatActionChoosingSticker: return L10n.t("AutoR.83f289d0c2")
+        default: return L10n.t("AutoR.c82fe61a84")
         }
     }
 
@@ -173,12 +173,12 @@ enum MessageFormatter {
 
     static func userStatus(_ status: UserStatus) -> String {
         switch status {
-        case .userStatusOnline: return "в сети"
-        case .userStatusOffline(let s): return "был(а) в сети \(listDate(s.wasOnline))"
-        case .userStatusRecently: return "был(а) недавно"
-        case .userStatusLastWeek: return "был(а) на этой неделе"
-        case .userStatusLastMonth: return "был(а) в этом месяце"
-        case .userStatusEmpty: return "был(а) давно"
+        case .userStatusOnline: return L10n.t("AutoR.d9022f72ce")
+        case .userStatusOffline(let s): return L10n.t("AutoR.24969f8432")
+        case .userStatusRecently: return L10n.t("AutoR.1d6716d62c")
+        case .userStatusLastWeek: return L10n.t("AutoR.1c2d9fdaf4")
+        case .userStatusLastMonth: return L10n.t("AutoR.303e34cf96")
+        case .userStatusEmpty: return L10n.t("AutoR.987adf37da")
         }
     }
 

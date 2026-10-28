@@ -140,7 +140,7 @@ final class GroupCallManager: ObservableObject {
         self.title = title
         isActive = true
         isMuted = false
-        stateText = "Подключение…"
+        stateText = L10n.t("AutoR.2d3f73a394")
         connected = false
         CallDiag.log("group join id=\(groupCallId)")
 
@@ -191,7 +191,7 @@ final class GroupCallManager: ObservableObject {
         }
 
         guard bridge.beginGroupCall(withGroupCallId: Int64(groupCallId), conference: true) else {
-            stateText = "Движок групповых звонков недоступен"
+            stateText = L10n.t("AutoR.766045970e")
             return
         }
         bridge.emitGroupJoinPayload { [weak self] payload, ssrc in
@@ -208,13 +208,13 @@ final class GroupCallManager: ObservableObject {
                                                                   joinParameters: joinParameters,
                                                                   participantId: nil)
                     bridge.setGroupJoinPayload(response.text)
-                    self.stateText = "В групповом звонке"
+                    self.stateText = L10n.t("AutoR.180df04346")
                     CallDiag.log("group joined payload=\(response.text.count) chars")
                     await self.reloadParticipants()
                     if video && !self.isVideoEnabled { self.toggleVideo() }
                 } catch {
                     CallDiag.log("group join failed \(error)")
-                    self.stateText = "Не удалось войти в звонок"
+                    self.stateText = L10n.t("AutoR.5abf853298")
                     TelegramClient.shared.errorMessage = "Не удалось войти: \(TelegramClient.describe(error))"
                     self.leave()
                 }

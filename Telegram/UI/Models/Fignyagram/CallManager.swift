@@ -86,7 +86,7 @@ final class CallManager: ObservableObject {
             guard !Task.isCancelled, let strongSelf = self else { return }
             if case .callStateExchangingKeys = strongSelf.currentCall?.state {
                 strongSelf.needsRetry = false
-                strongSelf.stateText = "Обмен ключами не завершился"
+                strongSelf.stateText = L10n.t("AutoR.b6dd6e8f02")
                 CallDiag.log("key exchange stuck for 14s callId=\(strongSelf.currentCall?.id ?? -1)")
             }
         }
@@ -224,7 +224,7 @@ final class CallManager: ObservableObject {
                            isVideo: isVideo, outgoing: outgoing)
         case .denied:
             CallDiag.log("microphone permission denied")
-            stateText = "Нет доступа к микрофону"
+            stateText = L10n.t("AutoR.a4ef60ef7e")
             TelegramClient.shared.errorMessage = "Нет доступа к микрофону: разрешите его в Настройках"
         default:
             CallDiag.log("microphone permission requested")
@@ -238,7 +238,7 @@ final class CallManager: ObservableObject {
                                             servers: servers, versions: versions, maxLayer: maxLayer,
                                             isVideo: isVideo, outgoing: outgoing)
                     } else {
-                        self.stateText = "Нет доступа к микрофону"
+                        self.stateText = L10n.t("AutoR.a4ef60ef7e")
                         TelegramClient.shared.errorMessage = "Нет доступа к микрофону: разрешите его в Настройках"
                     }
                 }
@@ -360,9 +360,9 @@ final class CallManager: ObservableObject {
                     self.startDurationTimer()
                     CallDiag.log("timer started")
                 }
-                self.stateText = "Звонок подключён"
+                self.stateText = L10n.t("AutoR.f9519e909b")
             case 2: // OngoingCallStateFailed
-                self.stateText = "Ошибка соединения"
+                self.stateText = L10n.t("AutoR.67c3d77cec")
                 self.needsRetry = false
                 // End locally without blocking the main thread; the detached
                 // teardown also discards the TDLib call.
@@ -372,7 +372,7 @@ final class CallManager: ObservableObject {
                 // callback runs on the main thread, which froze the call UI.
                 CallDiag.log("engine reconnecting")
                 self.poorConnection = true
-                self.stateText = "Переподключение…"
+                self.stateText = L10n.t("AutoR.5e71f6c567")
             default:
                 break
             }
@@ -434,7 +434,7 @@ final class CallManager: ObservableObject {
                     self.pendingSignaling.removeAll()
                     self.stateText = bridgeState
                 } else {
-                    self.stateText = "Не удалось запустить аудио-модуль"
+                    self.stateText = L10n.t("AutoR.13de7d3d68")
                 }
             }
         }
@@ -612,7 +612,7 @@ final class CallManager: ObservableObject {
 
     func retryConnection() {
         needsRetry = false
-        stateText = "Соединение…"
+        stateText = L10n.t("AutoR.5d985c2a42")
         CallDiag.log("retry requested callId=\(currentCall?.id ?? -1) outgoing=\(currentCall?.isOutgoing ?? false)")
         if currentCall?.isOutgoing == false {
             Task { await TelegramClient.shared.acceptCall() }
@@ -767,12 +767,12 @@ final class CallManager: ObservableObject {
 
     static func text(_ state: CallState) -> String {
         switch state {
-        case .callStatePending: return "Соединение…"
-        case .callStateExchangingKeys: return "Обмен ключами…"
-        case .callStateReady: return "Соединение…"
-        case .callStateHangingUp: return "Завершение…"
-        case .callStateDiscarded: return "Завершено"
-        case .callStateError: return "Ошибка звонка"
+        case .callStatePending: return L10n.t("AutoR.5d985c2a42")
+        case .callStateExchangingKeys: return L10n.t("AutoR.8d56b60007")
+        case .callStateReady: return L10n.t("AutoR.5d985c2a42")
+        case .callStateHangingUp: return L10n.t("AutoR.d2a828e0f0")
+        case .callStateDiscarded: return L10n.t("AutoR.0083ce05cc")
+        case .callStateError: return L10n.t("AutoR.f90a183ab2")
         default: return "…"
         }
     }
