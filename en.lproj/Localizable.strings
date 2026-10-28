@@ -920,3 +920,5 @@
 "Dev.Console" = "Console";
 "Settings.BlockScreenshots" = "Block screenshots and screen recording";
 "Settings.DownloadLanguagePack" = "Download Apple Translation language pack";
+"Settings.ActivateTranslator" = "Activate translator and download language packs";
+"Settings.TranslationSample" = "Hello! This is a translation check for the selected language.";

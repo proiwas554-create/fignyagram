@@ -96,3 +96,5 @@
 "Dev.Console" = "Konsole";
 "Settings.BlockScreenshots" = "Screenshots blockieren";
 "Settings.DownloadLanguagePack" = "Sprachpaket herunterladen";
+"Settings.ActivateTranslator" = "Übersetzer aktivieren und Sprachpakete laden";
+"Settings.TranslationSample" = "Hallo! Übersetzungsprüfung.";

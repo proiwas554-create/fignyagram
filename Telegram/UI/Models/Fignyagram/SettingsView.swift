@@ -1,9 +1,12 @@
 import SwiftUI
+import Translation
 
 struct SettingsView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var privacy = PrivacyPreferences.shared
     @ObservedObject private var autoTranslation = AutoTranslationSettings.shared
+    @State private var showTranslationSheet = false
+    @State private var translationSample = "Hello, how are you?"
     @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
     @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0
@@ -251,7 +254,10 @@ struct SettingsView: View {
                     }
                 }
             }
-            .navigationTitle("Настройки")
+            .modifier(TranslationPresentationModifier(isPresented: $showTranslationSheet,
+                                                  text: translationSample,
+                                                  target: autoTranslation.targetLanguage))
+        .navigationTitle("Настройки")
         .onAppear { autoTranslation.reloadFromDefaults() }
             .modifier(GlassListModifier())
             .tint(.blue)
@@ -299,11 +305,34 @@ struct SettingsView: View {
         .navigationViewStyle(.stack)
     }
 
+    /// Presents Apple's own translation sheet exactly once, from Settings.
+    private func activateTranslationSheet() {
+        translationSample = L10n.t("Settings.TranslationSample")
+        showTranslationSheet = true
+    }
+
     private func row(_ title: String, icon: String, value: SettingsDestination) -> some View {
         Button {
             destination = value
         } label: {
             Label(title, systemImage: icon)
+        }
+    }
+}
+
+
+/// Wraps `.translationPresentation` so the settings screen compiles on iOS 15
+/// and shows Apple's download sheet only when the user asks for it.
+private struct TranslationPresentationModifier: ViewModifier {
+    @Binding var isPresented: Bool
+    let text: String
+    let target: String
+
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.translationPresentation(isPresented: $isPresented, text: text)
+        } else {
+            content
         }
     }
 }

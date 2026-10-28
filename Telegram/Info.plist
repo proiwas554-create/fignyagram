@@ -4,6 +4,16 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<true/>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ru</string>
+		<string>en</string>
+		<string>es</string>
+		<string>de</string>
+		<string>zh</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

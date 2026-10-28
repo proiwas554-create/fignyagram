@@ -96,3 +96,5 @@
 "Dev.Console" = "控制台";
 "Settings.BlockScreenshots" = "阻止截屏和录屏";
 "Settings.DownloadLanguagePack" = "下载语言包";
+"Settings.ActivateTranslator" = "激活翻译并下载语言包";
+"Settings.TranslationSample" = "你好！翻译测试。";
