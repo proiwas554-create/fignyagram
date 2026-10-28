@@ -196,18 +196,15 @@ final class AutoTranslationManager: ObservableObject {
         attachHostIfNeeded()
     }
 
+    /// Hard guard: the exact source→target pair must be installed on device.
+    /// Anything else silently keeps the original TDLib text and never starts a
+    /// translation session (that is what triggered Apple's download sheet).
     static func isPackInstalled(text: String, target: String) async -> Bool {
         if #available(iOS 18.0, *) {
+            let source = Locale.Language(identifier: language(of: text) ?? "en")
             let destination = Locale.Language(identifier: target)
-            let availability = LanguageAvailability()
-            var sources: [String] = []
-            if let detected = language(of: text) { sources.append(detected) }
-            sources.append(contentsOf: ["en", "ru"])
-            for code in sources {
-                let status = await availability.status(from: Locale.Language(identifier: code), to: destination)
-                if status == LanguageAvailability.Status.installed { return true }
-            }
-            return false
+            let status = await LanguageAvailability().status(from: source, to: destination)
+            return status == LanguageAvailability.Status.installed
         }
         return false
     }
@@ -243,10 +240,8 @@ final class AutoTranslationManager: ObservableObject {
     /// download the language pack, and that must happen only here.
     func requestLanguagePreparation() {
         guard AutoTranslationSettings.shared.isSupported else { return }
-        // The user explicitly picked this language on the settings screen, where
-        // Apple's download sheet is allowed to appear. From now on chats may use
-        // it silently.
-        packStatus[AutoTranslationSettings.shared.targetLanguage] = true
+        // Only requests the one-time system sheet on the settings screen.
+        // It never marks the pack as installed: chats still require .installed.
         pendingPreparation = true
         requestGeneration += 1
     }
