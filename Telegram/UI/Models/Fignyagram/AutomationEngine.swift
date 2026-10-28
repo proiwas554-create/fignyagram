@@ -95,6 +95,7 @@ final class AutomationEngine: ObservableObject {
             let chatId = message.chatId
             let messageId = message.id
             Task {
+                guard !TelegramClient.shared.isInvisible else { return }
                 guard let client = TelegramClient.shared.tdClient else { return }
                 _ = try? await client.viewMessages(chatId: chatId,
                                                    forceRead: true,

@@ -92,7 +92,16 @@ final class TranslatedMessageCache {
     static let shared = TranslatedMessageCache()
     private let cache = NSCache<NSString, NSString>()
 
-    private init() { cache.countLimit = 600 }
+    private init() {
+        cache.countLimit = 600
+        Foundation.NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.cache.removeAllObjects()
+        }
+    }
 
     func removeAll() {
         cache.removeAllObjects()
@@ -553,6 +562,8 @@ struct AutoTranslatedMessageText: View {
         requestTask = Task { [message, role] in
             try? await Task.sleep(nanoseconds: 200_000_000)
             guard !Task.isCancelled else { return }
+            // Do not compete with active scrolling: wait for the finger to stop.
+            guard await ScrollActivity.shared.waitUntilIdle() else { return }
             manager.requestIfNeeded(message: message, text: text, role: role)
         }
     }

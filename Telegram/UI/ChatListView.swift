@@ -209,6 +209,11 @@ struct ChatListView: View {
                     }
                 }
                 .listStyle(.plain)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 8)
+                        .onChanged { _ in ScrollActivity.shared.begin() }
+                        .onEnded { _ in ScrollActivity.shared.end() }
+                )
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {

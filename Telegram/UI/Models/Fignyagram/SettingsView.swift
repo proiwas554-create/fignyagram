@@ -215,6 +215,12 @@ struct SettingsView: View {
                             Label(L10n.t("Settings.ActivateTranslator"), systemImage: "arrow.down.circle")
                         }
                     }
+                    Toggle(L10n.t("Settings.GhostMode"), isOn: Binding(
+                        get: { TelegramClient.shared.isInvisible },
+                        set: { value in
+                            Task { try? await TelegramClient.shared.setInvisibleMode(value) }
+                        }
+                    ))
                     Toggle(L10n.t("Settings.GhostStories"), isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }

@@ -1953,3 +1953,4 @@
 "Feed.Settings.Refresh" = "Refresh";
 "Feed.Settings.RefreshInterval" = "Auto refresh";
 "Feed.Settings.Hint" = "Automatic values adapt to the device. Stop-words and Important filters live on a separate screen.";
+"Settings.GhostMode" = "Ghost mode (no online status or read receipts)";

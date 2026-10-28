@@ -805,7 +805,7 @@ final class TelegramClient: ObservableObject {
     /// never sees the view. TDLib 1.8.68 in this build exposes no readStories
     /// binding yet, so the guard lives here for the upcoming stories UI.
     func readStoriesIfAllowed(_ markRead: () async -> Void) async {
-        guard !PrivacyPreferences.shared.storyGhostMode else {
+        guard !PrivacyPreferences.shared.storyGhostMode, !isInvisible else {
             CallDiag.log("story ghost mode: readStories skipped")
             return
         }
@@ -889,6 +889,12 @@ final class TelegramClient: ObservableObject {
     }
 
     private func markAsRead(chatId: Int64, messageIds: [Int64]) {
+        // Ghost mode: never send viewMessages to the server. The chat is still
+        // marked locally by ChatStore, the peer sees no read receipt.
+        if isInvisible {
+            CallDiag.log("ghost mode: viewMessages blocked chat=\(chatId)")
+            return
+        }
         guard let client, !messageIds.isEmpty else { return }
         Task {
             try? await client.viewMessages(chatId: chatId, forceRead: true, messageIds: messageIds, source: nil)

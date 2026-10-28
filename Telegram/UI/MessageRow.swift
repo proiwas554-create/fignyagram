@@ -655,6 +655,11 @@ private enum AttributedTextCache {
     private static let storage: NSCache<NSString, Box> = {
         let cache = NSCache<NSString, Box>()
         cache.countLimit = 500
+        Foundation.NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { _ in cache.removeAllObjects() }
         return cache
     }()
 

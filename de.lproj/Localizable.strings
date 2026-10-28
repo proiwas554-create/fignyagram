@@ -1953,3 +1953,4 @@
 "Feed.Settings.Refresh" = "Aktualisierung";
 "Feed.Settings.RefreshInterval" = "Automatisch aktualisieren";
 "Feed.Settings.Hint" = "Automatische Werte passen sich an.";
+"Settings.GhostMode" = "Geistermodus";

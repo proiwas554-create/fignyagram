@@ -1953,3 +1953,4 @@
 "Feed.Settings.Refresh" = "Actualización";
 "Feed.Settings.RefreshInterval" = "Actualizar cada";
 "Feed.Settings.Hint" = "Los valores automáticos se adaptan al dispositivo.";
+"Settings.GhostMode" = "Modo fantasma";
