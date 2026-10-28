@@ -29,6 +29,7 @@ final class FontManager: ObservableObject {
 
     private let directory: URL
     private let fileManager = FileManager.default
+    private let uiFontCache = NSCache<NSString, UIFont>()
 
     private init() {
         let documents = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -38,6 +39,11 @@ final class FontManager: ObservableObject {
         customNames = UserDefaults.standard.stringArray(forKey: Self.customNamesKey) ?? []
         registerAll()
         applyGlobalAppearance()
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.didReceiveMemoryWarningNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in self?.uiFontCache.removeAllObjects() }
     }
 
     var builtinSelection: Builtin? { Builtin(rawValue: selection) }
@@ -124,6 +130,14 @@ final class FontManager: ObservableObject {
     }
 
     private func uiFont(size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
+        let key = "\(selection)|\(size)|\(weight.rawValue)" as NSString
+        if let cached = uiFontCache.object(forKey: key) { return cached }
+        let font = makeUIFont(size: size, weight: weight)
+        uiFontCache.setObject(font, forKey: key)
+        return font
+    }
+
+    private func makeUIFont(size: CGFloat, weight: UIFont.Weight = .regular) -> UIFont {
         if let builtin = builtinSelection {
             let descriptor = UIFont.systemFont(ofSize: size, weight: weight).fontDescriptor
             let design: UIFontDescriptor.SystemDesign

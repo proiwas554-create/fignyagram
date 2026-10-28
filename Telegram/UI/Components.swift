@@ -149,10 +149,12 @@ nonisolated enum ImageCache {
 
     /// Drops decoded images on memory pressure; they are re-decoded on demand.
     static func configureForDevice() {
-        guard DevicePerformance.isLowMemory else { return }
-        cache.totalCostLimit = DevicePerformance.isVeryLowMemory ? 24 * 1024 * 1024 : 32 * 1024 * 1024
-        cache.countLimit = 250
-        miniCache.countLimit = 300
+        let legacy = MainActor.assumeIsolated { LegacyShield.shared.isLegacy }
+        guard DevicePerformance.isLowMemory || legacy else { return }
+        cache.totalCostLimit = 32 * 1024 * 1024
+        cache.countLimit = 220
+        miniCache.countLimit = 260
+        decodeQueue.maxConcurrentOperationCount = 1
     }
 
     static func setUltraMode(_ enabled: Bool) {
@@ -312,6 +314,9 @@ struct AvatarView: View {
         .onDisappear {
             downloadTask?.cancel()
             downloadTask = nil
+            // Release the decoded avatar immediately: on legacy devices the
+            // image cache alone is not enough during fast channel scrolling.
+            if LegacyShield.shared.isLegacy { image = nil }
         }
     }
 

@@ -38,7 +38,7 @@ final class ChatRowViewModel: ObservableObject {
         // immediately; only cells that stay on screen get translated.
         requestTask?.cancel()
         requestTask = Task.detached(priority: .background) { [chatId, originalTitle] in
-            try? await Task.sleep(nanoseconds: 150_000_000)
+            try? await Task.sleep(nanoseconds: await LegacyShield.shared.translationDebounce)
             guard !Task.isCancelled else { return }
             await AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
         }

@@ -560,7 +560,7 @@ struct AutoTranslatedMessageText: View {
         requestTask?.cancel()
         let text = formatted.text
         requestTask = Task { [message, role] in
-            try? await Task.sleep(nanoseconds: 200_000_000)
+            try? await Task.sleep(nanoseconds: await LegacyShield.shared.messageTranslationDebounce)
             guard !Task.isCancelled else { return }
             // Do not compete with active scrolling: wait for the finger to stop.
             manager.requestIfNeeded(message: message, text: text, role: role)
