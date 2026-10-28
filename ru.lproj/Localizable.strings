@@ -918,3 +918,5 @@
 "Dev.SimulateMemory" = "Симулировать нехватку памяти";
 "Dev.StorageStats" = "Статистика хранилища";
 "Dev.Console" = "Консоль";
+"Settings.BlockScreenshots" = "Блокировка скриншотов и записи экрана";
+"Settings.DownloadLanguagePack" = "Скачать языковой пакет Apple Translation";

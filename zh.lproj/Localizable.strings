@@ -94,3 +94,5 @@
 "Dev.SimulateMemory" = "模拟内存警告";
 "Dev.StorageStats" = "存储统计";
 "Dev.Console" = "控制台";
+"Settings.BlockScreenshots" = "阻止截屏和录屏";
+"Settings.DownloadLanguagePack" = "下载语言包";

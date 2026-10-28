@@ -94,3 +94,5 @@
 "Dev.SimulateMemory" = "Simular falta de memoria";
 "Dev.StorageStats" = "Estadísticas de almacenamiento";
 "Dev.Console" = "Consola";
+"Settings.BlockScreenshots" = "Bloquear capturas de pantalla";
+"Settings.DownloadLanguagePack" = "Descargar paquete de idioma";

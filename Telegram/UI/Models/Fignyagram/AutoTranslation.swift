@@ -168,6 +168,9 @@ final class AutoTranslationManager: ObservableObject {
             .store(in: &cancellables)
     }
 
+    /// Chats never start a translation session for a missing language pack:
+    /// the host is attached only after `isPackInstalled` returned true, so
+    /// Apple's download sheet cannot be triggered by scrolling or opening chats.
     /// Queues the request, but only when the language pack is already installed.
     /// The session is therefore never started for a missing pack from a chat.
     private func enqueue(request: Request, target: String) {
@@ -240,10 +243,11 @@ final class AutoTranslationManager: ObservableObject {
     /// download the language pack, and that must happen only here.
     func requestLanguagePreparation() {
         guard AutoTranslationSettings.shared.isSupported else { return }
-        // Only requests the one-time system sheet on the settings screen.
-        // It never marks the pack as installed: chats still require .installed.
+        // Settings screen only: attaches the session so the user can download
+        // the pack through Apple's own sheet. Chats never call this.
         pendingPreparation = true
         requestGeneration += 1
+        attachHostIfNeeded()
     }
 
     /// Silent translation entry point for cells: returns a cached translation,

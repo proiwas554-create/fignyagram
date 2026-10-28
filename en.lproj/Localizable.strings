@@ -918,3 +918,5 @@
 "Dev.SimulateMemory" = "Simulate memory warning";
 "Dev.StorageStats" = "Storage stats";
 "Dev.Console" = "Console";
+"Settings.BlockScreenshots" = "Block screenshots and screen recording";
+"Settings.DownloadLanguagePack" = "Download Apple Translation language pack";

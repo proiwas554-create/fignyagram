@@ -157,7 +157,7 @@ struct SettingsView: View {
                             }
                         }
                     ))
-                    Toggle(L10n.t("Settings.BlockShots"), isOn: Binding(
+                    Toggle(L10n.t("Settings.BlockScreenshots"), isOn: Binding(
                         get: { privacy.blockScreenshots },
                         set: { privacy.blockScreenshots = $0 }
                     ))

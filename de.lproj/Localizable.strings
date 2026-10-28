@@ -94,3 +94,5 @@
 "Dev.SimulateMemory" = "Speicherwarnung simulieren";
 "Dev.StorageStats" = "Speicherstatistik";
 "Dev.Console" = "Konsole";
+"Settings.BlockScreenshots" = "Screenshots blockieren";
+"Settings.DownloadLanguagePack" = "Sprachpaket herunterladen";
