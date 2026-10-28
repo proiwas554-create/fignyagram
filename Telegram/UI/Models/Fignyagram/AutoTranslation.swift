@@ -181,13 +181,19 @@ final class AutoTranslationManager: ObservableObject {
         }
         guard !packChecks.contains(target) else { return }
         packChecks.insert(target)
-        Task { [weak self] in
+        // Detection + availability checks run fully off the main thread so chat
+        // and list scrolling is never blocked by the translation pipeline.
+        Task.detached(priority: .userInitiated) {
             let installed = await Self.isPackInstalled(text: request.text, target: target)
-            guard let self else { return }
-            self.packStatus[target] = installed
-            self.packChecks.remove(target)
-            if installed { self.commit(request) }
-            else { CallDiag.log("translation pack not installed for \(target): keeping original text") }
+            await MainActor.run {
+                self.packStatus[target] = installed
+                self.packChecks.remove(target)
+                if installed {
+                    self.commit(request)
+                } else {
+                    CallDiag.log("translation pack not installed for \(target): keeping original text")
+                }
+            }
         }
     }
 
@@ -202,7 +208,7 @@ final class AutoTranslationManager: ObservableObject {
     /// Hard guard: the exact source→target pair must be installed on device.
     /// Anything else silently keeps the original TDLib text and never starts a
     /// translation session (that is what triggered Apple's download sheet).
-    static func isPackInstalled(text: String, target: String) async -> Bool {
+    nonisolated static func isPackInstalled(text: String, target: String) async -> Bool {
         if #available(iOS 18.0, *) {
             let source = Locale.Language(identifier: language(of: text) ?? "en")
             let destination = Locale.Language(identifier: target)
@@ -354,10 +360,25 @@ final class AutoTranslationManager: ObservableObject {
         CallDiag.log("auto translation unavailable on this device")
     }
 
-    static func language(of text: String) -> String? {
+    nonisolated static func language(of text: String) -> String? {
         let recognizer = NLLanguageRecognizer()
         recognizer.processString(text)
         return recognizer.dominantLanguage?.rawValue
+    }
+
+    /// Prefetch used by cells: detection and availability checks run in a
+    /// detached task so scrolling never waits on NaturalLanguage or Apple's
+    /// availability service.
+    nonisolated static func backgroundPrefetch(text: String, target: String) async -> Bool {
+        guard let source = language(of: text) else { return false }
+        if #available(iOS 18.0, *) {
+            let status = await LanguageAvailability().status(
+                from: Locale.Language(identifier: source),
+                to: Locale.Language(identifier: target)
+            )
+            return status == LanguageAvailability.Status.installed
+        }
+        return false
     }
 
     private func attachHostIfNeeded() {

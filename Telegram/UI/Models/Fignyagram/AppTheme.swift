@@ -45,7 +45,7 @@ extension L10n {
     /// System localization only: the .lproj table for the iPhone language is
     /// chosen by iOS. No manual language override can create a mixed UI.
     static func t(_ key: String) -> String {
-        NSLocalizedString(key, comment: "")
+        MainActor.assumeIsolated { FnyLocalization.shared.string(key) }
     }
 
     static func keyed(_ key: String, ru: String, en: String) -> String {
