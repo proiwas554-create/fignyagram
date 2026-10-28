@@ -337,10 +337,6 @@ struct TranslationHostView: View {
                     target: Locale.Language(identifier: settings.targetLanguage)
                 )
             }
-            .onChange(of: manager.requestGeneration) { _ in
-                guard !manager.isDraining else { return }
-                configuration?.invalidate()
-            }
             .onChange(of: settings.targetLanguage) { value in
                 configuration = TranslationSession.Configuration(
                     source: nil,
@@ -362,7 +358,14 @@ struct TranslationHostView: View {
             // Only the settings screen sets this flag; chats never do.
             try? await session.prepareTranslation()
         }
-        while let request = manager.pending.first {
+        // Long-lived loop: the session is created exactly once per language and
+        // is never invalidated from chat rendering, so Apple's download sheet
+        // cannot be triggered from lists or message cells.
+        while !Task.isCancelled {
+            guard let request = manager.pending.first else {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                continue
+            }
             // Never let Apple show its download sheet from a chat: translate
             // only when the language pack is already installed.
             if #available(iOS 18.0, *) {
@@ -374,7 +377,9 @@ struct TranslationHostView: View {
                         await LanguageAvailability().status(from: source, to: target)
                     installed = (status == LanguageAvailability.Status.installed)
                 }
-                if !installed {
+                guard installed else {
+                    // Missing pack: silently keep the original text. The sheet is
+                    // only ever shown from Settings via prepareTranslation().
                     manager.finish(request, translation: nil)
                     continue
                 }

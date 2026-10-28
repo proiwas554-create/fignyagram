@@ -44,7 +44,7 @@ struct DeveloperSettingsView: View {
                         .onChange(of: verboseLogs) { enabled in
                             client.setLogVerbosity(enabled ? 3 : 1)
                         }
-                    Button("Симулировать нехватку памяти") {
+                    Button(L10n.t("Dev.SimulateMemory")) {
                         ImageCache.clear()
                         monitor.sample()
                     }
@@ -52,11 +52,11 @@ struct DeveloperSettingsView: View {
                         ChatStore.shared.clearLoadedMessages()
                         monitor.sample()
                     }
-                    Button("Перезапустить прокси") {
+                    Button(L10n.t("Dev.RestartProxy")) {
                         proxy.restart()
                     }
                     .disabled(!proxy.isEnabled)
-                    Button("Статистика хранилища") {
+                    Button(L10n.t("Dev.StorageStats")) {
                         Task {
                             storageInfo = await client.storageStatisticsSummary()
                         }
@@ -76,7 +76,7 @@ struct DeveloperSettingsView: View {
                     row("Пользователей", "\(store.users.count)")
                     row("Кэш", MessageFormatter.fileSize(cache.totalBytes))
                     row("Оптимизация", performance.isEnabled ? performance.level.title : "выключена")
-                    Button("Обновить статистику") { cache.refresh() }
+                    Button(L10n.t("Dev.RefreshStats")) { cache.refresh() }
                 }
 
                 Section {
@@ -92,7 +92,7 @@ struct DeveloperSettingsView: View {
                         .onChange(of: decodeConcurrency) { value in
                             ImageCache.setDecodeConcurrency(value)
                         }
-                    Button("Применить облегчённый профиль (старые устройства)") {
+                    Button(L10n.t("Dev.LegacyProfile")) {
                         ImageCache.applyLegacyDeviceTuning()
                     }
                 } header: {
@@ -102,7 +102,7 @@ struct DeveloperSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section("Консоль") {
+                Section(L10n.t("Dev.Console")) {
                     Button {
                         showTerminal = true
                     } label: {
@@ -112,7 +112,7 @@ struct DeveloperSettingsView: View {
 
                 Section("TDLib") {
                     Stepper("Log verbosity: \(Int(verbosity))", value: $verbosity, in: 0...5)
-                    Button("Применить уровень логов") {
+                    Button(L10n.t("Dev.ApplyLogLevel")) {
                         client.setLogVerbosity(Int(verbosity))
                     }
                 }
@@ -124,17 +124,17 @@ struct DeveloperSettingsView: View {
                     Button("Очистить весь кэш", role: .destructive) {
                         cache.clearAll()
                     }
-                    Button("Заблокировать режим разработчика", role: .destructive) {
+                    Button(L10n.t("Dev.Lock"), role: .destructive) {
                         developer.lock()
                         dismiss()
                     }
                 }
             }
-            .navigationTitle("Для разработчиков")
+            .navigationTitle(L10n.t("Dev.Title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .task { cache.refresh() }

@@ -12,13 +12,13 @@ struct CacheSettingsView: View {
             List {
                 Section {
                     HStack {
-                        Text("Всего в кэше")
+                        Text(L10n.t("Cache.Total"))
                         Spacer()
                         Text(MessageFormatter.fileSize(cache.totalBytes))
                             .foregroundColor(.secondary)
                     }
                 } footer: {
-                    Text("Кэш можно очищать по категориям. История сообщений и аккаунт не удаляются.")
+                    Text(L10n.t("Cache.CategoriesHint"))
                         .font(.appFootnote)
                 }
 
@@ -34,11 +34,11 @@ struct CacheSettingsView: View {
                         Text("5 ГБ").tag(5120)
                     }
                 } footer: {
-                    Text("При превышении лимита раз в 10 минут очищаются две самые тяжёлые категории. Сообщения и аккаунт не затрагиваются.")
+                    Text(L10n.t("Cache.AutoCleanHint"))
                         .font(.appFootnote)
                 }
 
-                Section("Категории") {
+                Section(L10n.t("Cache.Categories")) {
                     ForEach(cache.categories) { category in
                         HStack(spacing: 12) {
                             Image(systemName: category.icon)
@@ -69,7 +69,7 @@ struct CacheSettingsView: View {
                     Button(role: .destructive) {
                         showClearAll = true
                     } label: {
-                        Label("Очистить весь кэш", systemImage: "trash")
+                        Label(L10n.t("Cache.ClearAll"), systemImage: "trash")
                     }
                     .disabled(cache.totalBytes == 0 || cache.isWorking)
 
@@ -77,36 +77,36 @@ struct CacheSettingsView: View {
                         ImageCache.clear()
                         cache.refresh()
                     } label: {
-                        Label("Очистить кэш изображений в памяти", systemImage: "photo.on.rectangle")
+                        Label(L10n.t("Cache.ClearImages"), systemImage: "photo.on.rectangle")
                     }
 
                     Button(role: .destructive) {
                         ChatStore.shared.clearLoadedMessages()
                     } label: {
-                        Label("Очистить кэш сообщений", systemImage: "bubble.left.and.bubble.right")
+                        Label(L10n.t("Cache.ClearMessages"), systemImage: "bubble.left.and.bubble.right")
                     }
                 } footer: {
-                    Text("Очистка кэша сообщений освобождает загруженную историю из памяти. Сами сообщения остаются в Telegram и загрузятся снова при открытии чата.")
+                    Text(L10n.t("Cache.ClearMessagesHint"))
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Память и кэш")
+            .navigationTitle(L10n.t("Cache.Title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .task { cache.refresh() }
             .overlay {
                 if cache.isWorking {
-                    ProgressView("Очистка…")
+                    ProgressView(L10n.t("Cache.Clearing"))
                         .padding(18)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                 }
             }
             .confirmationDialog(
-                "Очистить категорию?",
+                L10n.t("Cache.ClearCategory"),
                 isPresented: Binding(
                     get: { pendingCategory != nil },
                     set: { if !$0 { pendingCategory = nil } }
@@ -119,19 +119,19 @@ struct CacheSettingsView: View {
                         pendingCategory = nil
                     }
                 }
-                Button("Отмена", role: .cancel) { pendingCategory = nil }
+                Button(L10n.t("Common.Cancel"), role: .cancel) { pendingCategory = nil }
             }
             .confirmationDialog(
-                "Очистить весь кэш?",
+                L10n.t("Cache.ClearAllConfirm"),
                 isPresented: $showClearAll,
                 titleVisibility: .visible
             ) {
                 Button("Очистить всё", role: .destructive) {
                     cache.clearAll()
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Будут удалены скачанные медиа, файлы, сохранённые гифки и кэш загруженных сообщений. История в Telegram останется.")
+                Text(L10n.t("Cache.ClearAllHint"))
             }
         }
         .navigationViewStyle(.stack)
