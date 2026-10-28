@@ -28,6 +28,7 @@ struct ChatListView: View {
     @State private var showSettings = false
     @State private var showProxy = false
     @State private var showNewsFeed = false
+    @State private var showClassicMusic = false
     @State private var showVisitHistory = false
     @State private var showSearchHistory = false
     @State private var showProfile = false
@@ -233,6 +234,17 @@ struct ChatListView: View {
             }
 
             .onChange(of: search) { _ in scheduleSearch() }
+            .sheet(isPresented: $showClassicMusic) {
+                NavigationView {
+                    MusicView()
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button("Закрыть") { showClassicMusic = false }
+                            }
+                        }
+                }
+                .navigationViewStyle(.stack)
+            }
             .sheet(isPresented: $showSettings) { SettingsView() }
             .sheet(isPresented: $showNewsFeed) { NewsFeedView() }
             .sheet(isPresented: $showProfile) { ProfileSettingsView() }
@@ -641,6 +653,14 @@ struct ChatListView: View {
                         .font(.system(size: 21))
                 }
                 Spacer()
+                Button { showNewsFeed = true } label: {
+                    Image(systemName: "newspaper")
+                        .font(.system(size: 21))
+                }
+                Button { showClassicMusic = true } label: {
+                    Image(systemName: "music.note")
+                        .font(.system(size: 21))
+                }
                 composeMenu
                 profileMenu
                     .font(.system(size: 21))

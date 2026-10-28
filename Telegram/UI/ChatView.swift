@@ -192,8 +192,14 @@ struct ChatView: View {
 
                 Menu {
                     Button {
-                        summaryText = ConversationSummary.summarize(messages: Array(visibleMessages.suffix(120)))
-                        showSummary = true
+                        let snapshot = Array(visibleMessages.suffix(120))
+                        Task {
+                            let result = await Task.detached(priority: .userInitiated) {
+                                ConversationSummary.summarize(messages: snapshot)
+                            }.value
+                            summaryText = result
+                            showSummary = true
+                        }
                     } label: {
                         Label("Кратко о переписке", systemImage: "text.append")
                     }
@@ -204,8 +210,13 @@ struct ChatView: View {
                             }
                             return nil
                         }
-                        summaryText = AIContextManager.summarize(messages: Array(texts))
-                        showSummary = true
+                        Task {
+                            let result = await Task.detached(priority: .userInitiated) {
+                                AIContextManager.summarize(messages: Array(texts))
+                            }.value
+                            summaryText = result
+                            showSummary = true
+                        }
                     } label: {
                         Label("AI-выжимка (на устройстве)", systemImage: "brain")
                     }

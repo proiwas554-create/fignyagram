@@ -132,6 +132,7 @@ import SwiftUI
 struct AIDigestView: View {
     let digestText: String
     @Environment(\.dismiss) private var dismiss
+    @State private var isAnimating = false
 
     var body: some View {
         NavigationView {

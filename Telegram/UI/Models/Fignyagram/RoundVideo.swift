@@ -89,7 +89,11 @@ nonisolated enum RoundVideoConverter {
 
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("round-\(UUID().uuidString).mp4")
-        guard let export = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality) else {
+        // Older devices get a cheaper encode: the 640x640 target is the same,
+        // only the encoder effort differs.
+        let lowMemory = ProcessInfo.processInfo.physicalMemory <= 3 * 1024 * 1024 * 1024
+        let preset = lowMemory ? AVAssetExportPresetMediumQuality : AVAssetExportPresetHighestQuality
+        guard let export = AVAssetExportSession(asset: composition, presetName: preset) else {
             throw NSError(domain: "RoundVideo", code: 2)
         }
         export.outputURL = output
