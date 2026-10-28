@@ -63,7 +63,7 @@ struct SessionsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .confirmationDialog("Завершить все другие сессии?", isPresented: $confirmTerminateAll, titleVisibility: .visible) {
@@ -73,7 +73,7 @@ struct SessionsView: View {
                         await reload()
                     }
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Все устройства, кроме этого, будут разлогинены.")
             }

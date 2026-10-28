@@ -155,16 +155,16 @@ struct LegacyChatListView: View {
                                 Divider()
                             }
                             Button { showProfile = true } label: {
-                                Label("Профиль", systemImage: "person.crop.circle")
+                                Label(L10n.t("Common.Profile"), systemImage: "person.crop.circle")
                             }
                             Button { showAccounts = true } label: {
                                 Label("Аккаунты", systemImage: "person.2")
                             }
                             Button { showProxy = true } label: {
-                                Label("Прокси", systemImage: "network")
+                                Label(L10n.t("Common.Proxy"), systemImage: "network")
                             }
                             Button { showSettings = true } label: {
-                                Label("Настройки", systemImage: "gearshape")
+                                Label(L10n.t("Common.Settings"), systemImage: "gearshape")
                             }
                             Button(role: .destructive) { confirmLogout = true } label: {
                                 Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")

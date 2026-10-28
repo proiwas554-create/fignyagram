@@ -165,7 +165,7 @@ struct ChatListView: View {
                         }
                     }
                     if !query.isEmpty && !matchedSettings.isEmpty {
-                        Section("Настройки") {
+                        Section(L10n.t("Common.Settings")) {
                             ForEach(matchedSettings, id: \.self) { name in
                                 Button {
                                     switch name {
@@ -245,7 +245,7 @@ struct ChatListView: View {
                     MusicView()
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
-                                Button("Закрыть") { showClassicMusic = false }
+                                Button(L10n.t("Common.Close")) { showClassicMusic = false }
                             }
                         }
                 }
@@ -624,7 +624,7 @@ struct ChatListView: View {
                 Divider()
             }
             Button { showProfile = true } label: {
-                Label("Профиль", systemImage: "person.crop.circle")
+                Label(L10n.t("Common.Profile"), systemImage: "person.crop.circle")
             }
             Button {
                 proxy.setEnabled(!proxy.isEnabled)
@@ -638,7 +638,7 @@ struct ChatListView: View {
                 Label("Аккаунты", systemImage: "person.2")
             }
             Button { showSettings = true } label: {
-                Label("Настройки", systemImage: "gearshape")
+                Label(L10n.t("Common.Settings"), systemImage: "gearshape")
             }
             Button(role: .destructive) { confirmLogout = true } label: {
                 Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
@@ -724,7 +724,7 @@ struct ChatListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { showVisitHistory = false }
+                    Button(L10n.t("Common.Close")) { showVisitHistory = false }
                 }
             }
         }
@@ -900,7 +900,7 @@ struct ChatPickerView: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(L10n.t("Common.Cancel")) { dismiss() } }
             }
         }
         .navigationViewStyle(.stack)

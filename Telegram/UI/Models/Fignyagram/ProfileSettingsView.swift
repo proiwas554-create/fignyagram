@@ -120,15 +120,15 @@ struct ProfileSettingsView: View {
                     Section { HStack { Spacer(); ProgressView(); Spacer() } }
                 }
             }
-            .navigationTitle("Профиль")
+            .navigationTitle(L10n.t("Common.Profile"))
             .modifier(GlassListModifier())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") { save() }
+                    Button(L10n.t("Common.Save")) { save() }
                         .disabled(isSaving || isLoading)
                 }
             }
@@ -145,7 +145,7 @@ struct ProfileSettingsView: View {
                     client.logOut()
                     dismiss()
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Установленная версия TDLib не поддерживает смену номера без повторной авторизации. Можно выйти из аккаунта и войти заново с новым номером.")
             }

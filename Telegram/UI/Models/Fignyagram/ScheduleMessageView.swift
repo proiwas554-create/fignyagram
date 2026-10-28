@@ -28,7 +28,7 @@ struct ScheduleMessageView: View {
                     .font(.appFootnote)
                 }
 
-                Section("Сообщение") {
+                Section(L10n.t("Common.Message")) {
                     Text(text)
                         .lineLimit(4)
                         .foregroundColor(.secondary)
@@ -38,7 +38,7 @@ struct ScheduleMessageView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Запланировать") {

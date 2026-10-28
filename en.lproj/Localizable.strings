@@ -947,3 +947,12 @@
 "Hw.Throttle" = "Auto throttling when hot";
 "Hw.MaxPerfConfirm" = "Enable maximum performance?";
 "Hw.Risk" = "Enable at your own risk";
+"Common.Chat" = "Chat";
+"Common.Message" = "Message";
+"Common.Settings" = "Settings";
+"Common.Profile" = "Profile";
+"Common.Proxy" = "Proxy";
+"Common.Notifications" = "Notifications";
+"Common.Send" = "Send";
+"Common.Pin" = "Pin";
+"Common.Unpin" = "Unpin";

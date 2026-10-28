@@ -947,3 +947,12 @@
 "Hw.Throttle" = "Авто-троттлинг при нагреве";
 "Hw.MaxPerfConfirm" = "Включить максимальную производительность?";
 "Hw.Risk" = "Включить на свой страх и риск";
+"Common.Chat" = "Чат";
+"Common.Message" = "Сообщение";
+"Common.Settings" = "Настройки";
+"Common.Profile" = "Профиль";
+"Common.Proxy" = "Прокси";
+"Common.Notifications" = "Уведомления";
+"Common.Send" = "Отправить";
+"Common.Pin" = "Закрепить";
+"Common.Unpin" = "Открепить";

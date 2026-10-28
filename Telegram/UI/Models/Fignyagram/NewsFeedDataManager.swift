@@ -319,7 +319,7 @@ struct NewsFeedView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showFilters = true } label: {
@@ -392,7 +392,7 @@ struct NewsFeedFiltersView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button(L10n.t("Common.Done")) { dismiss() }
                 }
             }
         }

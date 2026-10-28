@@ -93,7 +93,7 @@ struct SettingsView: View {
                     } label: {
                         Label("Подключить устройство по QR", systemImage: "qrcode.viewfinder")
                     }
-                    Toggle("Уведомления", isOn: Binding(
+                    Toggle(L10n.t("Common.Notifications"), isOn: Binding(
                         get: { !notificationsDisabled },
                         set: { enabled in
                             notificationsDisabled = !enabled
@@ -189,7 +189,10 @@ struct SettingsView: View {
                         }
                     )) {
                         ForEach(AutoTranslationSettings.Mode.allCases) { item in
-                            Text(item.title).tag(item)
+                            Text(item.title)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.7)
+                                .tag(item)
                         }
                     }
                     .disabled(!autoTranslation.isSupported)
@@ -265,14 +268,14 @@ struct SettingsView: View {
             .modifier(TranslationPresentationModifier(isPresented: $showTranslationSheet,
                                                   text: translationSample,
                                                   target: autoTranslation.targetLanguage))
-        .navigationTitle("Настройки")
+        .navigationTitle(L10n.t("Common.Settings"))
         .onAppear { autoTranslation.reloadFromDefaults() }
             .modifier(GlassListModifier())
             .tint(.blue)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .sheet(item: $destination) { item in
@@ -304,7 +307,7 @@ struct SettingsView: View {
                     }
                 }
             }
-            .alert("Готово", isPresented: $showDeviceResult) {
+            .alert(L10n.t("Common.Done"), isPresented: $showDeviceResult) {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(deviceResultText)

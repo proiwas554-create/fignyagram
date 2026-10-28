@@ -159,7 +159,7 @@ struct AuthView: View {
             case .initializing:
                 VStack(spacing: 12) {
                     ProgressView("Подключение…")
-                    Button("Отмена") {
+                    Button(L10n.t("Common.Cancel")) {
                         proxy.setEnabled(false)
                         client.restartConnection()
                     }

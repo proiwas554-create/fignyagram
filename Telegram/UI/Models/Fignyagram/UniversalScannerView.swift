@@ -25,7 +25,7 @@ struct UniversalScannerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showScanner) {
@@ -42,12 +42,12 @@ struct UniversalScannerView: View {
                     if let url = URL(string: scannedCode),
                        let scheme = url.scheme?.lowercased(),
                        ["http", "https", "tg"].contains(scheme) {
-                        Button("Открыть") {
+                        Button(L10n.t("Common.Open")) {
                             UIApplication.shared.open(url)
                         }
                     }
                 }
-                Button("Закрыть", role: .cancel) {}
+                Button(L10n.t("Common.Close"), role: .cancel) {}
             } message: {
                 Text(scannedCode ?? "")
             }

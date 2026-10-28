@@ -37,7 +37,7 @@ struct StickerSetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .confirmationDialog("Отправить стикер?", isPresented: Binding(
@@ -45,12 +45,12 @@ struct StickerSetView: View {
                 set: { if !$0 { pendingSticker = nil } }
             ), titleVisibility: .visible) {
                 if let sticker = pendingSticker {
-                    Button("Отправить") {
+                    Button(L10n.t("Common.Send")) {
                         TelegramClient.shared.sendSticker(sticker, to: chatId)
                         pendingSticker = nil
                     }
                 }
-                Button("Отмена", role: .cancel) { pendingSticker = nil }
+                Button(L10n.t("Common.Cancel"), role: .cancel) { pendingSticker = nil }
             } message: {
                 Text("Стикер будет отправлен в текущий чат.")
             }

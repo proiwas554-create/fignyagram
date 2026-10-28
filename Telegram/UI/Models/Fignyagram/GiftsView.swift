@@ -34,7 +34,7 @@ struct GiftsView: View {
                                     .foregroundColor(.secondary)
                             }
                             Spacer()
-                            Button("Отправить") { confirmGift = item }
+                            Button(L10n.t("Common.Send")) { confirmGift = item }
                                 .buttonStyle(.bordered)
                                 .disabled(sending)
                         }
@@ -45,7 +45,7 @@ struct GiftsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .confirmationDialog(
@@ -56,7 +56,7 @@ struct GiftsView: View {
                 if let gift = confirmGift {
                     Button("Отправить за \(gift.gift.starCount) ⭐") { send(gift) }
                 }
-                Button("Отмена", role: .cancel) { confirmGift = nil }
+                Button(L10n.t("Common.Cancel"), role: .cancel) { confirmGift = nil }
             } message: {
                 Text("Подарок будет отправлен в «\(title)» и спишет звёзды с баланса.")
             }

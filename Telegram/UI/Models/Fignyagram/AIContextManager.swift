@@ -147,7 +147,7 @@ struct AIDigestView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Готово") { dismiss() }
+                    Button(L10n.t("Common.Done")) { dismiss() }
                 }
             }
         }

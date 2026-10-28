@@ -77,7 +77,7 @@ struct DirectMessageStatsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .sheet(item: Binding(
@@ -88,7 +88,7 @@ struct DirectMessageStatsView: View {
                     ChatView(chatId: target.id)
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
-                                Button("Закрыть") { selectedChatId = nil }
+                                Button(L10n.t("Common.Close")) { selectedChatId = nil }
                             }
                         }
                 }

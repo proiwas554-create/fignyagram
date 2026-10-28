@@ -59,7 +59,7 @@ struct ShareComposerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showChatPicker) {

@@ -454,7 +454,7 @@ struct ChatView: View {
         .sheet(item: $shareItem) { item in
             ShareSheet(items: [item.url])
         }
-        .alert("Готово", isPresented: $showSaveAlert) {
+        .alert(L10n.t("Common.Done"), isPresented: $showSaveAlert) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(saveAlertText)
@@ -951,7 +951,7 @@ struct ChatView: View {
                         .buttonStyle(.plain)
 
                         if suggestion.isBot {
-                            Button("Открыть") {
+                            Button(L10n.t("Common.Open")) {
                                 openBot(suggestion)
                             }
                             .font(.appCaption)
@@ -1069,9 +1069,9 @@ struct ChatView: View {
 
             Group {
                 if #available(iOS 16.0, *) {
-                    TextField("Сообщение", text: $text, axis: .vertical).lineLimit(1...5)
+                    TextField(L10n.t("Common.Message"), text: $text, axis: .vertical).lineLimit(1...5)
                 } else {
-                    TextField("Сообщение", text: $text)
+                    TextField(L10n.t("Common.Message"), text: $text)
                 }
             }
             .focused($isInputFocused)
@@ -1121,7 +1121,7 @@ struct ChatView: View {
                 .scaleEffect(1 + CGFloat(voice.level) * 0.6)
             Text(MessageFormatter.duration(Int(voice.elapsed))).monospacedDigit()
             Spacer()
-            Button("Отмена", role: .destructive) {
+            Button(L10n.t("Common.Cancel"), role: .destructive) {
                 voice.cancel()
                 client.sendChatAction(.chatActionCancel, chatId: chatId)
             }
@@ -1472,7 +1472,7 @@ struct ChatView: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Открепить")
+            .accessibilityLabel(L10n.t("Common.Unpin"))
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
@@ -1737,7 +1737,7 @@ struct ChatSearchView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .overlay {
@@ -1933,11 +1933,11 @@ struct ChatNotificationSettingsView: View {
                     Text("Чат не найден").foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Уведомления")
+            .navigationTitle(L10n.t("Common.Notifications"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .overlay(alignment: .topTrailing) {

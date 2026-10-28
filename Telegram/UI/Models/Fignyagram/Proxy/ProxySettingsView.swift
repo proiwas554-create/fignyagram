@@ -139,7 +139,7 @@ struct ProxySettingsView: View {
                                         connectVPNKey(key)
                                     }
                                 }
-                                Button("Удалить", role: .destructive) {
+                                Button(L10n.t("Common.Delete"), role: .destructive) {
                                     vpnKeys.remove(key)
                                 }
                             }
@@ -159,11 +159,11 @@ struct ProxySettingsView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Прокси")
+            .navigationTitle(L10n.t("Common.Proxy"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
         }

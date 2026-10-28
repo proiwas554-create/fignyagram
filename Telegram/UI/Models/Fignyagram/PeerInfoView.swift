@@ -221,7 +221,7 @@ struct PeerInfoView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if let info, info.typeText == "канал" || info.typeText == "группа" {
@@ -251,7 +251,7 @@ struct PeerInfoView: View {
                 titleVisibility: .visible
             ) {
                 Button("Покинуть", role: .destructive) { leaveChat() }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Вы перестанете получать сообщения из этого \(info?.typeText ?? "чата"). Действие нельзя отменить.")
             }
@@ -283,7 +283,7 @@ struct PeerInfoView: View {
                         ChatView(chatId: direct)
                             .toolbar {
                                 ToolbarItem(placement: .cancellationAction) {
-                                    Button("Закрыть") { showDirectMessages = false }
+                                    Button(L10n.t("Common.Close")) { showDirectMessages = false }
                                 }
                             }
                     }
@@ -295,7 +295,7 @@ struct PeerInfoView: View {
                         ChatView(chatId: linked)
                             .toolbar {
                                 ToolbarItem(placement: .cancellationAction) {
-                                    Button("Закрыть") { showLinkedChat = false }
+                                    Button(L10n.t("Common.Close")) { showLinkedChat = false }
                                 }
                             }
                     }

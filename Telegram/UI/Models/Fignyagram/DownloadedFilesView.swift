@@ -74,7 +74,7 @@ struct DownloadedFilesView: View {
             .searchable(text: $search, prompt: "Поиск по имени файла")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(role: .destructive) {
@@ -94,7 +94,7 @@ struct DownloadedFilesView: View {
                 Button("Очистить весь кэш", role: .destructive) {
                     TelegramClient.shared.clearFileCache()
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Все скачанные файлы и миниатюры будут удалены из памяти приложения. Это действие нельзя отменить.")
             }

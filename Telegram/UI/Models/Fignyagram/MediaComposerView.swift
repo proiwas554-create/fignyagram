@@ -99,10 +99,10 @@ struct MediaComposerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Отправить") {
+                    Button(L10n.t("Common.Send")) {
                         onSend(caption.trimmingCharacters(in: .whitespacesAndNewlines), items)
                         dismiss()
                     }

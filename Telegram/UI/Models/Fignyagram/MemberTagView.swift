@@ -24,9 +24,9 @@ struct MemberTagView: View {
             .navigationTitle("Тег участника")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Отмена") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(L10n.t("Common.Cancel")) { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button(L10n.t("Common.Save")) {
                         isSaving = true
                         Task {
                             do {

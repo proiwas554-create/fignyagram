@@ -68,10 +68,10 @@ struct TrackMetadataView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Отмена") { dismiss() }
+                    Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Сохранить") {
+                    Button(L10n.t("Common.Save")) {
                         library.updateMetadata(
                             track,
                             title: title.trimmingCharacters(in: .whitespacesAndNewlines),

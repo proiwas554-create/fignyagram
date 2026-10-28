@@ -123,3 +123,12 @@
 "Hw.Throttle" = "Automatisches Drosseln";
 "Hw.MaxPerfConfirm" = "Maximale Leistung aktivieren?";
 "Hw.Risk" = "Auf eigenes Risiko";
+"Common.Chat" = "Chat";
+"Common.Message" = "Nachricht";
+"Common.Settings" = "Einstellungen";
+"Common.Profile" = "Profil";
+"Common.Proxy" = "Proxy";
+"Common.Notifications" = "Benachrichtigungen";
+"Common.Send" = "Senden";
+"Common.Pin" = "Anheften";
+"Common.Unpin" = "Lösen";

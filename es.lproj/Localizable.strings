@@ -123,3 +123,12 @@
 "Hw.Throttle" = "Limitación automática";
 "Hw.MaxPerfConfirm" = "¿Activar rendimiento máximo?";
 "Hw.Risk" = "Activar bajo tu responsabilidad";
+"Common.Chat" = "Chat";
+"Common.Message" = "Mensaje";
+"Common.Settings" = "Ajustes";
+"Common.Profile" = "Perfil";
+"Common.Proxy" = "Proxy";
+"Common.Notifications" = "Notificaciones";
+"Common.Send" = "Enviar";
+"Common.Pin" = "Fijar";
+"Common.Unpin" = "Desfijar";

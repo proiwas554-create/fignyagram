@@ -59,7 +59,7 @@ struct ClassicProfileMenuView: View {
                         onSettings()
                     } label: {
                         HStack {
-                            Label("Настройки", systemImage: "gearshape")
+                            Label(L10n.t("Common.Settings"), systemImage: "gearshape")
                             Spacer()
                             Image(systemName: "chevron.right").font(.appCaption).foregroundColor(.secondary)
                         }
@@ -76,11 +76,11 @@ struct ClassicProfileMenuView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Профиль")
+            .navigationTitle(L10n.t("Common.Profile"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
         }

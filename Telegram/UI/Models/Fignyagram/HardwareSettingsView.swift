@@ -9,7 +9,7 @@ struct HardwareSettingsView: View {
         NavigationView {
             Form {
                 Section {
-                    Picker("Профиль", selection: Binding(
+                    Picker(L10n.t("Common.Profile"), selection: Binding(
                         get: { tuning.profile },
                         set: { tuning.setProfile($0) }
                     )) {
@@ -72,7 +72,7 @@ struct HardwareSettingsView: View {
                 Button(L10n.t("Hw.Risk"), role: .destructive) {
                     tuning.maxPerformance = true
                 }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Нагрузка на процессор и нагрев возрастут. Стабильность не гарантируется.")
             }

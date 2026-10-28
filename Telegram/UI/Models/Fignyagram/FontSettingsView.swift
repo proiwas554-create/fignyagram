@@ -40,7 +40,7 @@ struct FontSettingsView: View {
                                 }
                             }
                             .swipeActions {
-                                Button("Удалить", role: .destructive) { fonts.removeCustomFont(name) }
+                                Button(L10n.t("Common.Delete"), role: .destructive) { fonts.removeCustomFont(name) }
                             }
                         }
                     }
@@ -63,7 +63,7 @@ struct FontSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .sheet(isPresented: $showPicker) {

@@ -708,7 +708,7 @@ struct MusicView: View {
             Button(role: .destructive) {
                 delete(track)
             } label: {
-                Label("Удалить", systemImage: "trash")
+                Label(L10n.t("Common.Delete"), systemImage: "trash")
             }
         }
         .contextMenu {
@@ -727,7 +727,7 @@ struct MusicView: View {
                 isSelecting = true
                 showForwardPicker = true
             } label: {
-                Label("Отправить", systemImage: "paperplane")
+                Label(L10n.t("Common.Send"), systemImage: "paperplane")
             }
             Button {
                 Task {

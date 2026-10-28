@@ -49,7 +49,7 @@ struct CloudPasswordView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .task { await load() }
@@ -59,7 +59,7 @@ struct CloudPasswordView: View {
                 titleVisibility: .visible
             ) {
                 Button("Отключить", role: .destructive) { disablePassword() }
-                Button("Отмена", role: .cancel) {}
+                Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Для отключения введите текущий пароль в поле «Текущий пароль».")
             }

@@ -123,3 +123,12 @@
 "Hw.Throttle" = "自动降频";
 "Hw.MaxPerfConfirm" = "启用最高性能？";
 "Hw.Risk" = "风险自负";
+"Common.Chat" = "聊天";
+"Common.Message" = "消息";
+"Common.Settings" = "设置";
+"Common.Profile" = "个人资料";
+"Common.Proxy" = "代理";
+"Common.Notifications" = "通知";
+"Common.Send" = "发送";
+"Common.Pin" = "置顶";
+"Common.Unpin" = "取消置顶";

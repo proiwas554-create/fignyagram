@@ -297,10 +297,10 @@ struct MessageRow: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Отмена") { showTagEditor = false }
+                        Button(L10n.t("Common.Cancel")) { showTagEditor = false }
                     }
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Сохранить") {
+                        Button(L10n.t("Common.Save")) {
                             Task {
                                 if let me = TelegramClient.shared.me {
                                     try? await TelegramClient.shared.setMemberTag(
@@ -607,11 +607,11 @@ struct LongTextSheet: View {
     var body: some View {
         NavigationView {
             LongTextView(text: text)
-                .navigationTitle("Сообщение")
+                .navigationTitle(L10n.t("Common.Message"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
-                        Button("Закрыть") { dismiss() }
+                        Button(L10n.t("Common.Close")) { dismiss() }
                     }
                     ToolbarItem(placement: .navigationBarTrailing) {
                         Button {
@@ -899,7 +899,7 @@ struct MessageActionsSheet: View {
                     } else if message.content.saveableFile != nil,
                        (properties?.canBeSaved != false || PrivacyPreferences.shared.ignoreCopyProtection) {
                         Button { act(.saveMedia) } label: {
-                            Label("Сохранить", systemImage: "square.and.arrow.down")
+                            Label(L10n.t("Common.Save"), systemImage: "square.and.arrow.down")
                         }
                     }
                 }
@@ -947,10 +947,10 @@ struct MessageActionsSheet: View {
                     HStack { Spacer(); ProgressView(); Spacer() }
                 }
             }
-            .navigationTitle("Сообщение")
+            .navigationTitle(L10n.t("Common.Message"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Закрыть") { dismiss() } }
+                ToolbarItem(placement: .cancellationAction) { Button(L10n.t("Common.Close")) { dismiss() } }
             }
         }
         .navigationViewStyle(.stack)

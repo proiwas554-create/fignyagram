@@ -985,7 +985,7 @@ struct VideoNoteRecorderView: View {
     var body: some View {
         VStack(spacing: 32) {
             HStack {
-                Button("Отмена") { close() }.foregroundColor(.white)
+                Button(L10n.t("Common.Cancel")) { close() }.foregroundColor(.white)
                 Spacer()
                 if isRecording {
                     Text(MessageFormatter.duration(Int(elapsed))).foregroundColor(.white).monospacedDigit()

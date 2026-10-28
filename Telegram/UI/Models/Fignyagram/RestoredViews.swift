@@ -82,12 +82,12 @@ struct NotificationSettingsView: View {
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Уведомления")
+            .navigationTitle(L10n.t("Common.Notifications"))
             .modifier(GlassListModifier())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .onAppear { refreshPermission() }
@@ -132,7 +132,7 @@ struct NotificationScopeDetailView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Уведомления", isOn: $enabled)
+                Toggle(L10n.t("Common.Notifications"), isOn: $enabled)
                 Picker("Не беспокоить", selection: $mute) {
                     Text("По умолчанию").tag(0)
                     Text("1 час").tag(3600)
@@ -189,7 +189,7 @@ struct LimitsSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
         }

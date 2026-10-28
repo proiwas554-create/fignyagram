@@ -51,7 +51,7 @@ struct PinnedMessagesView: View {
                             Button(role: .destructive) {
                                 TelegramClient.shared.unpinMessage(message)
                             } label: {
-                                Label("Открепить", systemImage: "pin.slash")
+                                Label(L10n.t("Common.Unpin"), systemImage: "pin.slash")
                             }
                         }
                     }
@@ -61,7 +61,7 @@ struct PinnedMessagesView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Закрыть") { dismiss() }
+                    Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
             .onAppear {
