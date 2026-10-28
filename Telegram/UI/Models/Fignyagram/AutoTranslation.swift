@@ -155,6 +155,8 @@ final class AutoTranslationManager: ObservableObject {
     var isDraining = false
     var pendingPreparation = false
     private var preparedLanguages: Set<String> = []
+    private var packStatus: [String: Bool] = [:]
+    private var packChecks: Set<String> = []
 
     private init() {
         AutoTranslationSettings.shared.$targetLanguage
@@ -164,6 +166,45 @@ final class AutoTranslationManager: ObservableObject {
                 self?.handleTargetLanguageChange()
             }
             .store(in: &cancellables)
+    }
+
+    /// Queues the request, but only when the language pack is already installed.
+    /// The session is therefore never started for a missing pack from a chat.
+    private func enqueue(request: Request, target: String) {
+        if let installed = packStatus[target] {
+            guard installed else { return }
+            commit(request)
+            return
+        }
+        guard !packChecks.contains(target) else { return }
+        packChecks.insert(target)
+        Task { [weak self] in
+            let installed = await Self.isPackInstalled(text: request.text, target: target)
+            guard let self else { return }
+            self.packStatus[target] = installed
+            self.packChecks.remove(target)
+            if installed { self.commit(request) }
+            else { CallDiag.log("translation pack not installed for \(target): keeping original text") }
+        }
+    }
+
+    private func commit(_ request: Request) {
+        guard !inFlight.contains(request.id) else { return }
+        inFlight.insert(request.id)
+        pending.append(request)
+        requestGeneration += 1
+        attachHostIfNeeded()
+    }
+
+    static func isPackInstalled(text: String, target: String) async -> Bool {
+        if #available(iOS 18.0, *) {
+            let language = language(of: text) ?? "en"
+            let source = Locale.Language(identifier: language)
+            let destination = Locale.Language(identifier: target)
+            let status = await LanguageAvailability().status(from: source, to: destination)
+            return status == LanguageAvailability.Status.installed
+        }
+        return false
     }
 
     /// Chat/channel titles use the same cache with role "title".
@@ -188,11 +229,9 @@ final class AutoTranslationManager: ObservableObject {
                                                         editDate: 0,
                                                         language: settings.targetLanguage,
                                                         role: "title") == nil else { return }
-        inFlight.insert(key)
-        pending.append(Request(id: key, chatId: chatId, messageId: 0,
-                               editDate: 0, text: trimmed, role: "title"))
-        requestGeneration += 1
-        attachHostIfNeeded()
+        enqueue(request: Request(id: key, chatId: chatId, messageId: 0,
+                                 editDate: 0, text: trimmed, role: "title"),
+                target: settings.targetLanguage)
     }
 
     /// Called once when the user picks a language: the system may need to
@@ -265,10 +304,9 @@ final class AutoTranslationManager: ObservableObject {
                                                         editDate: Int32(message.editDate),
                                                         language: settings.targetLanguage,
                                                         role: role) == nil else { return }
-        inFlight.insert(key)
-        pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
-                               editDate: Int32(message.editDate), text: trimmed, role: role))
-        requestGeneration += 1
+        enqueue(request: Request(id: key, chatId: message.chatId, messageId: message.id,
+                                 editDate: Int32(message.editDate), text: trimmed, role: role),
+                target: settings.targetLanguage)
         CallDiag.log("auto translation queued: message=\(message.id) target=\(settings.targetLanguage) role=\(role)")
         attachHostIfNeeded()
     }

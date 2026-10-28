@@ -183,7 +183,6 @@ struct SettingsView: View {
                         get: { autoTranslation.mode },
                         set: { value in
                             autoTranslation.mode = value
-                            if value == .auto { AutoTranslationManager.shared.requestLanguagePreparation() }
                         }
                     )) {
                         ForEach(AutoTranslationSettings.Mode.allCases) { item in
