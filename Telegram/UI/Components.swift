@@ -50,8 +50,12 @@ nonisolated enum ImageCache {
                 let rect = CGRect(x: (image.size.width - side) / 2,
                                   y: (image.size.height - side) / 2,
                                   width: side, height: side)
-                let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side))
+                let format = UIGraphicsImageRendererFormat.default()
+                format.opaque = true
+                let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format)
                 let rounded = renderer.image { context in
+                    UIColor.systemBackground.setFill()
+                    context.fill(CGRect(x: 0, y: 0, width: side, height: side))
                     UIBezierPath(ovalIn: CGRect(x: 0, y: 0, width: side, height: side)).addClip()
                     image.draw(at: CGPoint(x: -rect.origin.x, y: -rect.origin.y))
                 }
@@ -275,7 +279,10 @@ struct AvatarView: View {
             if let image {
                 Image(uiImage: image).resizable().scaledToFill()
             } else if let image = ImageCache.image(minithumbnail: photo?.minithumbnail) {
-                Image(uiImage: image).resizable().scaledToFill().blur(radius: 2)
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .blur(radius: ScrollActivity.shared.isScrolling ? 0 : 2)
             } else {
                 ZStack {
                     LinearGradient(

@@ -222,8 +222,7 @@ struct MessageRow: View {
             }
         } else {
             bubble
-                .rasterizeOnScroll()
-        }
+                }
     }
 
     private var bubble: some View {
