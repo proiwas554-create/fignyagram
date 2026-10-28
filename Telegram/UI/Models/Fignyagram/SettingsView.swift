@@ -35,7 +35,7 @@ struct SettingsView: View {
         NavigationView {
             List {
                 Section(L10n.t("Auto.547743e82f")) {
-                    row("Прокси", icon: "network", value: .proxy)
+                    row(L10n.t("AutoT.ed903f8795"), icon: "network", value: .proxy)
                 }
 
                 Section {
@@ -62,7 +62,7 @@ struct SettingsView: View {
                         get: { UserDefaults.standard.object(forKey: "textSelectionEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "textSelectionEnabled") }
                     ))
-                    row("Шрифт", icon: "textformat", value: .fonts)
+                    row(L10n.t("AutoT.e479fdc532"), icon: "textformat", value: .fonts)
                 } header: {
                     Text(L10n.t("Auto.065a4bdc2e"))
                 } footer: {
@@ -85,9 +85,9 @@ struct SettingsView: View {
                 }
 
                 Section(L10n.t("Auto.a1ceab59e9")) {
-                    row("Профиль", icon: "person.crop.circle", value: .profile)
-                    row("Устройства и сессии", icon: "laptopcomputer.and.iphone", value: .sessions)
-                    row("Облачный пароль", icon: "lock.shield", value: .cloudPassword)
+                    row(L10n.t("AutoT.a46c372347"), icon: "person.crop.circle", value: .profile)
+                    row(L10n.t("AutoT.067770493a"), icon: "laptopcomputer.and.iphone", value: .sessions)
+                    row(L10n.t("AutoT.5a77c57a29"), icon: "lock.shield", value: .cloudPassword)
                     Button {
                         showDeviceQR = true
                     } label: {
@@ -103,11 +103,11 @@ struct SettingsView: View {
                             }
                         }
                     ))
-                    row("Настройки уведомлений", icon: "bell.badge", value: .notifications)
+                    row(L10n.t("AutoT.0fc9def45f"), icon: "bell.badge", value: .notifications)
                 }
 
                 Section {
-                    row("Команды", icon: "wand.and.stars", value: .commands)
+                    row(L10n.t("AutoT.ce87c3f7c4"), icon: "wand.and.stars", value: .commands)
                 } header: {
                     Text(L10n.t("Auto.b05019e764"))
                 } footer: {
@@ -136,10 +136,10 @@ struct SettingsView: View {
                 }
 
                 Section(L10n.t("Auto.d884c5b006")) {
-                    row("Скачанные файлы", icon: "internaldrive", value: .downloads)
-                    row("Память и кэш", icon: "externaldrive", value: .cache)
-                    row("Ограничения отображения", icon: "slider.horizontal.3", value: .limits)
-                    row("Оптимизация", icon: "bolt.batteryblock", value: .optimization)
+                    row(L10n.t("AutoT.c2f7359a1b"), icon: "internaldrive", value: .downloads)
+                    row(L10n.t("AutoT.dbc234480c"), icon: "externaldrive", value: .cache)
+                    row(L10n.t("AutoT.7b900f6633"), icon: "slider.horizontal.3", value: .limits)
+                    row(L10n.t("AutoT.c09fb8d62b"), icon: "bolt.batteryblock", value: .optimization)
                     row(L10n.t("Settings.Performance.Profile"), icon: "cpu", value: .hardware)
                 }
 

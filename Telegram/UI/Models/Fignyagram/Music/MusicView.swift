@@ -12,12 +12,12 @@ struct MusicView: View {
         var id: String { rawValue }
         var title: LocalizedStringKey {
             switch self {
-            case .main: return "Моя"
-            case .chats: return "Чаты"
-            case .saved: return "Избранное"
-            case .favorites: return "Любимые"
-            case .profile: return "Профиль"
-            case .recent: return "Недавние"
+            case .main: return LocalizedStringKey(L10n.t("AutoT.f96a4e3ca8"))
+            case .chats: return LocalizedStringKey(L10n.t("AutoT.19adecc3d1"))
+            case .saved: return LocalizedStringKey(L10n.t("AutoT.2fc4139291"))
+            case .favorites: return LocalizedStringKey(L10n.t("AutoT.3a8413a42e"))
+            case .profile: return LocalizedStringKey(L10n.t("AutoT.a46c372347"))
+            case .recent: return LocalizedStringKey(L10n.t("AutoT.83c8b9632d"))
             }
         }
     }
@@ -167,16 +167,16 @@ struct MusicView: View {
                 FullMusicPlayerView()
             }
             .sheet(isPresented: $showChatPicker) {
-                ChatPickerView(title: "Музыка из чата") { chatId in
+                ChatPickerView(title: L10n.t("AutoT.856e080cfa")) { chatId in
                     pendingImportChatId = chatId
-                    pendingImportTitle = ChatStore.shared.chats[chatId]?.title ?? "Чат"
+                    pendingImportTitle = ChatStore.shared.chats[chatId]?.title ?? L10n.t("AutoT.c52b4c5cbc")
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
                         showImportDestination = true
                     }
                 }
             }
             .sheet(isPresented: $showProfileUserPicker) {
-                ChatPickerView(title: "Чей профиль?") { chatId in
+                ChatPickerView(title: L10n.t("AutoT.4f8f16b854")) { chatId in
                     if let userId = ChatStore.shared.chats[chatId]?.privateUserId {
                         profileMusicTarget = ProfileMusicTarget(
                             id: userId,
@@ -192,7 +192,7 @@ struct MusicView: View {
                 TrackMetadataView(track: track)
             }
             .sheet(isPresented: $showForwardPicker) {
-                ChatPickerView(title: "Отправить треки") { chatId in
+                ChatPickerView(title: L10n.t("AutoT.bf1f3f491a")) { chatId in
                     let tracks = library.tracks.filter { selectedTrackIDs.contains($0.id) }
                     Task { await client.sendTracks(tracks, to: chatId) }
                     isSelecting = false
@@ -787,33 +787,33 @@ struct MusicView: View {
 
     private var emptyTitle: LocalizedStringKey {
         switch filter {
-        case .main: return "Плейлист пуст"
-        case .chats: return "Музыки из чатов пока нет"
-        case .saved: return "В «Избранном» нет музыки"
-        case .favorites: return "Любимых треков пока нет"
-        case .profile: return "В профиле Telegram нет музыки"
-        case .recent: return "Вы ещё не слушали музыку"
+        case .main: return LocalizedStringKey(L10n.t("AutoT.9e46a9b5fb"))
+        case .chats: return LocalizedStringKey(L10n.t("AutoT.a45f76d1b3"))
+        case .saved: return LocalizedStringKey(L10n.t("AutoT.ebff628e93"))
+        case .favorites: return LocalizedStringKey(L10n.t("AutoT.51733596d1"))
+        case .profile: return LocalizedStringKey(L10n.t("AutoT.dea6e845aa"))
+        case .recent: return LocalizedStringKey(L10n.t("AutoT.87ae3be1c3"))
         }
     }
 
     private var emptySubtitle: LocalizedStringKey {
         switch filter {
-        case .main: return "Добавьте треки из «Файлов» или из аудиосообщений Telegram."
-        case .chats: return "Выберите канал или чат и импортируйте из него всю музыку."
-        case .saved: return "Импортируйте аудио из «Избранного» Telegram."
-        case .favorites: return "Добавьте треки в любимые через контекстное меню."
-        case .profile: return "Добавьте треки в профиль Telegram, чтобы они появились здесь."
-        case .recent: return "Здесь появятся треки, которые вы недавно включали."
+        case .main: return LocalizedStringKey(L10n.t("AutoT.11be415c9e"))
+        case .chats: return LocalizedStringKey(L10n.t("AutoT.fd0cd6fc65"))
+        case .saved: return LocalizedStringKey(L10n.t("AutoT.7c351f8262"))
+        case .favorites: return LocalizedStringKey(L10n.t("AutoT.51f4d5f407"))
+        case .profile: return LocalizedStringKey(L10n.t("AutoT.05ace2ea77"))
+        case .recent: return LocalizedStringKey(L10n.t("AutoT.45393afa4f"))
         }
     }
 
     private var emptyActionTitle: LocalizedStringKey {
         switch filter {
-        case .main: return "Добавить из файлов"
-        case .saved: return "Импортировать из «Избранного»"
-        case .favorites: return "К плейлисту"
-        case .profile: return "Обновить"
-        case .chats, .recent: return "Импортировать из чата"
+        case .main: return LocalizedStringKey(L10n.t("AutoT.56d82d4ad1"))
+        case .saved: return LocalizedStringKey(L10n.t("AutoT.cfc70daf8e"))
+        case .favorites: return LocalizedStringKey(L10n.t("AutoT.2f932a199a"))
+        case .profile: return LocalizedStringKey(L10n.t("AutoT.dbe5444a9a"))
+        case .chats, .recent: return LocalizedStringKey(L10n.t("AutoT.b73e6cf682"))
         }
     }
 }
@@ -1165,9 +1165,9 @@ struct FullMusicPlayerView: View {
     }
 
     private var sleepLabel: String {
-        guard let sleepUntil else { return "Таймер" }
+        guard let sleepUntil else { return L10n.t("AutoT.33969aa545") }
         let minutes = max(0, Int(sleepUntil.timeIntervalSinceNow / 60))
-        return "Сон \(minutes)м"
+        return L10n.t("AutoT.b0af9f38d2")
     }
 
     private func setSleepTimer(minutes: Int) {

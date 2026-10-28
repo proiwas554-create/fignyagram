@@ -345,7 +345,7 @@ struct ChatListView: View {
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if chat.id != savedChatId {
                 Button { togglePin(chat) } label: {
-                    Label(isPinned(chat) ? "Открепить" : "Закрепить", systemImage: "pin.fill")
+                    Label(isPinned(chat) ? L10n.t("AutoT.507d9e0c15") : L10n.t("AutoT.f5f8df901c"), systemImage: "pin.fill")
                 }
                 .tint(.orange)
             }
