@@ -201,7 +201,8 @@ struct ChatView: View {
                             showSummary = true
                         }
                     } label: {
-                        Label("Кратко о переписке", systemImage: "text.append")
+                        Label(L10n.keyed("Chat.Summary", ru: "Кратко о переписке", en: "Conversation summary"),
+                              systemImage: "text.append")
                     }
                     Button {
                         let texts = visibleMessages.suffix(120).compactMap { message -> String? in
@@ -218,17 +219,20 @@ struct ChatView: View {
                             showSummary = true
                         }
                     } label: {
-                        Label("AI-выжимка (на устройстве)", systemImage: "brain")
+                        Label(L10n.keyed("Chat.AIDigest", ru: "AI-выжимка (на устройстве)", en: "AI digest (on device)"),
+                              systemImage: "brain")
                     }
                     Button {
                         showChatInfo = true
                     } label: {
-                        Label("Информация о чате", systemImage: "info.circle")
+                        Label(L10n.keyed("Chat.Info", ru: "Информация о чате", en: "Chat Info"),
+                              systemImage: "info.circle")
                     }
                     Button {
                         showMedia = true
                     } label: {
-                        Label("Медиа и файлы", systemImage: "folder")
+                        Label(L10n.keyed("Chat.Media", ru: "Медиа и файлы", en: "Media & Files"),
+                              systemImage: "folder")
                     }
                     Button {
                         showNotifications = true
@@ -1844,7 +1848,7 @@ struct ChatNotificationSettingsView: View {
             Form {
                 if let settings {
                     Section {
-                        Toggle("Уведомления", isOn: Binding(
+                        Toggle(L10n.keyed("Chat.Notifications", ru: "Уведомления", en: "Notifications"), isOn: Binding(
                             get: { effectiveMuteFor == 0 },
                             set: { enabled in
                                 update {
@@ -1892,7 +1896,7 @@ struct ChatNotificationSettingsView: View {
                     }
 
                     Section {
-                        Toggle("Уведомления об упоминаниях", isOn: Binding(
+                        Toggle(L10n.keyed("Chat.Mentions", ru: "Уведомления об упоминаниях", en: "Mention notifications"), isOn: Binding(
                             get: { effectiveMentions },
                             set: { enabled in
                                 update {

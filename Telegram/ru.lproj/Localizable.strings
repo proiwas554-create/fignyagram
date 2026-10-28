@@ -1,0 +1,17 @@
+"Chat.Info" = "Информация о чате";
+"Chat.Media" = "Медиа и файлы";
+"Chat.Notifications" = "Уведомления";
+"Chat.Mentions" = "Уведомления об упоминаниях";
+"Chat.Discussion" = "Обсуждение";
+"Chat.Summary" = "Кратко о переписке";
+"Chat.AIDigest" = "AI-выжимка (на устройстве)";
+"Chat.Translate" = "Перевести";
+"Chat.TranslateOnDevice" = "Перевести на устройстве";
+"Chat.Globe" = "Переведено";
+"Menu.AddToMusic" = "Добавить в музыку";
+"Menu.Forward" = "Переслать";
+"Menu.Reply" = "Ответить";
+"Menu.Copy" = "Копировать";
+"Menu.Delete" = "Удалить";
+"Menu.Pin" = "Закрепить";
+"Menu.Unpin" = "Открепить";

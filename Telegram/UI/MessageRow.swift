@@ -836,13 +836,15 @@ struct MessageActionsSheet: View {
                         Button {
                             act(.translate(text))
                         } label: {
-                            Label("Перевести", systemImage: "character.bubble")
+                            Label(L10n.keyed("Chat.Translate", ru: "Перевести", en: "Translate"),
+                              systemImage: "character.bubble")
                         }
                         if #available(iOS 18.0, *) {
                             Button {
                                 act(.translateOnDevice(text))
                             } label: {
-                                Label("Перевести на устройстве", systemImage: "lock.shield")
+                                Label(L10n.keyed("Chat.TranslateOnDevice", ru: "Перевести на устройстве", en: "Translate on device"),
+                                      systemImage: "lock.shield")
                             }
                         }
                     }

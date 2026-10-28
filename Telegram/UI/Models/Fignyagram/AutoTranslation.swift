@@ -232,13 +232,14 @@ struct AutoTranslatedMessageText: View {
     var body: some View {
         Group {
             if settings.isEnabled, let translated {
-                VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(translated)
                         .modifier(SelectableTextModifier())
                         .fixedSize(horizontal: false, vertical: true)
-                    Text("🌐 Переведено")
-                        .font(.appCaption2)
+                    Image(systemName: "globe")
+                        .font(.system(size: 10))
                         .foregroundColor(.secondary)
+                        .accessibilityLabel(L10n.keyed("Chat.Globe", ru: "Переведено", en: "Translated"))
                 }
             } else {
                 SpoilerTextView(formatted: formatted)

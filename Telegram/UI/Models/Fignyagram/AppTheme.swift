@@ -38,3 +38,15 @@ extension String {
         L10n.string(self, en)
     }
 }
+
+extension L10n {
+    /// Resource-based localization with a guaranteed fallback: the .lproj table
+    /// is used when the project bundles it, otherwise the English literal is
+    /// returned for English system language so no Russian leaks through.
+    static func keyed(_ key: String, ru: String, en: String) -> String {
+        let localized = NSLocalizedString(key, tableName: "Localizable", bundle: .main,
+                                          value: ru, comment: "")
+        if localized == ru, isEnglish { return en }
+        return localized
+    }
+}

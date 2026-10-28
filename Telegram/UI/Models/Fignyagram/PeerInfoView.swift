@@ -156,7 +156,8 @@ struct PeerInfoView: View {
                                     }
                                     if info.linkedChatId != nil {
                                         Divider()
-                                        profileAction("Обсуждение", icon: "bubble.left.and.bubble.right") {
+                                        profileAction(L10n.keyed("Chat.Discussion", ru: "Обсуждение", en: "Go to discussion"),
+                                                      icon: "bubble.left.and.bubble.right") {
                                             showLinkedChat = true
                                         }
                                     }
