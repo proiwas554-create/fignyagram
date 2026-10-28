@@ -188,7 +188,10 @@ struct SettingsView: View {
                     .disabled(!autoTranslation.isSupported)
                     Picker(L10n.t("Settings.Translate.Language"), selection: Binding(
                         get: { autoTranslation.targetLanguage },
-                        set: { autoTranslation.setTargetLanguage($0) }
+                        set: { value in
+                            autoTranslation.setTargetLanguage(value)
+                            AutoTranslationManager.shared.requestLanguagePreparation()
+                        }
                     )) {
                         ForEach(AutoTranslationSettings.supportedLanguages, id: \.code) { item in
                             Text(item.title).tag(item.code)

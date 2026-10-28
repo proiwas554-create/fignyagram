@@ -857,6 +857,17 @@ struct MessageActionsSheet: View {
                             }
                         }
                     }
+                    if !AutoTranslationSettings.shared.isEnabled,
+                       case .messageText(let body) = message.content,
+                       !body.text.text.isEmpty,
+                       #available(iOS 18.0, *) {
+                        Button {
+                            AutoTranslationManager.shared.requestManual(message: message, text: body.text.text)
+                        } label: {
+                            Label("Перевести на " + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
+                                  systemImage: "globe")
+                        }
+                    }
                     if case .messageDocument(let document) = message.content,
                        document.document.fileName.hasSuffix(".fgn.enc") {
                         Button {

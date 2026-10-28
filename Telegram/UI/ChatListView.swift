@@ -19,6 +19,7 @@ struct ChatListView: View {
     @ObservedObject private var proxy = BuiltInProxyManager.shared
     @ObservedObject private var recentContacts = RecentContactsStore.shared
     @ObservedObject private var hiddenChats = HiddenChats.shared
+    @ObservedObject private var autoTranslation = AutoTranslationManager.shared
     @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
@@ -128,7 +129,12 @@ struct ChatListView: View {
     }
 
     private func displayTitle(_ chat: ChatItem) -> String {
-        aliases.chatAlias(chat.id) ?? chat.title
+        let base = aliases.chatAlias(chat.id) ?? chat.title
+        if let cached = autoTranslation.translation(forChatId: chat.id, title: base) {
+            return cached
+        }
+        autoTranslation.requestChatTitle(chatId: chat.id, title: base)
+        return base
     }
 
     private func isPinned(_ chat: ChatItem) -> Bool {

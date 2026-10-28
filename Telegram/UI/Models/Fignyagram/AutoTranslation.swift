@@ -117,6 +117,12 @@ final class AutoTranslationManager: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     /// Bumped when the target language changes so every visible cell re-requests.
     @Published private(set) var cacheVersion = 0
+    /// Bumped only when new work is queued, so the host can restart its session
+    /// without invalidating on every layout pass (that caused the download loop).
+    @Published private(set) var requestGeneration = 0
+    var isDraining = false
+    var pendingPreparation = false
+    private var preparedLanguages: Set<String> = []
 
     private init() {
         AutoTranslationSettings.shared.$targetLanguage
@@ -126,6 +132,43 @@ final class AutoTranslationManager: ObservableObject {
                 self?.handleTargetLanguageChange()
             }
             .store(in: &cancellables)
+    }
+
+    /// Chat/channel titles use the same cache with role "title".
+    func translation(forChatId chatId: Int64, title: String) -> String? {
+        guard AutoTranslationSettings.shared.isEnabled else { return nil }
+        return TranslatedMessageCache.shared.translation(chatId: chatId,
+                                                         messageId: 0,
+                                                         editDate: 0,
+                                                         language: AutoTranslationSettings.shared.targetLanguage,
+                                                         role: "title")
+    }
+
+    func requestChatTitle(chatId: Int64, title: String) {
+        let settings = AutoTranslationSettings.shared
+        guard settings.isEnabled, settings.isSupported else { return }
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return }
+        guard Self.language(of: trimmed) != settings.targetLanguage else { return }
+        let key = "\(chatId):0:0:title"
+        guard !inFlight.contains(key),
+              TranslatedMessageCache.shared.translation(chatId: chatId, messageId: 0,
+                                                        editDate: 0,
+                                                        language: settings.targetLanguage,
+                                                        role: "title") == nil else { return }
+        inFlight.insert(key)
+        pending.append(Request(id: key, chatId: chatId, messageId: 0,
+                               editDate: 0, text: trimmed, role: "title"))
+        requestGeneration += 1
+        attachHostIfNeeded()
+    }
+
+    /// Called once when the user picks a language: the system may need to
+    /// download the language pack, and that must happen only here.
+    func requestLanguagePreparation() {
+        guard AutoTranslationSettings.shared.isSupported else { return }
+        pendingPreparation = true
+        requestGeneration += 1
     }
 
     private func handleTargetLanguageChange() {
@@ -162,6 +205,7 @@ final class AutoTranslationManager: ObservableObject {
         inFlight.insert(key)
         pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
                                editDate: Int32(message.editDate), text: trimmed, role: role))
+        requestGeneration += 1
         attachHostIfNeeded()
         CallDiag.log("manual translation queued: message=\(message.id) target=\(settings.targetLanguage)")
         return true
@@ -185,6 +229,7 @@ final class AutoTranslationManager: ObservableObject {
         inFlight.insert(key)
         pending.append(Request(id: key, chatId: message.chatId, messageId: message.id,
                                editDate: Int32(message.editDate), text: trimmed, role: role))
+        requestGeneration += 1
         CallDiag.log("auto translation queued: message=\(message.id) target=\(settings.targetLanguage) role=\(role)")
         attachHostIfNeeded()
     }
@@ -253,7 +298,8 @@ struct TranslationHostView: View {
                     target: Locale.Language(identifier: settings.targetLanguage)
                 )
             }
-            .onChange(of: manager.pending.count) { _ in
+            .onChange(of: manager.requestGeneration) { _ in
+                guard !manager.isDraining else { return }
                 configuration?.invalidate()
             }
             .onChange(of: settings.targetLanguage) { value in
@@ -268,6 +314,16 @@ struct TranslationHostView: View {
     }
 
     private func drain(_ session: TranslationSession) async {
+        guard !manager.isDraining else { return }
+        manager.isDraining = true
+        defer { manager.isDraining = false }
+
+        if manager.pendingPreparation {
+            manager.pendingPreparation = false
+            // Triggers the system language download sheet at most once per tap
+            // on the language picker, never during list rendering.
+            try? await session.prepareTranslation()
+        }
         while let request = manager.pending.first {
             do {
                 let response = try await session.translate(request.text)

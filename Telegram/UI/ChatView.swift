@@ -171,7 +171,7 @@ struct ChatView: View {
                     showChatInfo = true
                 } label: {
                     VStack(spacing: 0) {
-                        Text(aliases.chatAlias(chatId) ?? chat?.title ?? "Чат").font(.appHeadline).lineLimit(1)
+                        Text(headerTitle).font(.appHeadline).lineLimit(1)
                         if !subtitle.isEmpty {
                             Text(subtitle).font(.appCaption2)
                                 .foregroundColor(store.actionText(chatId: chatId) != nil ? .accentColor : .secondary)
@@ -1003,6 +1003,15 @@ struct ChatView: View {
                 mentionSuggestions = []
             }
         }
+    }
+
+    private var headerTitle: String {
+        let base = aliases.chatAlias(chatId) ?? chat?.title ?? "Чат"
+        if let cached = AutoTranslationManager.shared.translation(forChatId: chatId, title: base) {
+            return cached
+        }
+        AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: base)
+        return base
     }
 
     private var inputBar: some View {
