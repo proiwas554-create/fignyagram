@@ -11,7 +11,7 @@ struct AccountsView: View {
         NavigationView {
             List {
                 Section {
-                    ForEach(accounts.accounts) { account in
+                    ForEach(AccountManager.shared.profiles) { account in
                         Button {
                             if account.id != accounts.currentId {
                                 client.switchAccount(to: account.id)

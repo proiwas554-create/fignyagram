@@ -180,6 +180,9 @@ struct SettingsView: View {
                         Text("2000 символов").tag(2000)
                         Text("4000 символов").tag(4000)
                     }
+                    NavigationLink("Профили и PIN (двойное дно)") {
+                        ProfilesSecurityView()
+                    }
                     Button {
                         GuestMode.shared.enter()
                     } label: {

@@ -9,6 +9,8 @@ struct AccountSlot: Codable, Identifiable, Equatable {
     var filesDirectory: String
     /// false = slot was created but login never completed; nil = legacy slot.
     var isAuthenticated: Bool? = nil
+    /// true = hidden profile behind the duress PIN.
+    var isSecret: Bool? = nil
 }
 
 /// Persists account slots and the currently selected account.
@@ -106,6 +108,12 @@ final class AccountStore: ObservableObject {
         currentId = id
         save()
         return slot
+    }
+
+    func setSecret(id: String, isSecret: Bool) {
+        guard let index = accounts.firstIndex(where: { $0.id == id }) else { return }
+        accounts[index].isSecret = isSecret
+        save()
     }
 
     func switchTo(id: String) {

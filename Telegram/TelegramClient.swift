@@ -498,6 +498,25 @@ final class TelegramClient: ObservableObject {
 
     /// Recreates the TDLib client for the current account. Used when an
     /// authorization request is stuck behind a dead proxy.
+    /// Switches the active TDLib container. The current clients are destroyed
+    /// first (td_json_client_destroy inside the manager), so the old SQLite
+    /// files are flushed before the new profile paths are used.
+    func switchAccount(to id: String) async {
+        await MainActor.run {
+            self.errorMessage = nil
+            self.manager?.closeClients()
+            self.manager = nil
+            self.client = nil
+            ChatStore.shared.reset()
+            AccountStore.shared.switchTo(id: id)
+        }
+        // Give the manager a moment to release descriptors/sockets.
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        await MainActor.run {
+            self.start()
+        }
+    }
+
     func restartConnection() {
         let oldClient = client
         teardownSession()
