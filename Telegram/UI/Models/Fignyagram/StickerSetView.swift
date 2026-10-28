@@ -3,7 +3,7 @@ import TDLibKit
 
 struct StickerSetView: View {
     let setId: TdInt64
-    var initialTitle = "Набор стикеров"
+    var initialTitle = NSLocalizedString("Generated.0fa080c1d2e5", comment: "")
     var chatId: Int64 = 0
 
     @ObservedObject private var client = TelegramClient.shared
@@ -30,7 +30,7 @@ struct StickerSetView: View {
                 } else if let errorText {
                     Text(errorText).foregroundColor(.secondary).padding()
                 } else {
-                    ProgressView("Загрузка набора…")
+                    ProgressView(NSLocalizedString("Generated.9c5648097c99", comment: ""))
                 }
             }
             .navigationTitle(set?.title ?? initialTitle)

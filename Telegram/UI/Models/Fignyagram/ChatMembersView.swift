@@ -90,12 +90,12 @@ struct ChatMembersView: View {
                                     Button {
                                         rightsMember = member
                                     } label: {
-                                        Label(member.isAdmin ? "Изменить права" : "Повысить", systemImage: "crown")
+                                        Label(member.isAdmin ? NSLocalizedString("Generated.fa47175a1826", comment: "") : NSLocalizedString("Generated.aaaeb5e0d597", comment: ""), systemImage: "crown")
                                     }
                                     Button(role: .destructive) {
                                         ban(member, banned: !member.isBanned)
                                     } label: {
-                                        Label(member.isBanned ? "Разбанить" : "Забанить", systemImage: "hand.raised")
+                                        Label(member.isBanned ? NSLocalizedString("Generated.ef520f3b7a31", comment: "") : NSLocalizedString("Generated.647670f1f01a", comment: ""), systemImage: "hand.raised")
                                     }
                                 } label: {
                                     Image(systemName: "ellipsis.circle")
@@ -105,7 +105,7 @@ struct ChatMembersView: View {
                         }
                     }
                     .listStyle(.plain)
-                    .searchable(text: $query, prompt: "Поиск участников")
+                    .searchable(text: $query, prompt: NSLocalizedString("Generated.d9bd0b7da12c", comment: ""))
                     .onChange(of: query) { _ in Task { await load() } }
                 }
             }
@@ -212,7 +212,7 @@ private struct AddChatMemberView: View {
             }
             .navigationTitle(L10n.t("Auto.393f688cda"))
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $query, prompt: "Имя или @username")
+            .searchable(text: $query, prompt: NSLocalizedString("Generated.371bd20b13bf", comment: ""))
             .onChange(of: query) { value in
                 Task {
                     users = (try? await client.searchContacts(value)) ?? []

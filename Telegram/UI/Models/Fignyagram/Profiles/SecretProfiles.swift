@@ -209,38 +209,38 @@ struct ProfilesSecurityView: View {
 
     var body: some View {
         Form {
-            Section(L10n.string("Код-пароль при запуске", "Launch passcode")) {
-                Toggle(L10n.string("Запрашивать PIN", "Ask for PIN"), isOn: Binding(
+            Section(L10n.string(NSLocalizedString("Generated.b89e338ab6de", comment: ""), "Launch passcode")) {
+                Toggle(L10n.string(NSLocalizedString("Generated.b836df9be833", comment: ""), "Ask for PIN"), isOn: Binding(
                     get: { PINVault.shared.isEnabled },
                     set: { value in
                         PINVault.shared.isEnabled = value
-                        status = value ? "PIN включён" : "PIN выключен"
+                        status = value ? NSLocalizedString("Generated.a08318ad589e", comment: "") : NSLocalizedString("Generated.2a14008915b4", comment: "")
                     }
                 ))
-                SecureField(L10n.string("Основной PIN", "Primary PIN"), text: $primaryPin)
+                SecureField(L10n.string(NSLocalizedString("Generated.1457ef5a4f61", comment: ""), "Primary PIN"), text: $primaryPin)
                     .keyboardType(.numberPad)
-                Button(L10n.string("Сохранить основной PIN", "Save primary PIN")) {
-                    guard primaryPin.count >= 4 else { status = "Минимум 4 цифры"; return }
+                Button(L10n.string(NSLocalizedString("Generated.64b0a918b571", comment: ""), "Save primary PIN")) {
+                    guard primaryPin.count >= 4 else { status = NSLocalizedString("Generated.8a0979b93080", comment: ""); return }
                     PINVault.shared.setPrimaryPin(primaryPin)
                     primaryPin = ""
-                    status = "Основной PIN сохранён"
+                    status = NSLocalizedString("Generated.41778c180600", comment: "")
                 }
-                SecureField(L10n.string("Ложный PIN (двойное дно)", "Duress PIN (double bottom)"), text: $duressPin)
+                SecureField(L10n.string(NSLocalizedString("Generated.9272752fc014", comment: ""), "Duress PIN (double bottom)"), text: $duressPin)
                     .keyboardType(.numberPad)
-                Button(L10n.string("Сохранить ложный PIN", "Save duress PIN")) {
-                    guard duressPin.count >= 4 else { status = "Минимум 4 цифры"; return }
+                Button(L10n.string(NSLocalizedString("Generated.c20124ded476", comment: ""), "Save duress PIN")) {
+                    guard duressPin.count >= 4 else { status = NSLocalizedString("Generated.8a0979b93080", comment: ""); return }
                     PINVault.shared.setDuressPin(duressPin)
                     duressPin = ""
-                    status = "Ложный PIN сохранён"
+                    status = NSLocalizedString("Generated.e18c60997ab1", comment: "")
                 }
                 if !status.isEmpty {
                     Text(status).font(.appFootnote).foregroundColor(.secondary)
                 }
             }
 
-            Section(L10n.string("Профили (контейнеры TDLib)", "Profiles (TDLib containers)")) {
+            Section(L10n.string(NSLocalizedString("Generated.79505868f9d4", comment: ""), "Profiles (TDLib containers)")) {
                 Button(L10n.t("Profiles.Add")) {
-                    guard accounts.accounts.count < 10 else { status = "Максимум 10 профилей"; return }
+                    guard accounts.accounts.count < 10 else { status = NSLocalizedString("Generated.342e1bdf1b97", comment: ""); return }
                     let slot = accounts.addAccount()
                     status = "Создан профиль \(slot.title) — войдите в него"
                     Task { await manager.activate(id: slot.id) }
@@ -262,7 +262,7 @@ struct ProfilesSecurityView: View {
                         HStack(spacing: 12) {
                             Button(L10n.t("Profiles.Secret")) {
                                 manager.setSecret(account.id, isSecret: true)
-                                status = "Профиль скрыт за ложным PIN"
+                                status = NSLocalizedString("Generated.3529334f9b10", comment: "")
                             }
                             .font(.appCaption)
                             Button(L10n.t("Common.Open")) {
@@ -270,12 +270,12 @@ struct ProfilesSecurityView: View {
                             }
                             .font(.appCaption)
                             if accounts.accounts.count > 1 {
-                                Button(L10n.string("Удалить", "Delete"), role: .destructive) {
+                                Button(L10n.string(NSLocalizedString("Generated.7acaf374c44f", comment: ""), "Delete"), role: .destructive) {
                                     ProfileKeychain.deleteKey(for: account.id)
                                     try? FileManager.default.removeItem(atPath: account.databaseDirectory)
                                     try? FileManager.default.removeItem(atPath: account.filesDirectory)
                                     accounts.remove(id: account.id)
-                                    status = L10n.string("Профиль удалён", "Profile deleted")
+                                    status = L10n.string(NSLocalizedString("Generated.cb003fa740a4", comment: ""), "Profile deleted")
                                 }
                                 .font(.appCaption)
                             }

@@ -20,7 +20,7 @@ struct TranslationSheet: View {
                     } else if let errorText {
                         Text(errorText).foregroundColor(.secondary)
                     } else {
-                        ProgressView("Перевод…")
+                        ProgressView(NSLocalizedString("Generated.f76210d74232", comment: ""))
                     }
                 }
             }
@@ -35,7 +35,7 @@ struct TranslationSheet: View {
                 if let translated = await translation.translate(text) {
                     result = translated
                 } else {
-                    errorText = "Не удалось перевести текст"
+                    errorText = NSLocalizedString("Generated.959a84ab0bb3", comment: "")
                 }
             }
         }

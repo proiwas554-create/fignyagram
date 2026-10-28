@@ -89,13 +89,13 @@ struct StickerPickerView: View {
             gridContent(
                 favorites,
                 isLoading: isLoadingFavorites,
-                emptyText: "Нет избранных стикеров. Добавьте стикер через долгое нажатие в чате."
+                emptyText: NSLocalizedString("Generated.fc16f5a068e9", comment: "")
             )
         case .recent:
             gridContent(
                 recent,
                 isLoading: isLoadingRecent,
-                emptyText: "Вы ещё не отправляли стикеры"
+                emptyText: NSLocalizedString("Generated.81c7637f13b3", comment: "")
             )
         case .gifs:
             gifContent
@@ -210,7 +210,7 @@ struct StickerPickerView: View {
                             Button {
                                 select(set.id)
                             } label: {
-                                Text(set.title.isEmpty ? "Набор" : set.title)
+                                Text(set.title.isEmpty ? NSLocalizedString("Generated.1d98103f5ac1", comment: "") : set.title)
                                     .font(.appFootnote)
                                     .lineLimit(1)
                                     .padding(.horizontal, 10)
@@ -231,7 +231,7 @@ struct StickerPickerView: View {
                     .padding(.vertical, 8)
                 }
             }
-            gridContent(stickers, isLoading: isLoading, emptyText: errorText ?? "Установленных наборов стикеров нет")
+            gridContent(stickers, isLoading: isLoading, emptyText: errorText ?? NSLocalizedString("Generated.1f47fcc102d5", comment: ""))
         }
     }
 

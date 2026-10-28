@@ -24,7 +24,7 @@ struct GroupCallView: View {
                     }
                     .padding(.horizontal, 16)
                 }
-                Text(group.title.isEmpty ? "Групповой звонок" : group.title)
+                Text(group.title.isEmpty ? NSLocalizedString("Generated.daf4996f0170", comment: "") : group.title)
                     .font(.title2.bold())
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
@@ -80,7 +80,7 @@ struct GroupCallView: View {
                                 .frame(width: 58, height: 58)
                                 .background(Circle().fill(group.isVideoEnabled ? Color.white : Color.white.opacity(0.14)))
                                 .foregroundColor(group.isVideoEnabled ? .black : .white)
-                            Text(group.isVideoEnabled ? "Видео вкл." : "Видео")
+                            Text(group.isVideoEnabled ? NSLocalizedString("Generated.a578870d06c0", comment: "") : NSLocalizedString("Generated.88685209b986", comment: ""))
                                 .font(.appCaption)
                                 .foregroundColor(.white.opacity(0.8))
                         }
@@ -94,7 +94,7 @@ struct GroupCallView: View {
                                 .frame(width: 58, height: 58)
                                 .background(Circle().fill(group.isMuted ? Color.white : Color.white.opacity(0.14)))
                                 .foregroundColor(group.isMuted ? .black : .white)
-                            Text(group.isMuted ? "Вкл. микрофон" : "Без звука")
+                            Text(group.isMuted ? NSLocalizedString("Generated.a1834da247af", comment: "") : NSLocalizedString("Generated.73b2795e9a91", comment: ""))
                                 .font(.appCaption)
                                 .foregroundColor(.white.opacity(0.8))
                         }

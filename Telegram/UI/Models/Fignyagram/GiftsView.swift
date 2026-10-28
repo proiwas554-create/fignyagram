@@ -18,7 +18,7 @@ struct GiftsView: View {
         NavigationView {
             Group {
                 if isLoading {
-                    ProgressView("Загрузка подарков…")
+                    ProgressView(NSLocalizedString("Generated.6a3c63dc3960", comment: ""))
                 } else if gifts.isEmpty {
                     Text(L10n.t("Auto.496cd76e53")).foregroundColor(.secondary)
                 } else {
@@ -27,7 +27,7 @@ struct GiftsView: View {
                             Text(item.gift.sticker.emoji.isEmpty ? "🎁" : item.gift.sticker.emoji)
                                 .font(.system(size: 34))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(item.title.isEmpty ? (item.gift.sticker.emoji + " Подарок") : item.title)
+                                Text(item.title.isEmpty ? (item.gift.sticker.emoji + NSLocalizedString("Generated.ce8193f35f3f", comment: "")) : item.title)
                                     .font(.subheadline.bold())
                                 Text("\(item.gift.starCount) ⭐")
                                     .font(.appCaption)
@@ -81,7 +81,7 @@ struct GiftsView: View {
             defer { sending = false }
             do {
                 try await client.sendGift(item.gift, to: owner)
-                message = "Подарок отправлен"
+                message = NSLocalizedString("Generated.8fe29112c016", comment: "")
             } catch {
                 message = TelegramClient.describe(error)
             }

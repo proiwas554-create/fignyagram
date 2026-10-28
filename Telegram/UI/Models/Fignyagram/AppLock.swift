@@ -27,7 +27,7 @@ final class AppLock: ObservableObject {
         guard isEnabled, isLocked else { return }
 
         let context = LAContext()
-        context.localizedFallbackTitle = "Ввести пароль"
+        context.localizedFallbackTitle = NSLocalizedString("Generated.b059ff33970d", comment: "")
 
         // Face ID / Touch ID first: the passcode sheet is only a fallback.
         var biometricsError: NSError?
@@ -35,7 +35,7 @@ final class AppLock: ObservableObject {
             do {
                 let ok = try await context.evaluatePolicy(
                     .deviceOwnerAuthenticationWithBiometrics,
-                    localizedReason: "Разблокируйте Fignyagram"
+                    localizedReason: NSLocalizedString("Generated.6f2b61d97845", comment: "")
                 )
                 if ok { isLocked = false; lastError = nil }
                 return
@@ -55,7 +55,7 @@ final class AppLock: ObservableObject {
         do {
             let ok = try await fallback.evaluatePolicy(
                 .deviceOwnerAuthentication,
-                localizedReason: "Разблокируйте Fignyagram"
+                localizedReason: NSLocalizedString("Generated.6f2b61d97845", comment: "")
             )
             if ok { isLocked = false; lastError = nil }
         } catch {

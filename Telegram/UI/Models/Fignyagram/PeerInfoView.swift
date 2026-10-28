@@ -28,7 +28,7 @@ struct PeerInfoView: View {
         NavigationView {
             Group {
                 if isLoading {
-                    ProgressView("Загрузка…")
+                    ProgressView(NSLocalizedString("Generated.aa819ceed5c2", comment: ""))
                 } else if let info {
                     ScrollView {
                         VStack(spacing: 16) {
@@ -118,12 +118,12 @@ struct PeerInfoView: View {
                             if let userId = info.userId,
                                userId != TelegramClient.shared.me?.id {
                                 HStack(spacing: 0) {
-                                    profileAction("Позвонить", icon: "phone") {
+                                    profileAction(NSLocalizedString("Generated.85093028bdd5", comment: ""), icon: "phone") {
                                         TelegramClient.shared.callUser(userId: userId, isVideo: false)
                                         dismiss()
                                     }
                                     Divider().frame(height: 28)
-                                    profileAction("Видеозвонок", icon: "video") {
+                                    profileAction(NSLocalizedString("Generated.c77c74425f6c", comment: ""), icon: "video") {
                                         TelegramClient.shared.callUser(userId: userId, isVideo: true)
                                         dismiss()
                                     }
@@ -133,7 +133,7 @@ struct PeerInfoView: View {
 
                             if info.typeText == "группа" || info.typeText == "канал" {
                                 VStack(spacing: 0) {
-                                    profileAction("Участники", icon: "person.2") {
+                                    profileAction(NSLocalizedString("Generated.daadb507d549", comment: ""), icon: "person.2") {
                                         showMembers = true
                                     }
                                     if let myId = TelegramClient.shared.me?.id {
@@ -150,13 +150,13 @@ struct PeerInfoView: View {
                                     }
                                     if info.directMessagesChatId != nil {
                                         Divider()
-                                        profileAction("Сообщения каналу", icon: "paperplane") {
+                                        profileAction(NSLocalizedString("Generated.fa967369353b", comment: ""), icon: "paperplane") {
                                             showDirectMessages = true
                                         }
                                     }
                                     if info.linkedChatId != nil {
                                         Divider()
-                                        profileAction(L10n.keyed("Chat.Discussion", ru: "Обсуждение", en: "Go to discussion"),
+                                        profileAction(L10n.keyed("Chat.Discussion", ru: NSLocalizedString("Generated.23fbdea556a9", comment: ""), en: "Go to discussion"),
                                                       icon: "bubble.left.and.bubble.right") {
                                             showLinkedChat = true
                                         }
@@ -261,11 +261,11 @@ struct PeerInfoView: View {
             .sheet(isPresented: $showGifts) {
                 GiftsView(
                     owner: giftOwner,
-                    title: info?.title ?? "Подарки"
+                    title: info?.title ?? NSLocalizedString("Generated.bd1980228244", comment: "")
                 )
             }
             .sheet(isPresented: $showMembers) {
-                ChatMembersView(chatId: chatId, title: info?.title ?? "Участники")
+                ChatMembersView(chatId: chatId, title: info?.title ?? NSLocalizedString("Generated.daadb507d549", comment: ""))
             }
             .sheet(isPresented: $showMyTag) {
                 if let myId = TelegramClient.shared.me?.id {

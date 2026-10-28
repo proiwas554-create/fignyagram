@@ -141,13 +141,13 @@ final class FontManager: ObservableObject {
     func importFont(from url: URL) throws {
         let ext = url.pathExtension.lowercased()
         guard ["ttf", "otf", "ttc"].contains(ext) else {
-            throw NSError(domain: "FontManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Нужен файл TTF, OTF или TTC"])
+            throw NSError(domain: "FontManager", code: 1, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Generated.86e547d56bf4", comment: "")])
         }
         let destination = directory.appendingPathComponent("\(UUID().uuidString).\(ext)")
         try fileManager.copyItem(at: url, to: destination)
         guard let postScriptName = register(url: destination) else {
             try? fileManager.removeItem(at: destination)
-            throw NSError(domain: "FontManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Не удалось зарегистрировать шрифт"])
+            throw NSError(domain: "FontManager", code: 2, userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("Generated.fb2f7a5cab07", comment: "")])
         }
         if !customNames.contains(postScriptName) {
             customNames.append(postScriptName)

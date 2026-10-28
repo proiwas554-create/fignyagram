@@ -57,7 +57,7 @@ enum MediaSaver {
     static func saveToPhotos(_ url: URL, isVideo: Bool) async -> String? {
         let status = await requestAddAccess()
         guard status == .authorized || status == .limited else {
-            return "Разрешите добавление в «Фото» в настройках iOS"
+            return NSLocalizedString("Generated.81be0b7f5dd2", comment: "")
         }
         do {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
@@ -73,7 +73,7 @@ enum MediaSaver {
                     } else if let error {
                         continuation.resume(throwing: MediaSaveError.failed(error.localizedDescription))
                     } else {
-                        continuation.resume(throwing: MediaSaveError.failed("Не удалось сохранить в «Фото»"))
+                        continuation.resume(throwing: MediaSaveError.failed(NSLocalizedString("Generated.98a56efede32", comment: "")))
                     }
                 }
             }
@@ -85,10 +85,10 @@ enum MediaSaver {
 
     /// Saves several already-converted images in one Photos transaction.
     static func saveImagesToPhotos(_ urls: [URL]) async -> String? {
-        guard !urls.isEmpty else { return "Нет изображений для сохранения" }
+        guard !urls.isEmpty else { return NSLocalizedString("Generated.dc808823c984", comment: "") }
         let status = await requestAddAccess()
         guard status == .authorized || status == .limited else {
-            return "Разрешите добавление в «Фото» в настройках iOS"
+            return NSLocalizedString("Generated.81be0b7f5dd2", comment: "")
         }
         do {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Swift.Error>) in
@@ -102,7 +102,7 @@ enum MediaSaver {
                     } else if let error {
                         continuation.resume(throwing: MediaSaveError.failed(error.localizedDescription))
                     } else {
-                        continuation.resume(throwing: MediaSaveError.failed("Не удалось сохранить изображения"))
+                        continuation.resume(throwing: MediaSaveError.failed(NSLocalizedString("Generated.7bbd1483e22b", comment: "")))
                     }
                 }
             }

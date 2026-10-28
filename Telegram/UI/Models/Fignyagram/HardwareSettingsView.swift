@@ -26,17 +26,17 @@ struct HardwareSettingsView: View {
                 }
 
                 Section(L10n.t("Auto.72275dacae")) {
-                    row("Модель", tuning.device.marketingName)
+                    row(NSLocalizedString("Generated.ee4b7b031c58", comment: ""), tuning.device.marketingName)
                     row(L10n.t("Hw.Identifier"), tuning.device.identifier)
                     row(L10n.t("Hw.Class"), tuning.device.tier.title)
-                    row("Рекомендуемый профиль", tuning.device.recommendedProfile.title)
+                    row(NSLocalizedString("Generated.d736188bbd15", comment: ""), tuning.device.recommendedProfile.title)
                     row(L10n.t("Hw.MaxFreq"), "\(tuning.device.recommendedRefreshRate) Гц")
                 }
 
                 Section(L10n.t("Auto.8f8c377196")) {
-                    row("Термическое состояние", thermalTitle)
-                    row("Режим энергосбережения", tuning.isLowPower ? "включён" : "выключен")
-                    row("Память устройства", String(format: "%.0f ГБ", Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824))
+                    row(NSLocalizedString("Generated.5d5ebcceba4d", comment: ""), thermalTitle)
+                    row(NSLocalizedString("Generated.fb74c99c2019", comment: ""), tuning.isLowPower ? NSLocalizedString("Generated.e59094ed9041", comment: "") : NSLocalizedString("Generated.5943ad965d17", comment: ""))
+                    row(NSLocalizedString("Generated.729b9f5426ee", comment: ""), String(format: NSLocalizedString("Generated.eb3153f1094e", comment: ""), Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824))
                 }
 
                 Section {
@@ -86,7 +86,7 @@ struct HardwareSettingsView: View {
         case .fair: return "умеренное"
         case .serious: return "сильный нагрев"
         case .critical: return "критическое"
-        @unknown default: return "неизвестно"
+        @unknown default: return NSLocalizedString("Generated.d755e9e7b1f3", comment: "")
         }
     }
 

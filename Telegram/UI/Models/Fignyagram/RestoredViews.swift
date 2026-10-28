@@ -51,13 +51,13 @@ struct NotificationSettingsView: View {
 
                 Section {
                     NavigationLink {
-                        NotificationScopeDetailView(title: "Личные чаты", icon: "person", key: "Private")
+                        NotificationScopeDetailView(title: NSLocalizedString("Generated.1a2aed5cd4eb", comment: ""), icon: "person", key: "Private")
                     } label: { Label(L10n.t("Auto.e1087ec78b"), systemImage: "person") }
                     NavigationLink {
-                        NotificationScopeDetailView(title: "Группы", icon: "person.2", key: "Groups")
+                        NotificationScopeDetailView(title: NSLocalizedString("Generated.f530227e164d", comment: ""), icon: "person.2", key: "Groups")
                     } label: { Label(L10n.t("Auto.ebc417c95a"), systemImage: "person.2") }
                     NavigationLink {
-                        NotificationScopeDetailView(title: "Каналы", icon: "megaphone", key: "Channels")
+                        NotificationScopeDetailView(title: NSLocalizedString("Generated.53b50dcd25e1", comment: ""), icon: "megaphone", key: "Channels")
                     } label: { Label(L10n.t("Auto.0c1119c13e"), systemImage: "megaphone") }
                 } header: {
                     Text(L10n.t("Auto.f33dc46aa9"))

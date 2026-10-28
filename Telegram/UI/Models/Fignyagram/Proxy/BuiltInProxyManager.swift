@@ -23,7 +23,7 @@ final class BuiltInProxyManager: ObservableObject {
     @Published private(set) var isEnabled: Bool
     @Published private(set) var isRunning = false
     @Published private(set) var health: ProxyHealth = .waiting
-    @Published private(set) var status = "Выключен"
+    @Published private(set) var status = NSLocalizedString("Generated.57165572e062", comment: "")
     @Published private(set) var lastError: String?
 
     private var server: LocalMTProtoProxy?
@@ -93,7 +93,7 @@ final class BuiltInProxyManager: ObservableObject {
         }
         if health == .failed {
             await TelegramClient.shared.deactivateBuiltInProxy(port: port)
-            status = "Прокси недоступен — вход напрямую"
+            status = NSLocalizedString("Generated.346e9336dea8", comment: "")
             return
         }
         start()
@@ -193,7 +193,7 @@ final class BuiltInProxyManager: ObservableObject {
         DiagnosticsLog.log("proxy.start enabled=\(isEnabled) running=\(isRunning)")
         guard isEnabled, !isRunning, operation == nil else { return }
         reconnectAttempts = 0
-        status = "Запуск…"
+        status = NSLocalizedString("Generated.81392999a5d2", comment: "")
         lastError = nil
 
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
@@ -208,7 +208,7 @@ final class BuiltInProxyManager: ObservableObject {
                     lastError = nil
                 } catch {
                     await TelegramClient.shared.deactivateBuiltInProxy(port: port)
-                    status = "Не удалось включить в Telegram"
+                    status = NSLocalizedString("Generated.2ffa90882c2a", comment: "")
                     lastError = TelegramClient.describe(error)
                 }
                 operation = nil
@@ -225,7 +225,7 @@ final class BuiltInProxyManager: ObservableObject {
             // Don't block startup on the WebSocket preflight. Telegram's kws*
             // frontends can be temporarily unreachable or the hardcoded IP can
             // be stale; the local proxy itself falls back to direct TCP per DC.
-            status = "Запуск локального прокси…"
+            status = NSLocalizedString("Generated.731c6ed48530", comment: "")
 
             var startedProxy: LocalMTProtoProxy?
             var lastStartError: Error?
@@ -254,7 +254,7 @@ final class BuiltInProxyManager: ObservableObject {
                 if !Task.isCancelled {
                     await TelegramClient.shared.deactivateBuiltInProxy(port: port)
                     isRunning = false
-                    status = "Не удалось запустить локальный прокси"
+                    status = NSLocalizedString("Generated.560c8e8a9a80", comment: "")
                     lastError = TelegramClient.describe(lastStartError ?? ProxyTimeoutError())
                 }
                 operation = nil
@@ -273,7 +273,7 @@ final class BuiltInProxyManager: ObservableObject {
                 proxy.stop()
                 await TelegramClient.shared.deactivateBuiltInProxy(port: port)
                 isRunning = false
-                status = "Не удалось включить в Telegram"
+                status = NSLocalizedString("Generated.2ffa90882c2a", comment: "")
                 lastError = TelegramClient.describe(error)
                 operation = nil
                 return
@@ -288,7 +288,7 @@ final class BuiltInProxyManager: ObservableObject {
 
             server = proxy
             isRunning = true
-            status = "Ожидание подключения Telegram…"
+            status = NSLocalizedString("Generated.f29aa48606b4", comment: "")
             DiagnosticsLog.log("proxy.running port=\(port)")
             lastError = nil
             operation = nil
@@ -305,8 +305,8 @@ final class BuiltInProxyManager: ObservableObject {
             guard !Task.isCancelled, let self else { return }
             if self.isRunning, self.status.hasPrefix("Ожидание") {
                 self.health = .failed
-                self.status = "Сеть блокирует Telegram"
-                self.lastError = "Все TCP-соединения к серверам Telegram завершились таймаутом. Это сетевая блокировка; встроенный прокси не может её обойти. Попробуйте VPN или другую сеть."
+                self.status = NSLocalizedString("Generated.7aef029a9610", comment: "")
+                self.lastError = NSLocalizedString("Generated.a56145585e65", comment: "")
             }
         }
     }
@@ -317,19 +317,19 @@ final class BuiltInProxyManager: ObservableObject {
         self.health = health
         switch health {
         case .waiting:
-            status = "Ожидание подключения Telegram…"
+            status = NSLocalizedString("Generated.f29aa48606b4", comment: "")
         case .webSocket:
-            status = "Работает — WebSocket Telegram"
+            status = NSLocalizedString("Generated.742861a9adcc", comment: "")
             lastError = nil
         case .cloudflare:
-            status = "Работает — Cloudflare"
+            status = NSLocalizedString("Generated.c729291c230a", comment: "")
             lastError = nil
         case .directFallback:
-            status = "Работает — прямое TCP (WebSocket недоступен)"
+            status = NSLocalizedString("Generated.0de32731cc10", comment: "")
             lastError = nil
         case .failed:
-            status = "Сеть блокирует Telegram"
-            lastError = "Все TCP-соединения к серверам Telegram завершились таймаутом. Это сетевая блокировка; встроенный прокси не может её обойти. Попробуйте VPN или другую сеть."
+            status = NSLocalizedString("Generated.7aef029a9610", comment: "")
+            lastError = NSLocalizedString("Generated.a56145585e65", comment: "")
             registerUpstreamFailure()
         }
     }
@@ -353,8 +353,8 @@ final class BuiltInProxyManager: ObservableObject {
         recentUpstreamFailures.removeAll()
         builtInProxyLogger.critical("Proxy storm-stop: 3+ failures in 5s")
         stop()
-        status = "Прокси остановлен: слишком много обрывов"
-        lastError = "Автоматическая остановка после 3 обрывов за 5 секунд. Включите прокси снова в настройках, когда сеть стабилизируется."
+        status = NSLocalizedString("Generated.5670c8be31aa", comment: "")
+        lastError = NSLocalizedString("Generated.792cd2589be4", comment: "")
     }
 
     func stop() {
@@ -366,12 +366,12 @@ final class BuiltInProxyManager: ObservableObject {
         let proxy = server
         server = nil
         isRunning = false
-        status = "Отключение…"
+        status = NSLocalizedString("Generated.7cc8aa092322", comment: "")
 
         Task {
             await TelegramClient.shared.deactivateBuiltInProxy(port: port)
             proxy?.stop()
-            status = "Выключен"
+            status = NSLocalizedString("Generated.57165572e062", comment: "")
         }
     }
 
@@ -382,7 +382,7 @@ final class BuiltInProxyManager: ObservableObject {
         let proxy = server
         server = nil
         isRunning = false
-        status = "Перезапуск…"
+        status = NSLocalizedString("Generated.99e0a8e31f71", comment: "")
 
         Task {
             await TelegramClient.shared.deactivateBuiltInProxy(port: port)

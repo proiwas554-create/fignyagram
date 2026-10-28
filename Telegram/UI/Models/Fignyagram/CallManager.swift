@@ -76,7 +76,7 @@ final class CallManager: ObservableObject {
 
     /// TDLib stays in callStateExchangingKeys until the media engine answers.
     /// Without the linked tgcalls/WebRTC module the call can hang there, so we
-    /// surface a clear message instead of an endless "Обмен ключами…".
+    /// surface a clear message instead of an endless NSLocalizedString("Generated.a25f00fd2949", comment: "").
     private func watchKeyExchange() {
         keyExchangeWatchdog?.cancel()
         keyExchangeWatchdog = Task { [weak self] in
@@ -161,7 +161,7 @@ final class CallManager: ObservableObject {
             CallDiag.log("CALL ERROR code=\(e.error.code) message=\(e.error.message)")
             errorText = e.error.message
             if e.error.code == 4005000 {
-                TelegramClient.shared.errorMessage = "Звонок не состоялся: собеседник не ответил"
+                TelegramClient.shared.errorMessage = NSLocalizedString("Generated.2a170f00e936", comment: "")
             } else {
                 TelegramClient.shared.errorMessage = "Звонок завершился: \(e.error.message)"
             }
@@ -225,7 +225,7 @@ final class CallManager: ObservableObject {
         case .denied:
             CallDiag.log("microphone permission denied")
             stateText = L10n.t("AutoR.a4ef60ef7e")
-            TelegramClient.shared.errorMessage = "Нет доступа к микрофону: разрешите его в Настройках"
+            TelegramClient.shared.errorMessage = NSLocalizedString("Generated.74e4f6dc7401", comment: "")
         default:
             CallDiag.log("microphone permission requested")
             session.requestRecordPermission { [weak self] granted in
@@ -239,7 +239,7 @@ final class CallManager: ObservableObject {
                                             isVideo: isVideo, outgoing: outgoing)
                     } else {
                         self.stateText = L10n.t("AutoR.a4ef60ef7e")
-                        TelegramClient.shared.errorMessage = "Нет доступа к микрофону: разрешите его в Настройках"
+                        TelegramClient.shared.errorMessage = NSLocalizedString("Generated.74e4f6dc7401", comment: "")
                     }
                 }
             }
@@ -404,7 +404,7 @@ final class CallManager: ObservableObject {
         CallDiag.log("engine.start attempt video=\(wantsVideo) servers=\(servers.count)")
         // Engine construction performs audio-session setup and WebRTC thread
         // creation; doing it on the main thread froze the call UI right after
-        // callStateReady (the screen stayed at "Обмен ключами…").
+        // callStateReady (the screen stayed at NSLocalizedString("Generated.a25f00fd2949", comment: "")).
         let isVideo = wantsVideo
         let localCanvas = localView
         let remoteCanvas = remoteView
@@ -443,7 +443,7 @@ final class CallManager: ObservableObject {
     /// Fallback used when TDLibKit's generated models cannot decode an
     /// `updateCall` (the TDLibFramework build can be newer than the models).
     /// Without this the `callStateReady` update is dropped silently, the UI
-    /// stays at "Обмен ключами…" and the media engine is never started even
+    /// stays at NSLocalizedString("Generated.a25f00fd2949", comment: "") and the media engine is never started even
     /// though the peer is already sending signaling data.
     func handleRawCallUpdate(_ json: [String: Any]) {
         guard let call = json["call"] as? [String: Any] else { return }

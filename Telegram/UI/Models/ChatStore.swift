@@ -535,7 +535,7 @@ final class ChatStore: ObservableObject {
     func displayName(userId: Int64) -> String {
         guard let user = users[userId] else { return "…" }
         let name = [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " ")
-        return name.isEmpty ? "Удалённый аккаунт" : name
+        return name.isEmpty ? NSLocalizedString("Generated.5e97564b31fc", comment: "") : name
     }
 
     func senderName(_ sender: MessageSender) -> String {
@@ -543,7 +543,7 @@ final class ChatStore: ObservableObject {
         case .messageSenderUser(let u):
             return LocalAliases.shared.userAlias(u.userId) ?? displayName(userId: u.userId)
         case .messageSenderChat(let c):
-            return LocalAliases.shared.chatAlias(c.chatId) ?? chats[c.chatId]?.title ?? "Чат"
+            return LocalAliases.shared.chatAlias(c.chatId) ?? chats[c.chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: "")
         }
     }
 
@@ -554,13 +554,13 @@ final class ChatStore: ObservableObject {
         case .messageOriginHiddenUser(let o):
             return o.senderName
         case .messageOriginChat(let o):
-            return LocalAliases.shared.chatAlias(o.senderChatId) ?? chats[o.senderChatId]?.title ?? "Чат"
+            return LocalAliases.shared.chatAlias(o.senderChatId) ?? chats[o.senderChatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: "")
         case .messageOriginChannel(let o):
-            return LocalAliases.shared.chatAlias(o.chatId) ?? chats[o.chatId]?.title ?? "Канал"
+            return LocalAliases.shared.chatAlias(o.chatId) ?? chats[o.chatId]?.title ?? NSLocalizedString("Generated.4c90b2286f97", comment: "")
         }
     }
 
-    /// "Вася печатает…" style text, nil when nobody is doing anything.
+    /// NSLocalizedString("Generated.73410b3bdbed", comment: "") style text, nil when nobody is doing anything.
     func actionText(chatId: Int64) -> String? {
         guard let actions = chatActions[chatId], let (sender, action) = actions.first else { return nil }
         let verb = MessageFormatter.actionVerb(action)

@@ -63,7 +63,7 @@ struct ShareComposerView: View {
                 }
             }
             .sheet(isPresented: $showChatPicker) {
-                ChatPickerView(title: "Отправить в…") { chatId in
+                ChatPickerView(title: NSLocalizedString("Generated.f5ecad95f4d2", comment: "")) { chatId in
                     send(to: chatId)
                 }
             }

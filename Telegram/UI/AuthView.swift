@@ -49,7 +49,7 @@ struct AuthView: View {
                 Button {
                     showProxy = true
                 } label: {
-                    Label(proxy.isEnabled ? "Прокси включён" : "Настроить прокси",
+                    Label(proxy.isEnabled ? NSLocalizedString("Generated.a9c83cbf0fa5", comment: "") : NSLocalizedString("Generated.33e1627e761c", comment: ""),
                           systemImage: "network")
                         .font(.appFootnote)
                 }
@@ -118,7 +118,7 @@ struct AuthView: View {
             Label(L10n.t("Auto.841f592c32"), systemImage: "exclamationmark.triangle.fill")
                 .font(.appHeadline)
                 .foregroundColor(.orange)
-            Text(proxy.lastError ?? "Прокси не отвечает. Можно войти напрямую или перезапустить подключение.")
+            Text(proxy.lastError ?? NSLocalizedString("Generated.cb05b8fc224f", comment: ""))
                 .font(.appFootnote)
                 .foregroundColor(.secondary)
             HStack {
@@ -158,7 +158,7 @@ struct AuthView: View {
             switch client.authStep {
             case .initializing:
                 VStack(spacing: 12) {
-                    ProgressView("Подключение…")
+                    ProgressView(NSLocalizedString("Generated.83b877a86c05", comment: ""))
                     Button(L10n.t("Common.Cancel")) {
                         proxy.setEnabled(false)
                         client.restartConnection()
@@ -184,7 +184,7 @@ struct AuthView: View {
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
             case .loggingOut:
-                ProgressView("Выход…")
+                ProgressView(NSLocalizedString("Generated.2bc577e0c6c8", comment: ""))
             case .ready:
                 ProgressView()
             }
@@ -335,7 +335,7 @@ struct AuthView: View {
         case .authenticationCodeTypeCall: return "Код продиктуют в звонке"
         case .authenticationCodeTypeFlashCall, .authenticationCodeTypeMissedCall: return "Код — последние цифры входящего звонка"
         case .authenticationCodeTypeFragment: return "Код отправлен через Fragment"
-        default: return "Код отправлен"
+        default: return NSLocalizedString("Generated.765e18e7a282", comment: "")
         }
     }
 }

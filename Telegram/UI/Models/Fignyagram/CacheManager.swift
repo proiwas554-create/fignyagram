@@ -60,14 +60,14 @@ final class CacheManager: ObservableObject {
         }
 
         let order: [(String, String, String)] = [
-            ("photos", "Фото", "photo"),
-            ("videos", "Видео", "video"),
-            ("audio", "Аудио", "music.note"),
-            ("documents", "Файлы", "doc"),
-            ("stickers", "Стикеры", "face.smiling"),
-            ("voice", "Голосовые", "waveform"),
-            ("roundVideos", "Круглые видео", "circle.dashed"),
-            ("gifs", "Гифки", "rectangle.stack")
+            ("photos", NSLocalizedString("Generated.9dff61621bb9", comment: ""), "photo"),
+            ("videos", NSLocalizedString("Generated.88685209b986", comment: ""), "video"),
+            ("audio", NSLocalizedString("Generated.cdfbbeb4f654", comment: ""), "music.note"),
+            ("documents", NSLocalizedString("Generated.5d3db31fe076", comment: ""), "doc"),
+            ("stickers", NSLocalizedString("Generated.16fa88686812", comment: ""), "face.smiling"),
+            ("voice", NSLocalizedString("Generated.c7cdfb688908", comment: ""), "waveform"),
+            ("roundVideos", NSLocalizedString("Generated.5cf06ab0747d", comment: ""), "circle.dashed"),
+            ("gifs", NSLocalizedString("Generated.3075ab1bd76b", comment: ""), "rectangle.stack")
         ]
 
         categories = order.map { key, title, icon in

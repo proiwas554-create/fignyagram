@@ -17,7 +17,7 @@ struct MessageRepliesView: View {
         NavigationView {
             Group {
                 if isLoading {
-                    ProgressView("Загрузка ответов…")
+                    ProgressView(NSLocalizedString("Generated.ea068feb6bc9", comment: ""))
                 } else if let errorText {
                     Text(errorText)
                         .foregroundColor(.secondary)

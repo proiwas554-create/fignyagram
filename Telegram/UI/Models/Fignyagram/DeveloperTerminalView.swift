@@ -12,7 +12,7 @@ struct DeveloperTerminalView: View {
     @ObservedObject private var privacy = PrivacyPreferences.shared
 
     @State private var command = ""
-    @State private var lines: [String] = ["Fignyagram terminal. Введите help."]
+    @State private var lines: [String] = [NSLocalizedString("Generated.df4c481d9d1a", comment: "")]
     @State private var history: [String] = []
     @State private var historyIndex: Int?
 

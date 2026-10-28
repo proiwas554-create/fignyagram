@@ -110,7 +110,7 @@ nonisolated struct ProxyTimeoutError: LocalizedError {
     }
 
     var errorDescription: String? {
-        let base = "Не удалось подключиться к WebSocket Telegram. Проверьте интернет, VPN или повторите попытку."
+        let base = NSLocalizedString("Generated.f5547eb4fea3", comment: "")
         if let underlying, let description = (underlying as? LocalizedError)?.errorDescription {
             return base + " " + description
         }

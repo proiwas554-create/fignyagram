@@ -48,7 +48,7 @@ final class GroupCallManager: ObservableObject {
         var list: [Participant] = []
         for raw in ids {
             let peerId = raw
-            let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? "Участник"
+            let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? NSLocalizedString("Generated.dbb35eec718d", comment: "")
             peerNames[peerId] = name
             let existing = participants.first(where: { $0.id == peerId })
             list.append(Participant(id: peerId, name: name,
@@ -71,7 +71,7 @@ final class GroupCallManager: ObservableObject {
                 VoIPBridge.shared().addGroupRemoteVideo(forEndpoint: endpoint)
             }
         }
-        let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? "Участник"
+        let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? NSLocalizedString("Generated.dbb35eec718d", comment: "")
         peerNames[peerId] = name
         let entry = Participant(id: peerId, name: name,
                                 isMuted: participant.isMutedForCurrentUser || participant.isMutedForAllUsers,
@@ -90,7 +90,7 @@ final class GroupCallManager: ObservableObject {
         ssrcToPeer.removeAll()
         for participant in updated {
             let peerId = Self.peerId(participant.participantId)
-            let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? "Участник"
+            let name = peerNames[peerId] ?? ChatStore.shared.users[peerId].map { [$0.firstName, $0.lastName].filter { !$0.isEmpty }.joined(separator: " ") } ?? NSLocalizedString("Generated.dbb35eec718d", comment: "")
             peerNames[peerId] = name
             if participant.audioSourceId > 0 {
                 ssrcToPeer[UInt32(participant.audioSourceId)] = peerId
@@ -148,7 +148,7 @@ final class GroupCallManager: ObservableObject {
         bridge.groupStateHandler = { [weak self] connected in
             guard let self else { return }
             self.connected = connected
-            self.stateText = connected ? "В групповом звонке" : "Переподключение…"
+            self.stateText = connected ? NSLocalizedString("Generated.6adb7ce0c819", comment: "") : NSLocalizedString("Generated.746302e58849", comment: "")
             CallDiag.log("group engine connected=\(connected)")
         }
         bridge.groupAudioLevelsHandler = { [weak self] levels in

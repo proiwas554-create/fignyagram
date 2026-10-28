@@ -93,7 +93,7 @@ struct MusicView: View {
     }
 
     private var chatGroups: [(String, [MusicTrack])] {
-        Dictionary(grouping: chatTracks, by: { $0.sourceTitle ?? "Из чатов" })
+        Dictionary(grouping: chatTracks, by: { $0.sourceTitle ?? NSLocalizedString("Generated.4d2686d72530", comment: "") })
             .map { ($0.key, $0.value.sorted { $0.addedAt > $1.addedAt }) }
             .sorted { $0.0.localizedCaseInsensitiveCompare($1.0) == .orderedAscending }
     }
@@ -180,7 +180,7 @@ struct MusicView: View {
                     if let userId = ChatStore.shared.chats[chatId]?.privateUserId {
                         profileMusicTarget = ProfileMusicTarget(
                             id: userId,
-                            title: ChatStore.shared.chats[chatId]?.title ?? "Музыка профиля"
+                            title: ChatStore.shared.chats[chatId]?.title ?? NSLocalizedString("Generated.953c04042b18", comment: "")
                         )
                     }
                 }
@@ -384,7 +384,7 @@ struct MusicView: View {
                 Image(systemName: isSelecting ? "xmark.circle" : "checkmark.circle")
             }
             .disabled(library.tracks.isEmpty)
-            .accessibilityLabel(isSelecting ? "Отменить выбор" : "Выбрать треки")
+            .accessibilityLabel(isSelecting ? NSLocalizedString("Generated.900de173231c", comment: "") : NSLocalizedString("Generated.213aee1dcfad", comment: ""))
         }
 
         ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -442,7 +442,7 @@ struct MusicView: View {
                         } label: {
                             Label(SleepTimer.shared.isActive
                                   ? "Таймер сна (\\(SleepTimer.shared.remainingText))"
-                                  : "Таймер сна",
+                                  : NSLocalizedString("Generated.e398c807c9ef", comment: ""),
                                   systemImage: "moon.zzz")
                         }
                         Button {
@@ -498,7 +498,7 @@ struct MusicView: View {
     private var profileContent: some View {
         if isLoadingProfile {
             Spacer()
-            ProgressView("Загрузка музыки профиля…")
+            ProgressView(NSLocalizedString("Generated.b4dad412793c", comment: ""))
             Spacer()
         } else if filteredProfileAudios.isEmpty {
             VStack(spacing: 14) {
@@ -545,7 +545,7 @@ struct MusicView: View {
                                 Text(audio.title.isEmpty ? audio.fileName : audio.title)
                                     .font(.subheadline.bold())
                                     .lineLimit(1)
-                                Text(audio.performer.isEmpty ? "Неизвестный исполнитель" : audio.performer)
+                                Text(audio.performer.isEmpty ? NSLocalizedString("Generated.2ec7208d11d8", comment: "") : audio.performer)
                                     .font(.appCaption)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
@@ -667,7 +667,7 @@ struct MusicView: View {
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     HStack(spacing: 4) {
-                        Text(track.artist.isEmpty ? "Неизвестный исполнитель" : track.artist)
+                        Text(track.artist.isEmpty ? NSLocalizedString("Generated.2ec7208d11d8", comment: "") : track.artist)
                             .lineLimit(1)
                         if let duration = track.duration, duration > 0 {
                             Text("• \(duration / 60):\(String(format: "%02d", duration % 60))")
@@ -933,7 +933,7 @@ struct GlobalPlayerBar: View {
                     .font(.system(size: 19))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(player.isPlaying ? "Пауза" : "Играть")
+            .accessibilityLabel(player.isPlaying ? NSLocalizedString("Generated.b9e9bec3763c", comment: "") : NSLocalizedString("Generated.a8e8590e6629", comment: ""))
 
             Button {
                 player.stop()
@@ -1000,7 +1000,7 @@ struct FullMusicPlayerView: View {
                 }
 
                 VStack(spacing: 4) {
-                    Text(player.current?.title ?? "Ничего не играет")
+                    Text(player.current?.title ?? NSLocalizedString("Generated.b96264fd3f02", comment: ""))
                         .font(.title2.bold())
                         .lineLimit(2)
                         .multilineTextAlignment(.center)

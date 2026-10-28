@@ -50,14 +50,14 @@ struct ChatListView: View {
     /// Keys are localized at render time; keywords keep RU+EN so search works
     /// in every language.
     private static let settingsSearchItems: [(String, [String])] = [
-        ("Settings.Row.Proxy", ["прокси", "proxy", "сеть", "network"]),
-        ("Settings.Row.General", ["настройки", "settings"]),
-        ("Settings.Row.Notifications", ["уведомления", "notification"]),
-        ("Settings.Row.Cache", ["кэш", "память", "очистка", "cache", "memory"]),
-        ("Settings.Row.Optimization", ["оптимизация", "батарея", "энергия", "optimization", "battery"]),
-        ("Settings.Row.Privacy", ["приватность", "невидимка", "privacy"]),
-        ("Settings.Row.Limits", ["лимиты", "limits"]),
-        ("Settings.Row.Developer", ["разработчик", "debug", "терминал", "developer", "terminal"])
+        ("Settings.Row.Proxy", [NSLocalizedString("Generated.4c7437ad1524", comment: ""), "proxy", NSLocalizedString("Generated.fd076357bf4c", comment: ""), "network"]),
+        ("Settings.Row.General", [NSLocalizedString("Generated.a7c3b4345299", comment: ""), "settings"]),
+        ("Settings.Row.Notifications", [NSLocalizedString("Generated.c8f30cddc5b9", comment: ""), "notification"]),
+        ("Settings.Row.Cache", [NSLocalizedString("Generated.611cdeb92886", comment: ""), NSLocalizedString("Generated.0144f5315981", comment: ""), NSLocalizedString("Generated.1a5f59a1962b", comment: ""), "cache", "memory"]),
+        ("Settings.Row.Optimization", [NSLocalizedString("Generated.cffb764b1932", comment: ""), NSLocalizedString("Generated.fc436cf76731", comment: ""), NSLocalizedString("Generated.4d36393d0a36", comment: ""), "optimization", "battery"]),
+        ("Settings.Row.Privacy", [NSLocalizedString("Generated.f0112ad9e617", comment: ""), NSLocalizedString("Generated.02bff617062d", comment: ""), "privacy"]),
+        ("Settings.Row.Limits", [NSLocalizedString("Generated.600f0621e037", comment: ""), "limits"]),
+        ("Settings.Row.Developer", [NSLocalizedString("Generated.92e862e86481", comment: ""), "debug", NSLocalizedString("Generated.5c2224ecd3c2", comment: ""), "developer", "terminal"])
     ]
 
     private var matchedSettings: [String] {
@@ -218,7 +218,7 @@ struct ChatListView: View {
                     }
                 }
             }
-            .searchable(text: $search, prompt: "Поиск чатов, каналов, контактов")
+            .searchable(text: $search, prompt: NSLocalizedString("Generated.286bb65540f1", comment: ""))
             .navigationBarHidden(classic.isEnabled)
             .navigationTitle("Fignyagram")
             .navigationBarTitleDisplayMode(.large)
@@ -263,7 +263,7 @@ struct ChatListView: View {
                 }
             }
             .sheet(isPresented: $showNewChat) {
-                ChatPickerView(title: "Новое сообщение") { chatId in
+                ChatPickerView(title: NSLocalizedString("Generated.29edddcb8972", comment: "")) { chatId in
                     openTarget = ChatTarget(chatId: chatId, messageId: nil)
                 }
             }
@@ -359,7 +359,7 @@ struct ChatListView: View {
                 }
             }
             Button { togglePin(chat) } label: {
-                Label(isPinned(chat) ? "Открепить от верха" : "Закрепить сверху", systemImage: "pin")
+                Label(isPinned(chat) ? NSLocalizedString("Generated.798e51f8c12e", comment: "") : NSLocalizedString("Generated.c7266fe01d12", comment: ""), systemImage: "pin")
             }
             if chat.privateUserId != nil || chat.isGroup || chat.isChannel {
                 Button { client.copyUsername(for: chat) } label: {
@@ -390,7 +390,7 @@ struct ChatListView: View {
                 Button {
                     client.setUserBlocked(userId: userId, isBlocked: !store.isUserBlocked(userId))
                 } label: {
-                    Label(store.isUserBlocked(userId) ? "Разблокировать" : "Заблокировать", systemImage: "hand.raised")
+                    Label(store.isUserBlocked(userId) ? NSLocalizedString("Generated.ed4323481ea0", comment: "") : NSLocalizedString("Generated.619f0805b541", comment: ""), systemImage: "hand.raised")
                 }
             }
         }
@@ -451,7 +451,7 @@ struct ChatListView: View {
                         openTarget = ChatTarget(chatId: message.chatId, messageId: message.id)
                     } label: {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(store.chats[message.chatId]?.title ?? "Чат")
+                            Text(store.chats[message.chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: ""))
                                 .font(.appCaption.bold())
                                 .foregroundColor(.accentColor)
                             Text(MessageFormatter.preview(message.content)).lineLimit(2)
@@ -632,7 +632,7 @@ struct ChatListView: View {
                 proxy.setEnabled(!proxy.isEnabled)
             } label: {
                 Label(
-                    proxy.isEnabled ? "Выключить прокси" : "Включить прокси",
+                    proxy.isEnabled ? NSLocalizedString("Generated.9155c78ba20c", comment: "") : NSLocalizedString("Generated.4afdb2301f29", comment: ""),
                     systemImage: proxy.isEnabled ? "network.slash" : "network"
                 )
             }
@@ -843,10 +843,10 @@ struct ChatRow: View {
     }
 
     private var preview: String {
-        guard let message = chat.lastMessage else { return fallbackPreview ?? "Нет сообщений" }
-        if hidesLastMessage { return "Сообщение скрыто" }
+        guard let message = chat.lastMessage else { return fallbackPreview ?? NSLocalizedString("Generated.589b0f5e0573", comment: "") }
+        if hidesLastMessage { return NSLocalizedString("Generated.194408df1458", comment: "") }
         var text = MessageFormatter.preview(message.content)
-        if text.isEmpty { text = MessageFormatter.serviceText(message.content) ?? "Сообщение" }
+        if text.isEmpty { text = MessageFormatter.serviceText(message.content) ?? NSLocalizedString("Generated.836947131196", comment: "") }
         if MessageFormatter.serviceText(message.content) != nil { return text }
         if message.isOutgoing && !chat.isChannel { return "Вы: \(text)" }
         if chat.isGroup { return "\(senderName): \(text)" }
@@ -897,7 +897,7 @@ struct ChatPickerView: View {
                     }
                 }
             }
-            .searchable(text: $search, prompt: "Поиск")
+            .searchable(text: $search, prompt: NSLocalizedString("Generated.120cc16c5e15", comment: ""))
             .modifier(GlassListModifier())
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)

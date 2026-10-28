@@ -66,23 +66,23 @@ struct CommandPaletteView: View {
         result = ""
         Task {
             defer { isWorking = false }
-            let wantsClear = containsAny(text, ["очист", "почист", "удал", "освобод", "сброс"])
-            let wantsMemory = containsAny(text, ["кэш", "памят", "мусор", "данн"])
-            let wantsInvisible = containsAny(text, ["невидим", "скрыт", "невидимк", "призрак"])
-            let wantsDeleted = containsAny(text, ["удалён", "удален", "удаленные", "удалённые"])
-            let wantsStatus = containsAny(text, ["статус", "состоян", "что включ", "что там", "покажи"])
-            let enable = containsAny(text, ["включ", "вруб", "активир", "поставь", "разреши"])
-            let disable = containsAny(text, ["выключ", "отключ", "выруб", "убери", "запрет"])
+            let wantsClear = containsAny(text, [NSLocalizedString("Generated.3b7ec5a17b67", comment: ""), NSLocalizedString("Generated.11ddfef408f1", comment: ""), NSLocalizedString("Generated.a5626cccd891", comment: ""), NSLocalizedString("Generated.7f8a49adb553", comment: ""), NSLocalizedString("Generated.a487eb69ba59", comment: "")])
+            let wantsMemory = containsAny(text, [NSLocalizedString("Generated.611cdeb92886", comment: ""), NSLocalizedString("Generated.0dedddac1311", comment: ""), NSLocalizedString("Generated.8c1b60b1199b", comment: ""), NSLocalizedString("Generated.c4cbdcc9ef32", comment: "")])
+            let wantsInvisible = containsAny(text, [NSLocalizedString("Generated.2ac65121a3c4", comment: ""), NSLocalizedString("Generated.32956e1594e9", comment: ""), NSLocalizedString("Generated.e7e4274a6726", comment: ""), NSLocalizedString("Generated.6c5f535e6aa2", comment: "")])
+            let wantsDeleted = containsAny(text, [NSLocalizedString("Generated.7fa4077770da", comment: ""), NSLocalizedString("Generated.44204d8f15b5", comment: ""), NSLocalizedString("Generated.7a4c7257958e", comment: ""), NSLocalizedString("Generated.1a331e640579", comment: "")])
+            let wantsStatus = containsAny(text, [NSLocalizedString("Generated.7fed085d2147", comment: ""), NSLocalizedString("Generated.b1d7374f777d", comment: ""), NSLocalizedString("Generated.1bb433d1dca5", comment: ""), NSLocalizedString("Generated.8340d3b8ff86", comment: ""), NSLocalizedString("Generated.d72a54d2b889", comment: "")])
+            let enable = containsAny(text, [NSLocalizedString("Generated.5cbcd8b03c75", comment: ""), NSLocalizedString("Generated.047d61bd86e9", comment: ""), NSLocalizedString("Generated.4e4f52371543", comment: ""), NSLocalizedString("Generated.be0a544c98da", comment: ""), NSLocalizedString("Generated.2c3456ac659d", comment: "")])
+            let disable = containsAny(text, [NSLocalizedString("Generated.d74c8612f803", comment: ""), NSLocalizedString("Generated.8332f174851f", comment: ""), NSLocalizedString("Generated.57982a102305", comment: ""), NSLocalizedString("Generated.98943f0ea183", comment: ""), NSLocalizedString("Generated.4217b2c13cfa", comment: "")])
 
             if wantsClear && wantsMemory {
                 cache.clearAll()
                 lastTopic = .cache
-                result = "Кэш очищается."
+                result = NSLocalizedString("Generated.3dc62a6399d3", comment: "")
             } else if wantsDeleted {
                 let value = disable ? false : (enable ? true : !privacy.keepDeletedMessages)
                 privacy.keepDeletedMessages = value
                 lastTopic = .deleted
-                result = value ? "Показ удалённых сообщений включён." : "Показ удалённых сообщений выключен."
+                result = value ? NSLocalizedString("Generated.712dd7737662", comment: "") : NSLocalizedString("Generated.d0fffb7eac13", comment: "")
             } else if wantsStatus {
                 let invisible = await client.isInvisibleMode()
                 lastTopic = .status
@@ -92,7 +92,7 @@ struct CommandPaletteView: View {
                 do {
                     try await client.setInvisibleMode(value)
                     lastTopic = .invisible
-                    result = value ? "Режим невидимки включён." : "Режим невидимки выключен."
+                    result = value ? NSLocalizedString("Generated.bc00924ee917", comment: "") : NSLocalizedString("Generated.a447a932fa18", comment: "")
                 } catch {
                     result = TelegramClient.describe(error)
                 }
@@ -101,21 +101,21 @@ struct CommandPaletteView: View {
                 case .invisible:
                     do {
                         try await client.setInvisibleMode(enable)
-                        result = enable ? "Режим невидимки включён." : "Режим невидимки выключен."
+                        result = enable ? NSLocalizedString("Generated.bc00924ee917", comment: "") : NSLocalizedString("Generated.a447a932fa18", comment: "")
                     } catch { result = TelegramClient.describe(error) }
                 case .deleted:
                     privacy.keepDeletedMessages = enable
-                    result = enable ? "Показ удалённых включён." : "Показ удалённых выключен."
+                    result = enable ? NSLocalizedString("Generated.b5c49ce5c102", comment: "") : NSLocalizedString("Generated.b2d33ebf0b8b", comment: "")
                 case .cache:
                     cache.clearAll()
-                    result = "Кэш очищается."
+                    result = NSLocalizedString("Generated.3dc62a6399d3", comment: "")
                 default:
-                    result = "Уточните: невидимка, удалённые или кэш."
+                    result = NSLocalizedString("Generated.0af3c23329e4", comment: "")
                 }
-            } else if containsAny(text, ["помощь", "help", "что умеешь", "команд"]) {
-                result = "Можно: «почисти память», «статус», «сделай меня невидимым», «пусть удалённые остаются», затем просто «включи» или «выключи»."
+            } else if containsAny(text, [NSLocalizedString("Generated.50b230fe07bc", comment: ""), "help", NSLocalizedString("Generated.3f4ae9e96b07", comment: ""), NSLocalizedString("Generated.f53aab4c7690", comment: "")]) {
+                result = NSLocalizedString("Generated.89db1a211e71", comment: "")
             } else {
-                result = "Не понял. Попробуйте: «почисти кэш», «статус», «включи невидимку»."
+                result = NSLocalizedString("Generated.5c90ed9795df", comment: "")
             }
         }
     }

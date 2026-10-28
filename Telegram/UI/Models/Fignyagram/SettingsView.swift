@@ -166,8 +166,8 @@ struct SettingsView: View {
                     ))
                     Picker(L10n.t("Settings.SendTextAsFile"), selection: $autoTextFileThreshold) {
                         Text(L10n.t("Common.Never")).tag(0)
-                        Text(L10n.string("2000 символов", "2000 characters")).tag(2000)
-                        Text(L10n.string("4000 символов", "4000 characters")).tag(4000)
+                        Text(L10n.string(NSLocalizedString("Generated.932a47f6d569", comment: ""), "2000 characters")).tag(2000)
+                        Text(L10n.string(NSLocalizedString("Generated.e8c5c957c1ec", comment: ""), "4000 characters")).tag(4000)
                     }
                     NavigationLink(L10n.t("Settings.QuickReplies")) {
                         SnippetsSettingsView()
@@ -252,7 +252,7 @@ struct SettingsView: View {
                 } header: {
                     Text(L10n.t("Auto.0899eda172"))
                 } footer: {
-                    Text("Глобальный поиск ищет также сообщения и музыку. При выключении остаются поиск по чатам, каналам и контактам.\n\nСообщения, удалённые другими пользователями, останутся в локальном кэше этого устройства. Это работает только для уже загруженных сообщений. Всё на вашей совести.")
+                    Text(NSLocalizedString("Generated.7f0b0f9f7bac", comment: ""))
                         .font(.appFootnote)
                 }
 
@@ -301,7 +301,7 @@ struct SettingsView: View {
                 QRCodeScannerSheet { code in
                     Task {
                         if await client.confirmOtherDeviceLogin(code) {
-                            deviceResultText = "Устройство вошло в текущий аккаунт."
+                            deviceResultText = NSLocalizedString("Generated.1c4673c8b852", comment: "")
                             showDeviceResult = true
                         }
                     }

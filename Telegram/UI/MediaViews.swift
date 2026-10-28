@@ -80,7 +80,7 @@ struct DownloadStatusView: View {
     }
 
     private func timeText(_ seconds: TimeInterval?) -> String {
-        guard let seconds, seconds.isFinite, seconds > 0 else { return "осталось…" }
+        guard let seconds, seconds.isFinite, seconds > 0 else { return NSLocalizedString("Generated.888a645df64c", comment: "") }
         if seconds < 60 { return "~" + "\(Int(seconds.rounded())) с" }
         return "~" + "\(Int((seconds / 60).rounded())) мин"
     }
@@ -480,7 +480,7 @@ struct AudioFileView: View {
                 AudioPlayback.shared.stop()
                 player.play(track, queue: library.tracks)
             } else {
-                TelegramClient.shared.errorMessage = "Не удалось открыть аудио"
+                TelegramClient.shared.errorMessage = NSLocalizedString("Generated.104b4a23cfd9", comment: "")
             }
             isPreparing = false
         }
@@ -658,7 +658,7 @@ struct DocumentView: View {
             }
             .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Text(document.fileName.isEmpty ? "Документ" : document.fileName)
+                Text(document.fileName.isEmpty ? NSLocalizedString("Generated.c8dd8b44b641", comment: "") : document.fileName)
                     .font(.subheadline.bold()).lineLimit(2)
                 if files.downloadStatus(document.document) != nil {
                     DownloadStatusView(file: document.document, showCancel: true)
@@ -1011,7 +1011,7 @@ struct VideoNoteRecorderView: View {
             )
             Spacer()
             if isProcessing {
-                ProgressView("Обработка…").tint(.white).foregroundColor(.white)
+                ProgressView(NSLocalizedString("Generated.fa359521a2be", comment: "")).tint(.white).foregroundColor(.white)
             } else {
                 Button { isRecording ? stop() : start() } label: {
                     ZStack {
@@ -1023,7 +1023,7 @@ struct VideoNoteRecorderView: View {
                 }
                 .disabled(!isReady)
             }
-            Text(isRecording ? "Нажмите, чтобы отправить" : "Нажмите, чтобы записать видеосообщение")
+            Text(isRecording ? NSLocalizedString("Generated.636adfbc9bb6", comment: "") : NSLocalizedString("Generated.3f179a346f64", comment: ""))
                 .font(.appFootnote).foregroundColor(.white.opacity(0.8))
         }
         .padding(.vertical)
@@ -1031,14 +1031,14 @@ struct VideoNoteRecorderView: View {
         .onReceive(ticker) { _ in if isRecording { elapsed = Foundation.Date().timeIntervalSince(startDate) } }
         .task {
             guard await VideoNoteCamera.requestAccess() else {
-                TelegramClient.shared.errorMessage = "Нет доступа к камере или микрофону. Разрешите его в Настройках."
+                TelegramClient.shared.errorMessage = NSLocalizedString("Generated.3eaa01794512", comment: "")
                 dismiss()
                 return
             }
             camera.start { ok in
                 isReady = ok
                 if !ok {
-                    TelegramClient.shared.errorMessage = "Камера недоступна"
+                    TelegramClient.shared.errorMessage = NSLocalizedString("Generated.b999ffd6488f", comment: "")
                     dismiss()
                 }
             }
@@ -1054,7 +1054,7 @@ struct VideoNoteRecorderView: View {
         camera.startRecording { url in
             isRecording = false
             guard let url else {
-                TelegramClient.shared.errorMessage = "Не удалось записать видео"
+                TelegramClient.shared.errorMessage = NSLocalizedString("Generated.56b77897ca80", comment: "")
                 return
             }
             isProcessing = true
@@ -1064,7 +1064,7 @@ struct VideoNoteRecorderView: View {
                 if let prepared {
                     onSend(prepared)
                 } else {
-                    TelegramClient.shared.errorMessage = "Не удалось обработать видео"
+                    TelegramClient.shared.errorMessage = NSLocalizedString("Generated.42480528062f", comment: "")
                 }
                 close()
             }

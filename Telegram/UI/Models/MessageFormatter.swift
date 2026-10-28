@@ -9,7 +9,7 @@ enum MessageFormatter {
             return "\(mediaLabel(content) ?? "") \(caption.text)".trimmingCharacters(in: .whitespaces)
         }
         if case .messageText(let t) = content { return t.text.text }
-        return mediaLabel(content) ?? serviceText(content) ?? "Сообщение"
+        return mediaLabel(content) ?? serviceText(content) ?? NSLocalizedString("Generated.836947131196", comment: "")
     }
 
     /// Text or caption with its formatting entities.

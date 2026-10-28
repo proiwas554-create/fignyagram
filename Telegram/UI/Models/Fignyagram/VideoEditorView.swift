@@ -104,7 +104,7 @@ struct VideoEditorView: View {
                     Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(isExporting ? "Сохранение…" : "Готово") {
+                    Button(isExporting ? NSLocalizedString("Generated.faf9838506a0", comment: "") : NSLocalizedString("Generated.5bd69b0937c9", comment: "")) {
                         export()
                     }
                     .disabled(isExporting || end - start < 0.3)
@@ -157,7 +157,7 @@ struct VideoEditorView: View {
             asset: asset,
             presetName: AVAssetExportPreset1280x720
         ) else {
-            errorText = "Не удалось создать экспорт видео"
+            errorText = NSLocalizedString("Generated.3989d9f142de", comment: "")
             isExporting = false
             return
         }
@@ -200,9 +200,9 @@ struct VideoEditorView: View {
                     ))
                     dismiss()
                 case .failed, .cancelled:
-                    errorText = session.error?.localizedDescription ?? "Не удалось обработать видео"
+                    errorText = session.error?.localizedDescription ?? NSLocalizedString("Generated.42480528062f", comment: "")
                 default:
-                    errorText = "Видео не было обработано"
+                    errorText = NSLocalizedString("Generated.565183ef95e1", comment: "")
                 }
             }
         }

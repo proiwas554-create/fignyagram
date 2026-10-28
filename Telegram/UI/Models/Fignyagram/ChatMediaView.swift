@@ -90,7 +90,7 @@ struct ChatMediaView: View {
                     .listStyle(.plain)
                 }
             }
-            .searchable(text: $search, prompt: "Поиск по названию")
+            .searchable(text: $search, prompt: NSLocalizedString("Generated.96f78a80c755", comment: ""))
             .navigationTitle(L10n.t("Auto.aa5f13e475"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

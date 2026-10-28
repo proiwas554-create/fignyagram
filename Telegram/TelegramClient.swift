@@ -474,7 +474,7 @@ final class TelegramClient: ObservableObject {
         }
     }
 
-    /// Cancels "Добавить аккаунт" and returns to the account that was active before.
+    /// Cancels NSLocalizedString("Generated.b09bc79b1629", comment: "") and returns to the account that was active before.
     func cancelAddAccount() {
         guard let previous = AccountStore.shared.previousId,
               previous != AccountStore.shared.currentId else { return }
@@ -591,7 +591,7 @@ final class TelegramClient: ObservableObject {
 
     func sendPhoneNumber(_ phone: String) {
         let digits = phone.filter { $0.isNumber || $0 == "+" }
-        guard !digits.isEmpty else { errorMessage = "Введите номер телефона"; return }
+        guard !digits.isEmpty else { errorMessage = NSLocalizedString("Generated.9b78b77823d3", comment: ""); return }
         perform { client in
             try await client.setAuthenticationPhoneNumber(
                 phoneNumber: digits,
@@ -1332,7 +1332,7 @@ final class TelegramClient: ObservableObject {
                 title: [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " "),
                 typeText: {
                     if case .userTypeBot = user.type { return "бот" }
-                    return "пользователь"
+                    return NSLocalizedString("Generated.f3d0f03c3fcc", comment: "")
                 }(),
                 description: full?.bio?.text ?? "",
                 username: user.usernames?.activeUsernames.first,
@@ -1348,7 +1348,7 @@ final class TelegramClient: ObservableObject {
             let info = try? await client.getSupergroup(supergroupId: supergroup.supergroupId)
             return PeerInfo(
                 title: chat.title,
-                typeText: supergroup.isChannel ? "канал" : "группа",
+                typeText: supergroup.isChannel ? NSLocalizedString("Generated.ceef8bfad67c", comment: "") : NSLocalizedString("Generated.d6c380a8f341", comment: ""),
                 description: full?.description ?? "",
                 username: info?.usernames?.activeUsernames.first,
                 phone: nil,
@@ -1363,7 +1363,7 @@ final class TelegramClient: ObservableObject {
             let full = try? await client.getBasicGroupFullInfo(basicGroupId: basic.basicGroupId)
             return PeerInfo(
                 title: chat.title,
-                typeText: "группа",
+                typeText: NSLocalizedString("Generated.d6c380a8f341", comment: ""),
                 description: full?.description ?? "",
                 username: nil,
                 phone: nil,
@@ -1374,7 +1374,7 @@ final class TelegramClient: ObservableObject {
 
         return PeerInfo(
             title: chat.title,
-            typeText: "чат",
+            typeText: NSLocalizedString("Generated.26ca3a60e355", comment: ""),
             description: "",
             username: nil,
             phone: nil,
@@ -1784,14 +1784,14 @@ final class TelegramClient: ObservableObject {
         guard VoIPBridge.engineAvailable() else {
             // Without a working media engine TDLib would create a call whose
             // DH handshake cannot complete, so the user would get a hung call.
-            errorMessage = "Встроенный VoIP-движок отключён в этой сборке"
+            errorMessage = NSLocalizedString("Generated.fa050a519244", comment: "")
             return
         }
         guard let client else { return }
         do {
             let result = try await client.createCall(isVideo: isVideo, protocol: callProtocol(), userId: userId)
             CallDiag.log("createCall ok video=\(isVideo) callId=\(result.id) versions=\(callProtocol().libraryVersions.joined(separator: ","))")
-            CallManager.shared.setStatus("Набор номера…")
+            CallManager.shared.setStatus(NSLocalizedString("Generated.27f200a3a45c", comment: ""))
         } catch {
             CallDiag.log("createCall FAILED video=\(isVideo) error=\(Self.describe(error))")
             errorMessage = Self.describe(error)
@@ -2006,7 +2006,7 @@ final class TelegramClient: ObservableObject {
     func copyUsername(for chat: ChatItem) {
         Task {
             guard let username = await username(for: chat) else {
-                errorMessage = "У этого чата нет публичного юзернейма"
+                errorMessage = NSLocalizedString("Generated.9bbbeedc5033", comment: "")
                 return
             }
             UIPasteboard.general.string = "@\(username)"
@@ -2043,7 +2043,7 @@ final class TelegramClient: ObservableObject {
         // Video calls exist only inside the Telegram media engine.
         if isVideo {
             guard VoIPBridge.engineAvailable() else {
-                errorMessage = "Видеозвонки недоступны: встроенный VoIP-движок выключен"
+                errorMessage = NSLocalizedString("Generated.7d45f73d943e", comment: "")
                 return
             }
             // The media engine needs real camera access; without it the call
@@ -2057,12 +2057,12 @@ final class TelegramClient: ObservableObject {
                         if granted {
                             await self.startCall(userId: userId, isVideo: true)
                         } else {
-                            self.errorMessage = "Нет доступа к камере"
+                            self.errorMessage = NSLocalizedString("Generated.27855e89e6a9", comment: "")
                         }
                     }
                 }
             default:
-                errorMessage = "Нет доступа к камере: разрешите его в Настройках"
+                errorMessage = NSLocalizedString("Generated.59ee17543e90", comment: "")
             }
             return
         }
@@ -2073,18 +2073,18 @@ final class TelegramClient: ObservableObject {
         if let phone = store.users[userId]?.phoneNumber, !phone.isEmpty {
             call(phoneNumber: "+" + phone)
         } else {
-            errorMessage = "Номер телефона недоступен"
+            errorMessage = NSLocalizedString("Generated.024086c1dcf5", comment: "")
         }
     }
 
     func call(phoneNumber: String) {
         let number = phoneNumber.filter { $0.isNumber || $0 == "+" }
         guard !number.isEmpty, let url = URL(string: "tel:\(number)") else {
-            errorMessage = "Не удалось определить номер телефона"
+            errorMessage = NSLocalizedString("Generated.690a789c53c4", comment: "")
             return
         }
         guard UIApplication.shared.canOpenURL(url) else {
-            errorMessage = "Звонки недоступны на этом устройстве"
+            errorMessage = NSLocalizedString("Generated.25b9a4528064", comment: "")
             return
         }
         UIApplication.shared.open(url)
@@ -2219,7 +2219,7 @@ final class TelegramClient: ObservableObject {
 
     func sendAnimation(_ animation: TDLibKit.Animation, to chatId: Int64, replyTo: Int64? = nil) async {
         guard let source = await localFileURL(animation.animation) else {
-            errorMessage = "Не удалось скачать гифку"
+            errorMessage = NSLocalizedString("Generated.82d0c26742df", comment: "")
             return
         }
         let input = InputAnimation(
@@ -2396,7 +2396,7 @@ final class TelegramClient: ObservableObject {
         }
 
         _ = try await client.addProxy(
-            comment: "Встроенный прокси",
+            comment: NSLocalizedString("Generated.456e22f2b7dd", comment: ""),
             enable: true,
             proxy: Proxy(
                 port: port,
@@ -2423,7 +2423,7 @@ final class TelegramClient: ObservableObject {
             try? await client.removeProxy(proxyId: proxy.id)
         }
         _ = try await client.addProxy(
-            comment: "Внешний MTProto-прокси",
+            comment: NSLocalizedString("Generated.9479495c19d6", comment: ""),
             enable: true,
             proxy: Proxy(
                 port: port,

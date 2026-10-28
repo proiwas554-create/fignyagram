@@ -18,7 +18,7 @@ struct ProfileMusicView: View {
         NavigationView {
             Group {
                 if isLoading {
-                    ProgressView("Загрузка музыки…")
+                    ProgressView(NSLocalizedString("Generated.acf22311865d", comment: ""))
                 } else if audios.isEmpty {
                     Text(L10n.t("Auto.187ec31e72"))
                         .foregroundColor(.secondary)
@@ -30,7 +30,7 @@ struct ProfileMusicView: View {
                                 Text(audio.title.isEmpty ? audio.fileName : audio.title)
                                     .font(.subheadline.bold())
                                     .lineLimit(1)
-                                Text(audio.performer.isEmpty ? "Неизвестный исполнитель" : audio.performer)
+                                Text(audio.performer.isEmpty ? NSLocalizedString("Generated.2ec7208d11d8", comment: "") : audio.performer)
                                     .font(.appCaption)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)

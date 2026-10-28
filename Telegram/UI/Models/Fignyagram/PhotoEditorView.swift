@@ -179,7 +179,7 @@ struct PhotoEditorView: View {
                         cropStart = nil
                     }
                 } label: {
-                    Label(isCropping ? "Обрезка…" : "Свободная", systemImage: "crop.rotate")
+                    Label(isCropping ? NSLocalizedString("Generated.cafa4fadafc3", comment: "") : NSLocalizedString("Generated.de6f1c7c3c3e", comment: ""), systemImage: "crop.rotate")
                         .font(.appFootnote)
                 }
                 .buttonStyle(.bordered)

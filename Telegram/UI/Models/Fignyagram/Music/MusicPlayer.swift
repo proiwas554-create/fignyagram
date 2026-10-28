@@ -411,7 +411,7 @@ final class MusicPlayer: ObservableObject {
 }
 
 
-/// "Засыпаю под музыку": fades the player out after 15/30/60 minutes.
+/// NSLocalizedString("Generated.2bd415afa8d3", comment: ""): fades the player out after 15/30/60 minutes.
 @MainActor
 final class SleepTimer: ObservableObject {
     static let shared = SleepTimer()

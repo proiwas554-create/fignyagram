@@ -130,7 +130,7 @@ final class AppNotifications: NSObject, ObservableObject {
         }
         let previewGlobal = defaults.object(forKey: "notificationPreview") as? Bool ?? true
         let soundGlobal = defaults.object(forKey: "notificationSound") as? Bool ?? true
-        content.body = (settings.showPreview && previewGlobal) ? preview : "Новое сообщение"
+        content.body = (settings.showPreview && previewGlobal) ? preview : NSLocalizedString("Generated.29edddcb8972", comment: "")
         content.sound = (settings.sound && soundGlobal) ? .default : nil
         content.threadIdentifier = "chat-\(chat.id)"
         content.userInfo = ["chatId": chat.id]

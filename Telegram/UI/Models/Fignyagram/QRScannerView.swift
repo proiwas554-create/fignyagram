@@ -23,7 +23,7 @@ struct QRCodeScannerSheet: View {
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(Color.white.opacity(0.85), lineWidth: 3)
                         .frame(width: 240, height: 240)
-                    Text(errorText ?? "Наведите камеру на QR-код другого устройства")
+                    Text(errorText ?? NSLocalizedString("Generated.373e61ee43a4", comment: ""))
                         .font(.appFootnote)
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
@@ -92,12 +92,12 @@ final class QRScannerController: UIViewController, AVCaptureMetadataOutputObject
                     if granted {
                         self?.configure()
                     } else {
-                        self?.onError?("Разрешите доступ к камере в настройках iOS")
+                        self?.onError?(NSLocalizedString("Generated.b7c7c083e801", comment: ""))
                     }
                 }
             }
         default:
-            onError?("Разрешите доступ к камере в настройках iOS")
+            onError?(NSLocalizedString("Generated.b7c7c083e801", comment: ""))
         }
     }
 
@@ -105,14 +105,14 @@ final class QRScannerController: UIViewController, AVCaptureMetadataOutputObject
         guard let device = AVCaptureDevice.default(for: .video),
               let input = try? AVCaptureDeviceInput(device: device),
               session.canAddInput(input) else {
-            onError?("Камера недоступна")
+            onError?(NSLocalizedString("Generated.b999ffd6488f", comment: ""))
             return
         }
         session.addInput(input)
 
         let output = AVCaptureMetadataOutput()
         guard session.canAddOutput(output) else {
-            onError?("Не удалось включить сканер")
+            onError?(NSLocalizedString("Generated.861ab7b4622d", comment: ""))
             return
         }
         session.addOutput(output)

@@ -37,8 +37,8 @@ struct CreateChatView: View {
                     }
                 } footer: {
                     Text(kind == .channel
-                         ? "Канал создаётся сразу; юзернейм можно задать позже в профиле."
-                         : "Группа создаётся и открывается сразу после создания.")
+                         ? NSLocalizedString("Generated.5e9c7d4ef5e2", comment: "")
+                         : NSLocalizedString("Generated.52e8d2321d61", comment: ""))
                         .font(.appFootnote)
                 }
             }

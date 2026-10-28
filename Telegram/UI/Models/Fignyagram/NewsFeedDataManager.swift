@@ -269,7 +269,7 @@ struct NewsFeedView: View {
 
                 if manager.isLoading && manager.posts.isEmpty {
                     Spacer()
-                    ProgressView("Собираем ленту…")
+                    ProgressView(NSLocalizedString("Generated.2d248779c2b9", comment: ""))
                     Spacer()
                 } else if manager.posts.isEmpty {
                     Spacer()

@@ -55,7 +55,7 @@ final class GifLibrary: ObservableObject {
             return false
         }
         guard let source = await TelegramClient.shared.localFileURL(animation.animation) else {
-            errorText = "Не удалось скачать гифку"
+            errorText = NSLocalizedString("Generated.82d0c26742df", comment: "")
             return false
         }
         let ext = source.pathExtension.isEmpty ? "mp4" : source.pathExtension

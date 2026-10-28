@@ -26,7 +26,7 @@ struct SearchHistoryView: View {
     private static func displayName(_ user: TDLibKit.User) -> String {
         let name = [user.firstName, user.lastName].filter { !$0.isEmpty }.joined(separator: " ")
         if !name.isEmpty { return name }
-        return user.usernames?.activeUsernames.first ?? "Контакт"
+        return user.usernames?.activeUsernames.first ?? NSLocalizedString("Generated.67242a516531", comment: "")
     }
 
     var body: some View {

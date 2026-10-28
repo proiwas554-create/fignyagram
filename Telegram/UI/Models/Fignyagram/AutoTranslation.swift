@@ -78,9 +78,9 @@ final class AutoTranslationSettings: ObservableObject {
     }
 
     static let supportedLanguages: [(code: String, title: String)] = [
-        ("ru", "Русский"), ("en", "English"), ("de", "Deutsch"),
+        ("ru", NSLocalizedString("Generated.3f4a3ee0a93b", comment: "")), ("en", "English"), ("de", "Deutsch"),
         ("fr", "Français"), ("es", "Español"), ("it", "Italiano"),
-        ("tr", "Türkçe"), ("uk", "Українська"), ("ar", "العربية"),
+        ("tr", "Türkçe"), ("uk", NSLocalizedString("Generated.db74fa345ae9", comment: "")), ("ar", "العربية"),
         ("zh", "中文"), ("ja", "日本語"), ("ko", "한국어")
     ]
 }
@@ -506,7 +506,7 @@ struct AutoTranslatedMessageText: View {
                     Image(systemName: "globe")
                         .font(.system(size: 10))
                         .foregroundColor(.secondary)
-                        .accessibilityLabel(L10n.keyed("Chat.Globe", ru: "Переведено", en: "Translated"))
+                        .accessibilityLabel(L10n.keyed("Chat.Globe", ru: NSLocalizedString("Generated.e0f7ee443d68", comment: ""), en: "Translated"))
                 }
             } else {
                 SpoilerTextView(formatted: formatted)

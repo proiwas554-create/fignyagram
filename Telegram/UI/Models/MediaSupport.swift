@@ -44,7 +44,7 @@ final class AudioPlayback: NSObject, ObservableObject, AVAudioPlayerDelegate {
             isPlaying = true
             startTimer()
         } catch {
-            TelegramClient.shared.errorMessage = "Не удалось воспроизвести аудио"
+            TelegramClient.shared.errorMessage = NSLocalizedString("Generated.e531767609c2", comment: "")
         }
     }
 
@@ -124,7 +124,7 @@ final class VoiceRecorder: ObservableObject {
 
     func start() async -> Bool {
         guard await Self.requestPermission() else {
-            TelegramClient.shared.errorMessage = "Нет доступа к микрофону. Разрешите его в Настройках."
+            TelegramClient.shared.errorMessage = NSLocalizedString("Generated.06dbbe97481e", comment: "")
             return false
         }
         AudioPlayback.shared.stop()
@@ -152,7 +152,7 @@ final class VoiceRecorder: ObservableObject {
             }
         }
         guard let started else {
-            TelegramClient.shared.errorMessage = "Не удалось начать запись"
+            TelegramClient.shared.errorMessage = NSLocalizedString("Generated.98bc88a5f5b7", comment: "")
             return false
         }
         recorder = started

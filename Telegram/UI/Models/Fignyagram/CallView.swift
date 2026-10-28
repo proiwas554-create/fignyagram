@@ -69,7 +69,7 @@ struct CallView: View {
     @ObservedObject private var client = TelegramClient.shared
 
     private var displayName: String {
-        !call.peerTitle.isEmpty ? call.peerTitle : "Звонок"
+        !call.peerTitle.isEmpty ? call.peerTitle : NSLocalizedString("Generated.65865853e39c", comment: "")
     }
 
     private var initials: String {
@@ -396,7 +396,7 @@ struct CallView: View {
                 .foregroundColor(.white)
                 .lineLimit(1)
 
-            Text(call.isIncoming ? "Входящий звонок" : (isVideoCall ? "Видеозвонок" : "Аудиозвонок"))
+            Text(call.isIncoming ? NSLocalizedString("Generated.37c0fdfeb98a", comment: "") : (isVideoCall ? NSLocalizedString("Generated.c77c74425f6c", comment: "") : NSLocalizedString("Generated.e37872568fe3", comment: "")))
                 .font(.appFootnote)
                 .foregroundColor(.white.opacity(0.55))
         }
@@ -418,7 +418,7 @@ struct CallView: View {
                         Text(displayName)
                             .font(.title3.bold())
                             .foregroundColor(.white)
-                        Text(call.stateText.isEmpty ? "Соединение…" : call.stateText)
+                        Text(call.stateText.isEmpty ? NSLocalizedString("Generated.e51d9e34e8d2", comment: "") : call.stateText)
                             .font(.appFootnote)
                             .foregroundColor(.white.opacity(0.65))
                     }
@@ -436,9 +436,9 @@ struct CallView: View {
     @ViewBuilder
     private var callNotice: some View {
         if call.peerMuted {
-            noticePill(text: "Собеседник выключил микрофон", icon: "mic.slash.fill", color: .orange)
+            noticePill(text: NSLocalizedString("Generated.97676d92e2b7", comment: ""), icon: "mic.slash.fill", color: .orange)
         } else if call.poorConnection {
-            noticePill(text: "Плохая связь", icon: "wifi.exclamationmark", color: .yellow)
+            noticePill(text: NSLocalizedString("Generated.97360d8f05c3", comment: ""), icon: "wifi.exclamationmark", color: .yellow)
         }
     }
 
@@ -477,30 +477,30 @@ struct CallView: View {
             HStack(spacing: 26) {
                 controlButton(
                     icon: call.isMuted ? "mic.slash.fill" : "mic.fill",
-                    title: call.isMuted ? "Вкл. микрофон" : "Без звука",
+                    title: call.isMuted ? NSLocalizedString("Generated.a1834da247af", comment: "") : NSLocalizedString("Generated.73b2795e9a91", comment: ""),
                     active: call.isMuted
                 ) { call.toggleMute() }
 
                 controlButton(
                     icon: call.speakerOn ? "speaker.wave.3.fill" : "speaker.wave.2.fill",
-                    title: "Динамик",
+                    title: NSLocalizedString("Generated.497a600547ba", comment: ""),
                     active: call.speakerOn
                 ) { call.toggleSpeaker() }
 
                 if isVideoCall {
                     controlButton(
                         icon: call.isVideoEnabled ? "video.fill" : "video.slash.fill",
-                        title: "Видео",
+                        title: NSLocalizedString("Generated.88685209b986", comment: ""),
                         active: call.isVideoEnabled
                     ) { call.toggleVideo() }
                     controlButton(
                         icon: "eye.slash.fill",
-                        title: "Скрыть",
+                        title: NSLocalizedString("Generated.d31c442a0620", comment: ""),
                         active: false
                     ) { call.toggleChrome() }
                     controlButton(
                         icon: "arrow.triangle.2.circlepath.camera",
-                        title: "Камера",
+                        title: NSLocalizedString("Generated.a806e2ec25ee", comment: ""),
                         active: false
                     ) { call.toggleCamera() }
                 }
@@ -508,7 +508,7 @@ struct CallView: View {
 
             HStack(spacing: 18) {
                 if !call.isIncoming || call.hasAccepted {
-                    controlButton(icon: "chevron.down", title: "Свернуть", active: false) {
+                    controlButton(icon: "chevron.down", title: NSLocalizedString("Generated.38137eb0ffff", comment: ""), active: false) {
                         call.minimizeCall()
                     }
                 }

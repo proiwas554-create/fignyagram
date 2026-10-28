@@ -395,7 +395,7 @@ struct MessageRow: View {
                     .foregroundColor(.red)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(failure.canRetry ? "Отправить ещё раз" : "Ошибка отправки")
+            .accessibilityLabel(failure.canRetry ? NSLocalizedString("Generated.ce53e9ba4798", comment: "") : NSLocalizedString("Generated.7d2c1c8ba386", comment: ""))
         case nil:
             Text(isRead ? "✓✓" : "✓")
         }
@@ -415,10 +415,10 @@ private struct MessageReplyHeader: View {
         let replied = store.message(chatId: targetChatId, id: reply.messageId)
         let blocked = replied.map { store.isSenderBlocked($0.senderId) } ?? false
         let name = blocked
-            ? "Заблокированный пользователь"
-            : (replied.map { store.senderName($0.senderId) } ?? reply.origin.map { store.originName($0) } ?? "Сообщение")
+            ? NSLocalizedString("Generated.951c5889d5a3", comment: "")
+            : (replied.map { store.senderName($0.senderId) } ?? reply.origin.map { store.originName($0) } ?? NSLocalizedString("Generated.836947131196", comment: ""))
         let text = blocked
-            ? "Скрыто"
+            ? NSLocalizedString("Generated.8d42f51c627d", comment: "")
             : (reply.quote?.text.text
                 ?? replied.map(\.cachedPreview)
                 ?? reply.content.map { MessageFormatter.preview($0) }
@@ -810,7 +810,7 @@ struct MessageActionsSheet: View {
                         Button {
                             act(.pin(isPinned: !pinned))
                         } label: {
-                            Label(pinned ? "Открепить" : "Закрепить", systemImage: pinned ? "pin.slash" : "pin")
+                            Label(pinned ? NSLocalizedString("Generated.89f00bea46a6", comment: "") : NSLocalizedString("Generated.58b0c60b69d6", comment: ""), systemImage: pinned ? "pin.slash" : "pin")
                         }
                     }
                     if case .messageSenderUser(let sender) = message.senderId,
@@ -838,7 +838,7 @@ struct MessageActionsSheet: View {
                         Button {
                             act(.translate(text))
                         } label: {
-                            Label(L10n.keyed("Chat.Translate", ru: "Перевести", en: "Translate"),
+                            Label(L10n.keyed("Chat.Translate", ru: NSLocalizedString("Generated.7c5637a04325", comment: ""), en: "Translate"),
                               systemImage: "character.bubble")
                         }
                         }
@@ -846,7 +846,7 @@ struct MessageActionsSheet: View {
                             Button {
                                 act(.translateOnDevice(text))
                             } label: {
-                                Label(L10n.keyed("Chat.TranslateOnDevice", ru: "Перевести на устройстве", en: "Translate on device"),
+                                Label(L10n.keyed("Chat.TranslateOnDevice", ru: NSLocalizedString("Generated.2f55c1d2e1e1", comment: ""), en: "Translate on device"),
                                       systemImage: "lock.shield")
                             }
                             if AutoTranslationSettings.shared.mode == .manual {
@@ -917,7 +917,7 @@ struct MessageActionsSheet: View {
                                        isBlocked: !store.isUserBlocked(sender.userId)))
                         } label: {
                             Label(
-                                store.isUserBlocked(sender.userId) ? "Разблокировать" : "Заблокировать",
+                                store.isUserBlocked(sender.userId) ? NSLocalizedString("Generated.ed4323481ea0", comment: "") : NSLocalizedString("Generated.619f0805b541", comment: ""),
                                 systemImage: store.isUserBlocked(sender.userId) ? "person.crop.circle.badge.checkmark" : "person.crop.circle.badge.xmark"
                             )
                         }

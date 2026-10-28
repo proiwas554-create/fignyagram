@@ -101,7 +101,7 @@ struct ChatView: View {
     }
 
     /// Only the newest N unblocked messages are rendered; the rest stay in memory
-    /// and can be revealed with the "Показать ещё" button.
+    /// and can be revealed with the NSLocalizedString("Generated.d5d69fbc52d8", comment: "") button.
     private var visibleMessages: [TDLibKit.Message] {
         let limit = max(1, limits.effectiveMessagesPerChat + extraMessages)
         let source = unblockedMessages
@@ -201,7 +201,7 @@ struct ChatView: View {
                             showSummary = true
                         }
                     } label: {
-                        Label(L10n.keyed("Chat.Summary", ru: "Кратко о переписке", en: "Conversation summary"),
+                        Label(L10n.keyed("Chat.Summary", ru: NSLocalizedString("Generated.668a068c4469", comment: ""), en: "Conversation summary"),
                               systemImage: "text.append")
                     }
                     Button {
@@ -219,26 +219,26 @@ struct ChatView: View {
                             showSummary = true
                         }
                     } label: {
-                        Label(L10n.keyed("Chat.AIDigest", ru: "AI-выжимка (на устройстве)", en: "AI digest (on device)"),
+                        Label(L10n.keyed("Chat.AIDigest", ru: NSLocalizedString("Generated.f8f6ac5925d7", comment: ""), en: "AI digest (on device)"),
                               systemImage: "brain")
                     }
                     Button {
                         showChatInfo = true
                     } label: {
-                        Label(L10n.keyed("Chat.Info", ru: "Информация о чате", en: "Chat Info"),
+                        Label(L10n.keyed("Chat.Info", ru: NSLocalizedString("Generated.b9bc88dbfbb1", comment: ""), en: "Chat Info"),
                               systemImage: "info.circle")
                     }
                     Button {
                         showMedia = true
                     } label: {
-                        Label(L10n.keyed("Chat.Media", ru: "Медиа и файлы", en: "Media & Files"),
+                        Label(L10n.keyed("Chat.Media", ru: NSLocalizedString("Generated.1890b35ca134", comment: ""), en: "Media & Files"),
                               systemImage: "folder")
                     }
                     Button {
                         showNotifications = true
                     } label: {
                         Label(
-                            notificationsMuted ? "Включить уведомления" : "Настроить уведомления",
+                            notificationsMuted ? NSLocalizedString("Generated.c259010361c6", comment: "") : NSLocalizedString("Generated.2d5ae2990f79", comment: ""),
                             systemImage: notificationsMuted ? "bell" : "bell.slash"
                         )
                     }
@@ -323,7 +323,7 @@ struct ChatView: View {
             MessageActionsSheet(message: item.message) { handle($0, for: item.message) }
         }
         .sheet(item: Binding(get: { forwardMessage.map(Identified.init) }, set: { forwardMessage = $0?.message })) { item in
-            ChatPickerView(title: "Переслать") { target in
+            ChatPickerView(title: NSLocalizedString("Generated.4a5b059c4e08", comment: "")) { target in
                 client.forward(item.message, to: target)
             }
         }
@@ -333,19 +333,19 @@ struct ChatView: View {
             }
         }
         .sheet(isPresented: $showEncryptPrompt) {
-            PassphrasePrompt(title: "Ключ шифрования") { key in
+            PassphrasePrompt(title: NSLocalizedString("Generated.f40a1a16fe51", comment: "")) { key in
                 sendEncryptedNote(key: key)
             }
         }
         .sheet(item: $decryptRequest) { request in
-            PassphrasePrompt(title: "Ключ для расшифровки") { key in
+            PassphrasePrompt(title: NSLocalizedString("Generated.97e0d4d51f08", comment: "")) { key in
                 decryptNote(request, key: key)
             }
         }
         .sheet(isPresented: $showSummary) {
             NavigationView {
                 ScrollView {
-                    Text((summaryText ?? "").isEmpty ? "Недостаточно текста для выжимки." : (summaryText ?? ""))
+                    Text((summaryText ?? "").isEmpty ? NSLocalizedString("Generated.63ee2d65e20a", comment: "") : (summaryText ?? ""))
                         .font(.appBody)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
@@ -475,7 +475,7 @@ struct ChatView: View {
     }
 
     private var searchSheet: some View {
-        ChatSearchView(chatId: chatId, title: chat?.title ?? "Поиск") { messageId in
+        ChatSearchView(chatId: chatId, title: chat?.title ?? NSLocalizedString("Generated.120cc16c5e15", comment: "")) { messageId in
             jump(to: messageId)
         }
     }
@@ -716,7 +716,7 @@ struct ChatView: View {
                 .overlay {
                     if messages.isEmpty || unblockedMessages.isEmpty {
                         if isLoading {
-                            ProgressView("Загрузка…")
+                            ProgressView(NSLocalizedString("Generated.aa819ceed5c2", comment: ""))
                         } else if !messages.isEmpty {
                             Text(L10n.t("Auto.1665d3aa71")).foregroundColor(.secondary)
                         } else {
@@ -819,7 +819,7 @@ struct ChatView: View {
                         withAnimation { proxy.scrollTo(target, anchor: .center) }
                     } else if let blocked = messages.first(where: { $0.id == target }),
                               store.isSenderBlocked(blocked.senderId) {
-                        client.errorMessage = "Автор этого сообщения заблокирован"
+                        client.errorMessage = NSLocalizedString("Generated.c22fc8fce00a", comment: "")
                     } else if messages.contains(where: { $0.id == target }) {
                         // The message is loaded but outside the rendered window.
                         expandWindow(to: target)
@@ -827,7 +827,7 @@ struct ChatView: View {
                         DispatchQueue.main.async { scrollTarget = target }
                         return
                     } else {
-                        client.errorMessage = "Сообщение ещё не загружено — пролистайте выше"
+                        client.errorMessage = NSLocalizedString("Generated.cd6b548fb61a", comment: "")
                     }
                     scrollTarget = nil
                 }
@@ -1006,7 +1006,7 @@ struct ChatView: View {
     }
 
     private var headerTitle: String {
-        let base = aliases.chatAlias(chatId) ?? chat?.title ?? "Чат"
+        let base = aliases.chatAlias(chatId) ?? chat?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: "")
         if let cached = AutoTranslationManager.shared.translation(forChatId: chatId, title: base) {
             return cached
         }
@@ -1158,7 +1158,7 @@ struct ChatView: View {
         case .videoNote: showVideoNoteRecorder = true
         case .scheduled:
             guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-                client.errorMessage = "Сначала введите текст сообщения"
+                client.errorMessage = NSLocalizedString("Generated.1b344128bc85", comment: "")
                 return
             }
             showScheduleComposer = true
@@ -1208,7 +1208,7 @@ struct ChatView: View {
             let url = FileManager.default.temporaryDirectory
                 .appendingPathComponent("note-\(Int(Foundation.Date().timeIntervalSince1970)).fgn.enc")
             try payload.write(to: url, atomically: true, encoding: .utf8)
-            client.sendDocument(url, caption: "Зашифрованная заметка", to: chatId, replyTo: takeReply())
+            client.sendDocument(url, caption: NSLocalizedString("Generated.9e5c20d5cb12", comment: ""), to: chatId, replyTo: takeReply())
             text = ""
         } catch {
             client.errorMessage = "Не удалось зашифровать: \(error.localizedDescription)"
@@ -1226,7 +1226,7 @@ struct ChatView: View {
                 let plain = try CryptoNotes.decrypt(payload, passphrase: key)
                 decryptedNote = DecryptedNote(id: request.id, text: plain)
             } catch {
-                TelegramClient.shared.errorMessage = "Не удалось расшифровать: неверный ключ или повреждённый файл"
+                TelegramClient.shared.errorMessage = NSLocalizedString("Generated.0dd674698841", comment: "")
             }
         }
     }
@@ -1325,7 +1325,7 @@ struct ChatView: View {
                 Task {
                     do {
                         try await client.addAnimationToFavoriteSticker(animation.animation)
-                        saveAlertText = "Гифка добавлена в избранные стикеры"
+                        saveAlertText = NSLocalizedString("Generated.6cdd1a9ceabf", comment: "")
                         showSaveAlert = true
                     } catch {
                         client.errorMessage = TelegramClient.describe(error)
@@ -1365,7 +1365,7 @@ struct ChatView: View {
                         client.errorMessage = TelegramClient.describe(error)
                     }
                     _ = await GifLibrary.shared.save(animation.animation)
-                    saveAlertText = "Гифка сохранена в раздел «Гифки»"
+                    saveAlertText = NSLocalizedString("Generated.fa24b7ec130a", comment: "")
                     showSaveAlert = true
                 }
             }
@@ -1432,7 +1432,7 @@ struct ChatView: View {
 
     private static func pinnedPreview(_ message: TDLibKit.Message) -> String {
         let preview = MessageFormatter.preview(message.content)
-        return preview.isEmpty ? "Сообщение" : preview
+        return preview.isEmpty ? NSLocalizedString("Generated.836947131196", comment: "") : preview
     }
 
     private func pinnedBanner(_ message: TDLibKit.Message) -> some View {
@@ -1491,10 +1491,10 @@ struct ChatView: View {
         do {
             if wholePack {
                 try await client.installStickerSet(content.sticker)
-                saveAlertText = "Стикерпак добавлен в наборы стикеров"
+                saveAlertText = NSLocalizedString("Generated.36fd0519e22e", comment: "")
             } else {
                 try await client.addFavoriteSticker(content.sticker)
-                saveAlertText = "Стикер добавлен в избранные"
+                saveAlertText = NSLocalizedString("Generated.b3967c7a4489", comment: "")
             }
             showSaveAlert = true
         } catch {
@@ -1504,11 +1504,11 @@ struct ChatView: View {
 
     private func saveMedia(_ message: TDLibKit.Message) async {
         guard let file = message.content.saveableFile else {
-            client.errorMessage = "Это сообщение нельзя сохранить"
+            client.errorMessage = NSLocalizedString("Generated.671d1a9627fa", comment: "")
             return
         }
         guard let url = await client.localFileURL(file) else {
-            client.errorMessage = "Не удалось скачать файл"
+            client.errorMessage = NSLocalizedString("Generated.ae820ed22ee4", comment: "")
             return
         }
 
@@ -1517,8 +1517,8 @@ struct ChatView: View {
                 client.errorMessage = error
             } else {
                 saveAlertText = message.content.isVideoMedia
-                    ? "Видео сохранено в «Фото»"
-                    : "Фото сохранено в «Фото»"
+                    ? NSLocalizedString("Generated.30461117ae54", comment: "")
+                    : NSLocalizedString("Generated.5422b0de8734", comment: "")
                 showSaveAlert = true
             }
         } else {
@@ -1542,7 +1542,7 @@ struct ChatView: View {
                     if let original = await MediaPreparer.originalFile(provider, type: type) {
                         items.append(OutgoingMedia(kind: .document(original)))
                     } else {
-                        client.errorMessage = "Не удалось подготовить файл без сжатия"
+                        client.errorMessage = NSLocalizedString("Generated.8dfafe0f4433", comment: "")
                     }
                     continue
                 }
@@ -1551,7 +1551,7 @@ struct ChatView: View {
                        let video = await MediaPreparer.video(source) {
                         items.append(OutgoingMedia(kind: .video(video)))
                     } else {
-                        client.errorMessage = "Не удалось подготовить видео"
+                        client.errorMessage = NSLocalizedString("Generated.70a6ea804bb6", comment: "")
                     }
                 } else if let image = await MediaPreparer.loadImage(provider),
                           let photo = MediaPreparer.photo(image) {
@@ -1563,11 +1563,11 @@ struct ChatView: View {
                 } else if let original = await MediaPreparer.loadFile(provider, type: UTType.data.identifier) {
                     items.append(OutgoingMedia(kind: .document(original)))
                 } else {
-                    client.errorMessage = "Не удалось открыть вложение. Попробуйте ещё раз или выберите файл."
+                    client.errorMessage = NSLocalizedString("Generated.c0f8cdd6aa03", comment: "")
                 }
             }
             if items.isEmpty {
-                client.errorMessage = "Не удалось прикрепить выбранные файлы"
+                client.errorMessage = NSLocalizedString("Generated.7f16a9e09b32", comment: "")
             }
             presentComposer(items)
             sendMediaAsFiles = false
@@ -1632,8 +1632,8 @@ struct ChatView: View {
             if case .userTypeBot = user.type { return "бот" }
             return MessageFormatter.userStatus(store.userStatuses[userId] ?? user.status)
         }
-        if chat.isChannel { return "канал" }
-        if chat.isGroup { return "группа" }
+        if chat.isChannel { return NSLocalizedString("Generated.ceef8bfad67c", comment: "") }
+        if chat.isGroup { return NSLocalizedString("Generated.d6c380a8f341", comment: "") }
         return ""
     }
 
@@ -1732,7 +1732,7 @@ struct ChatSearchView: View {
                 }
             }
             .listStyle(.plain)
-            .searchable(text: $query, prompt: "Поиск сообщений")
+            .searchable(text: $query, prompt: NSLocalizedString("Generated.feaac1a6665f", comment: ""))
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1857,7 +1857,7 @@ struct ChatNotificationSettingsView: View {
             Form {
                 if let settings {
                     Section {
-                        Toggle(L10n.keyed("Chat.Notifications", ru: "Уведомления", en: "Notifications"), isOn: Binding(
+                        Toggle(L10n.keyed("Chat.Notifications", ru: NSLocalizedString("Generated.f1ac800118e1", comment: ""), en: "Notifications"), isOn: Binding(
                             get: { effectiveMuteFor == 0 },
                             set: { enabled in
                                 update {
@@ -1898,14 +1898,14 @@ struct ChatNotificationSettingsView: View {
                             }
                         ))
                     } header: {
-                        Text(chat?.title ?? "Чат")
+                        Text(chat?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: ""))
                     } footer: {
                         Text(L10n.t("Auto.9308ac5fb9"))
                             .font(.appFootnote)
                     }
 
                     Section {
-                        Toggle(L10n.keyed("Chat.Mentions", ru: "Уведомления об упоминаниях", en: "Mention notifications"), isOn: Binding(
+                        Toggle(L10n.keyed("Chat.Mentions", ru: NSLocalizedString("Generated.002bb25fea35", comment: ""), en: "Mention notifications"), isOn: Binding(
                             get: { effectiveMentions },
                             set: { enabled in
                                 update {

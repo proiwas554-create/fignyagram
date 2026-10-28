@@ -122,7 +122,7 @@ struct DirectMessageStatsView: View {
     }
 
     private func dateText(_ unix: Int?) -> String {
-        guard let unix, unix > 0 else { return "нет сообщений" }
+        guard let unix, unix > 0 else { return NSLocalizedString("Generated.3668c36503dc", comment: "") }
         let formatter = DateFormatter()
         formatter.dateStyle = .short
         formatter.timeStyle = .short

@@ -27,7 +27,7 @@ struct DownloadedFilesView: View {
                         Image(systemName: "internaldrive")
                             .font(.system(size: 48))
                             .foregroundColor(.secondary)
-                        Text(search.isEmpty ? "Скачанных файлов пока нет" : "Ничего не найдено")
+                        Text(search.isEmpty ? NSLocalizedString("Generated.5c3082ab52a7", comment: "") : NSLocalizedString("Generated.dcd57a91d647", comment: ""))
                             .foregroundColor(.secondary)
                     }
                 } else {
@@ -71,7 +71,7 @@ struct DownloadedFilesView: View {
             }
             .navigationTitle(L10n.t("Auto.c2f7359a1b"))
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $search, prompt: "Поиск по имени файла")
+            .searchable(text: $search, prompt: NSLocalizedString("Generated.d1617a222cf2", comment: ""))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Common.Close")) { dismiss() }

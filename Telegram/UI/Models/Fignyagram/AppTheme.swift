@@ -33,7 +33,7 @@ nonisolated enum L10n {
 }
 
 extension String {
-    /// `L("Русский текст", "English text")`
+    /// `L(NSLocalizedString("Generated.abface2c55f3", comment: ""), "English text")`
     func localizedPair(_ en: String) -> String {
         L10n.string(self, en)
     }

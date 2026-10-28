@@ -9,8 +9,8 @@ final class AppSettings: ObservableObject {
     static let shared = AppSettings()
 
     static let languages: [(code: String, title: String)] = [
-        ("system", "Системный / System"),
-        ("ru", "Русский"),
+        ("system", NSLocalizedString("Generated.fec1919084b4", comment: "")),
+        ("ru", NSLocalizedString("Generated.3f4a3ee0a93b", comment: "")),
         ("en", "English"),
         ("es", "Español"),
         ("de", "Deutsch"),

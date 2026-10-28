@@ -71,7 +71,7 @@ struct CloudPasswordView: View {
             HStack {
                 Text(L10n.t("Auto.2be9fce5be"))
                 Spacer()
-                Text(state.hasPassword ? "Включена" : "Выключена")
+                Text(state.hasPassword ? NSLocalizedString("Generated.46d2408e27f4", comment: "") : NSLocalizedString("Generated.cc201f2785c6", comment: ""))
                     .foregroundColor(state.hasPassword ? .green : .secondary)
             }
             if state.hasPassword, !state.passwordHint.isEmpty {
@@ -89,8 +89,8 @@ struct CloudPasswordView: View {
 
     private var setupSection: some View {
         Section {
-            SecureField("Новый пароль", text: $newPassword)
-            SecureField("Повторите пароль", text: $confirmPassword)
+            SecureField(NSLocalizedString("Generated.0b931450f428", comment: ""), text: $newPassword)
+            SecureField(NSLocalizedString("Generated.65d7e78dd50e", comment: ""), text: $confirmPassword)
             TextField(L10n.t("Auto.9b11400452"), text: $hint)
             TextField(L10n.t("Auto.abc95e528d"), text: $recoveryEmail)
                 .keyboardType(.emailAddress)
@@ -106,9 +106,9 @@ struct CloudPasswordView: View {
 
     private var changeSection: some View {
         Section {
-            SecureField("Текущий пароль", text: $oldPassword)
-            SecureField("Новый пароль", text: $newPassword)
-            SecureField("Повторите новый пароль", text: $confirmPassword)
+            SecureField(NSLocalizedString("Generated.659f19053c18", comment: ""), text: $oldPassword)
+            SecureField(NSLocalizedString("Generated.0b931450f428", comment: ""), text: $newPassword)
+            SecureField(NSLocalizedString("Generated.ea79bf98e8c6", comment: ""), text: $confirmPassword)
             TextField(L10n.t("Auto.69af60dcda"), text: $hint)
             Button(L10n.t("Auto.9ddb6c7f01")) { save() }
                 .disabled(isSaving || oldPassword.isEmpty || !canSubmit)
@@ -144,8 +144,8 @@ struct CloudPasswordView: View {
                         .font(.appFootnote)
                     TextField(L10n.t("Auto.0e6ee45cf3"), text: $resetCode)
                         .keyboardType(.numberPad)
-                    SecureField("Новый пароль", text: $newPassword)
-                    SecureField("Повторите пароль", text: $confirmPassword)
+                    SecureField(NSLocalizedString("Generated.0b931450f428", comment: ""), text: $newPassword)
+                    SecureField(NSLocalizedString("Generated.65d7e78dd50e", comment: ""), text: $confirmPassword)
                     TextField(L10n.t("Auto.69af60dcda"), text: $hint)
                     Button(L10n.t("Auto.8513955adb")) { recover() }
                         .disabled(isSaving || resetCode.isEmpty || !canSubmit)
@@ -196,7 +196,7 @@ struct CloudPasswordView: View {
 
     private func disablePassword() {
         guard !oldPassword.isEmpty else {
-            client.errorMessage = "Введите текущий пароль"
+            client.errorMessage = NSLocalizedString("Generated.879e488e0741", comment: "")
             return
         }
         isSaving = true

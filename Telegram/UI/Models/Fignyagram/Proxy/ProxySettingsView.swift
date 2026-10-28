@@ -118,9 +118,9 @@ struct ProxySettingsView: View {
                     Button(L10n.t("Auto.b2f9091164")) {
                         if vpnKeys.add(vpnKeyInput) {
                             vpnKeyInput = ""
-                            vpnKeyMessage = "Ключ сохранён"
+                            vpnKeyMessage = NSLocalizedString("Generated.9e22cfd592fa", comment: "")
                         } else {
-                            vpnKeyMessage = "Пустой или уже добавленный ключ"
+                            vpnKeyMessage = NSLocalizedString("Generated.73f42d55df65", comment: "")
                         }
                     }
                     .disabled(vpnKeyInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -172,7 +172,7 @@ struct ProxySettingsView: View {
 
     private func connectVPNKey(_ key: VPNKey) {
         guard let mtproto = key.mtproto else {
-            vpnKeyMessage = "Этот формат нельзя подключить внутри приложения"
+            vpnKeyMessage = NSLocalizedString("Generated.b272fe9b1457", comment: "")
             return
         }
         externalServer = mtproto.server

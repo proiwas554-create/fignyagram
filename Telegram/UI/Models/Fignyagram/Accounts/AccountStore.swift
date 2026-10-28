@@ -24,7 +24,7 @@ final class AccountStore: ObservableObject {
 
     @Published private(set) var accounts: [AccountSlot] = []
     @Published private(set) var currentId: String = ""
-    /// Account that was active before "Добавить аккаунт"; lets the user cancel.
+    /// Account that was active before NSLocalizedString("Generated.b09bc79b1629", comment: ""); lets the user cancel.
     @Published private(set) var previousId: String?
 
     /// Deletes tdlib_db_* folders that no longer belong to any account slot.
@@ -200,7 +200,7 @@ final class AccountStore: ObservableObject {
     private static func primaryAccount() -> AccountSlot {
         AccountSlot(
             id: "primary",
-            title: "Аккаунт 1",
+            title: NSLocalizedString("Generated.3c62a17f9819", comment: ""),
             databaseDirectory: documentsDirectory + "/tdlib_db",
             filesDirectory: documentsDirectory + "/tdlib_files"
         )

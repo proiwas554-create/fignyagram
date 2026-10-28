@@ -29,7 +29,7 @@ struct DeveloperSettingsView: View {
                 }
 
                 Section(L10n.t("Dev.AppLoad")) {
-                    row("Память", String(format: "%.1f МБ", monitor.memoryMB))
+                    row(NSLocalizedString("Generated.292706b12327", comment: ""), String(format: NSLocalizedString("Generated.2d0ddc2e72e9", comment: ""), monitor.memoryMB))
                     row("CPU", String(format: "%.1f%%", monitor.cpuPercent))
                     row("Потоки", "\(monitor.threadCount)")
                     row(L10n.t("Dev.LoadedMessages"), "\(monitor.loadedMessages)")
@@ -75,7 +75,7 @@ struct DeveloperSettingsView: View {
                     row("Чатов", "\(store.chats.count)")
                     row("Пользователей", "\(store.users.count)")
                     row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(cache.totalBytes))
-                    row("Оптимизация", performance.isEnabled ? performance.level.title : "выключена")
+                    row(NSLocalizedString("Generated.cc2c809533b3", comment: ""), performance.isEnabled ? performance.level.title : NSLocalizedString("Generated.b39d0c942c47", comment: ""))
                     Button(L10n.t("Dev.RefreshStats")) { cache.refresh() }
                 }
 

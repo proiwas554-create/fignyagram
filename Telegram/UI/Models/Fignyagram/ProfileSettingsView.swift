@@ -192,7 +192,7 @@ struct ProfileSettingsView: View {
         defer { isSaving = false }
         guard let image = await MediaPreparer.loadImage(provider),
               let photo = MediaPreparer.photo(image) else {
-            client.errorMessage = "Не удалось подготовить фото"
+            client.errorMessage = NSLocalizedString("Generated.11cbce07ee64", comment: "")
             return
         }
         do {

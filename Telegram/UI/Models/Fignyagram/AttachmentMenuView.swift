@@ -32,7 +32,7 @@ struct AttachmentMenuView: View {
                 }
                 Button { select(.spoiler) } label: {
                     Label(
-                        spoilerEnabled ? "Выключить спойлер" : "Отправить под спойлер",
+                        spoilerEnabled ? NSLocalizedString("Generated.21d26c5d86e4", comment: "") : NSLocalizedString("Generated.3d325a0da30f", comment: ""),
                         systemImage: spoilerEnabled ? "eye.slash.fill" : "eye.slash"
                     )
                 }

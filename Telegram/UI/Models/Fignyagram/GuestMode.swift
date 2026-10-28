@@ -27,7 +27,7 @@ final class GuestMode: ObservableObject {
 
     func requestExit() async {
         let context = LAContext()
-        context.localizedFallbackTitle = "Ввести код"
+        context.localizedFallbackTitle = NSLocalizedString("Generated.615052720d1f", comment: "")
         var error: NSError?
         guard context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) else {
             lastError = error?.localizedDescription
@@ -35,7 +35,7 @@ final class GuestMode: ObservableObject {
         }
         do {
             let ok = try await context.evaluatePolicy(.deviceOwnerAuthentication,
-                                                      localizedReason: "Выйти из гостевого режима")
+                                                      localizedReason: NSLocalizedString("Generated.5f069510f933", comment: ""))
             if ok {
                 isActive = false
                 CallDiag.log("guest mode exited")

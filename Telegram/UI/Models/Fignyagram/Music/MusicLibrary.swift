@@ -91,7 +91,7 @@ final class MusicLibrary: ObservableObject {
             return false
         }
         guard let source = await TelegramClient.shared.localFileURL(audio.audio) else {
-            errorText = "Не удалось скачать аудио"
+            errorText = NSLocalizedString("Generated.eb568ba44992", comment: "")
             return false
         }
         let title = audio.title.isEmpty ? audio.fileName : audio.title
@@ -102,7 +102,7 @@ final class MusicLibrary: ObservableObject {
         }
         return copyIntoLibrary(
             source: source,
-            title: title.isEmpty ? "Аудио" : title,
+            title: title.isEmpty ? NSLocalizedString("Generated.cdfbbeb4f654", comment: "") : title,
             artist: audio.performer,
             sourceChatId: sourceChatId,
             sourceTitle: sourceTitle,
@@ -113,11 +113,11 @@ final class MusicLibrary: ObservableObject {
     }
 
     /// Imports every audio file from a chat/channel into the main library or
-    /// the separate "Из чатов" tab.
+    /// the separate NSLocalizedString("Generated.4d2686d72530", comment: "") tab.
     func importChat(chatId: Int64, title: String, toMain: Bool) async {
         cancelImportRequested = false
         isImporting = true
-        importProgress = "Поиск аудио…"
+        importProgress = NSLocalizedString("Generated.824b6177e2da", comment: "")
         defer {
             isImporting = false
             importProgress = ""
@@ -125,14 +125,14 @@ final class MusicLibrary: ObservableObject {
 
         let messages = await TelegramClient.shared.audioMessages(chatId: chatId)
         guard !messages.isEmpty else {
-            errorText = "В этом чате не найдено аудио"
+            errorText = NSLocalizedString("Generated.2d8552c637a3", comment: "")
             return
         }
 
         var added = 0
         for (index, message) in messages.enumerated() {
             if cancelImportRequested {
-                errorText = "Импорт остановлен"
+                errorText = NSLocalizedString("Generated.280839f0f5f3", comment: "")
                 return
             }
             importProgress = "\(index + 1) из \(messages.count)"
@@ -158,7 +158,7 @@ final class MusicLibrary: ObservableObject {
                 continue
             }
         }
-        errorText = added > 0 ? nil : "Все треки уже есть в библиотеке"
+        errorText = added > 0 ? nil : NSLocalizedString("Generated.cb18b982f29d", comment: "")
     }
 
     /// Imports a document whose extension is a known audio format (wav/ogg/…).
@@ -171,7 +171,7 @@ final class MusicLibrary: ObservableObject {
         guard Self.audioExtensions.contains(ext) else { return false }
         if tracks.contains(where: { $0.telegramFileID == document.document.id }) { return false }
         guard let source = await TelegramClient.shared.localFileURL(document.document) else { return false }
-        let title = document.fileName.isEmpty ? "Аудио" : (document.fileName as NSString).deletingPathExtension
+        let title = document.fileName.isEmpty ? NSLocalizedString("Generated.cdfbbeb4f654", comment: "") : (document.fileName as NSString).deletingPathExtension
         return copyIntoLibrary(
             source: source,
             title: title,
@@ -185,10 +185,10 @@ final class MusicLibrary: ObservableObject {
 
     func importSavedMessagesMusic() async {
         guard let me = TelegramClient.shared.me else {
-            errorText = "Профиль ещё не загружен"
+            errorText = NSLocalizedString("Generated.d14fcb3b7c5b", comment: "")
             return
         }
-        await importChat(chatId: me.id, title: "Из избранного", toMain: false)
+        await importChat(chatId: me.id, title: NSLocalizedString("Generated.0d6533fd8ab4", comment: ""), toMain: false)
     }
 
     /// Imports Telegram profile audio files into the main music library.
@@ -205,7 +205,7 @@ final class MusicLibrary: ObservableObject {
 
     func cancelImport() {
         cancelImportRequested = true
-        importProgress = "Остановка…"
+        importProgress = NSLocalizedString("Generated.d8a5130d0fb1", comment: "")
     }
 
     func deleteAll() {
@@ -248,7 +248,7 @@ final class MusicLibrary: ObservableObject {
         removeArtwork: Bool
     ) {
         guard let index = tracks.firstIndex(where: { $0.id == track.id }) else { return }
-        tracks[index].title = title.isEmpty ? "Аудио" : title
+        tracks[index].title = title.isEmpty ? NSLocalizedString("Generated.cdfbbeb4f654", comment: "") : title
         tracks[index].artist = artist
 
         if removeArtwork, let old = artworkURL(for: track) {

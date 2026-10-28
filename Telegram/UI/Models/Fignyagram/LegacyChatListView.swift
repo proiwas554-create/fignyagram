@@ -76,20 +76,20 @@ struct LegacyChatListView: View {
                         .swipeActions(edge: .leading, allowsFullSwipe: true) {
                             if chat.id != savedId {
                                 Button { client.setPinned(chatId: chat.id, isPinned: !isPinned(chat)) } label: {
-                                    Label(isPinned(chat) ? "Открепить" : "Закрепить", systemImage: "pin.fill")
+                                    Label(isPinned(chat) ? NSLocalizedString("Generated.89f00bea46a6", comment: "") : NSLocalizedString("Generated.58b0c60b69d6", comment: ""), systemImage: "pin.fill")
                                 }
                                 .tint(.orange)
                             }
                         }
                         .contextMenu {
                             Button { client.setPinned(chatId: chat.id, isPinned: !isPinned(chat)) } label: {
-                                Label(isPinned(chat) ? "Открепить" : "Закрепить сверху", systemImage: "pin")
+                                Label(isPinned(chat) ? NSLocalizedString("Generated.89f00bea46a6", comment: "") : NSLocalizedString("Generated.c7266fe01d12", comment: ""), systemImage: "pin")
                             }
                             if let userId = chat.privateUserId {
                                 Button {
                                     client.setUserBlocked(userId: userId, isBlocked: !store.isUserBlocked(userId))
                                 } label: {
-                                    Label(store.isUserBlocked(userId) ? "Разблокировать" : "Заблокировать", systemImage: "hand.raised")
+                                    Label(store.isUserBlocked(userId) ? NSLocalizedString("Generated.ed4323481ea0", comment: "") : NSLocalizedString("Generated.619f0805b541", comment: ""), systemImage: "hand.raised")
                                 }
                             }
                         }
@@ -112,7 +112,7 @@ struct LegacyChatListView: View {
                     }
                 }
             }
-            .searchable(text: $search, prompt: "Поиск чатов")
+            .searchable(text: $search, prompt: NSLocalizedString("Generated.807140ee3aa7", comment: ""))
             .onChange(of: search) { _ in scheduleSearch() }
             .navigationTitle("Fignyagram")
             .toolbar {
@@ -189,7 +189,7 @@ struct LegacyChatListView: View {
                 SearchHistoryView { item in search = item }
             }
             .sheet(isPresented: $showNewChat) {
-                ChatPickerView(title: "Новое сообщение") { chatId in
+                ChatPickerView(title: NSLocalizedString("Generated.29edddcb8972", comment: "")) { chatId in
                     openTarget = ChatTarget(chatId: chatId, messageId: nil)
                 }
             }
@@ -311,10 +311,10 @@ struct LegacyChatListView: View {
     }
 
     private static let settingsItems: [(String, [String])] = [
-        ("Прокси", ["прокси", "proxy"]),
-        ("Настройки", ["настройки", "settings"]),
-        ("Уведомления", ["уведомления", "notification"]),
-        ("Оптимизация", ["оптимизация", "кэш", "cache"])
+        (NSLocalizedString("Generated.787d938d6d11", comment: ""), [NSLocalizedString("Generated.4c7437ad1524", comment: ""), "proxy"]),
+        (NSLocalizedString("Generated.353b6d5bbe63", comment: ""), [NSLocalizedString("Generated.a7c3b4345299", comment: ""), "settings"]),
+        (NSLocalizedString("Generated.f1ac800118e1", comment: ""), [NSLocalizedString("Generated.c8f30cddc5b9", comment: ""), "notification"]),
+        (NSLocalizedString("Generated.cc2c809533b3", comment: ""), [NSLocalizedString("Generated.cffb764b1932", comment: ""), NSLocalizedString("Generated.611cdeb92886", comment: ""), "cache"])
     ]
 
     @ViewBuilder
@@ -349,11 +349,11 @@ struct LegacyChatListView: View {
                 HStack(spacing: 10) {
                     LegacyAvatarView(
                         id: chatId,
-                        title: store.chats[chatId]?.title ?? "Чат",
+                        title: store.chats[chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: ""),
                         photo: store.chats[chatId]?.photo,
                         size: 40
                     )
-                    Text(store.chats[chatId]?.title ?? "Чат").lineLimit(1)
+                    Text(store.chats[chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: "")).lineLimit(1)
                     Spacer()
                 }
             }
@@ -362,12 +362,12 @@ struct LegacyChatListView: View {
                 HStack(spacing: 10) {
                     LegacyAvatarView(
                         id: message.chatId,
-                        title: store.chats[message.chatId]?.title ?? "Чат",
+                        title: store.chats[message.chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: ""),
                         photo: store.chats[message.chatId]?.photo,
                         size: 40
                     )
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(store.chats[message.chatId]?.title ?? "Чат").font(.appCaption.bold())
+                        Text(store.chats[message.chatId]?.title ?? NSLocalizedString("Generated.6d8d73b88945", comment: "")).font(.appCaption.bold())
                         Text(MessageFormatter.preview(message.content)).lineLimit(1)
                     }
                     Spacer()
@@ -391,7 +391,7 @@ struct LegacyChatListView: View {
 
     private func preview(_ chat: ChatItem) -> String {
         if let action = store.actionText(chatId: chat.id) { return action }
-        guard let message = chat.lastMessage else { return "Нет сообщений" }
+        guard let message = chat.lastMessage else { return NSLocalizedString("Generated.589b0f5e0573", comment: "") }
         let text = MessageFormatter.preview(message.content)
         if message.isOutgoing && !chat.isChannel { return "Вы: \(text)" }
         return text
