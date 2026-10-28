@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var privacy = PrivacyPreferences.shared
+    @ObservedObject private var autoTranslation = AutoTranslationSettings.shared
     @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
     @AppStorage("autoTextFileThreshold") private var autoTextFileThreshold = 0
@@ -193,6 +194,21 @@ struct SettingsView: View {
                     }
                     Toggle("Вкладка «Музыка» в нижнем баре", isOn: $showMusicTab)
                     Toggle("Вкладка «Новости» в нижнем баре", isOn: $showNewsTab)
+                    Toggle("Автоперевод сообщений (на устройстве)", isOn: Binding(
+                        get: { autoTranslation.isEnabled },
+                        set: { value in
+                            autoTranslation.isEnabled = value && autoTranslation.isSupported
+                        }
+                    ))
+                    .disabled(!autoTranslation.isSupported)
+                    Picker("Язык перевода", selection: Binding(
+                        get: { autoTranslation.targetLanguage },
+                        set: { autoTranslation.targetLanguage = $0 }
+                    )) {
+                        ForEach(AutoTranslationSettings.supportedLanguages, id: \.code) { item in
+                            Text(item.title).tag(item.code)
+                        }
+                    }
                     Toggle("Невидимый просмотр историй", isOn: Binding(
                         get: { privacy.storyGhostMode },
                         set: { privacy.storyGhostMode = $0 }

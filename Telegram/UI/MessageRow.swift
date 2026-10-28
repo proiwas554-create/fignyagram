@@ -262,12 +262,10 @@ struct MessageRow: View {
             replyHeader
             MessageContentView(message: message)
             if case .messageText(let textContent) = message.content,
-               !textContent.text.text.isEmpty,
-               textContent.text.text.count <= 4000 {
-                TranslatedTextView(
-                    text: textContent.text.text,
-                    font: .appCaption2.italic()
-                )
+               !textContent.text.text.isEmpty {
+                // The message body itself (was missing: only the translation line
+                // was rendered, so plain text messages appeared empty).
+                AutoTranslatedMessageText(message: message, formatted: textContent.text)
             }
             if let caption = message.cachedCaption, !caption.text.isEmpty {
                 SpoilerTextView(formatted: caption)
