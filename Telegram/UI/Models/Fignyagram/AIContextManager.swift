@@ -143,7 +143,7 @@ struct AIDigestView: View {
                     .padding()
                     .textSelection(.enabled)
             }
-            .navigationTitle("AI-выжимка")
+            .navigationTitle(L10n.t("Auto.9d6b1eafb1"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {

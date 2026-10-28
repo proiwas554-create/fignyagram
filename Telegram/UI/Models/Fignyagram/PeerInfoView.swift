@@ -73,7 +73,7 @@ struct PeerInfoView: View {
                                         Image(systemName: "doc.on.doc")
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel("Скопировать @username")
+                                    .accessibilityLabel(L10n.t("Auto.670bd1660c"))
                                 }
                             }
 
@@ -87,7 +87,7 @@ struct PeerInfoView: View {
                                         Image(systemName: "doc.on.doc")
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel("Скопировать номер телефона")
+                                    .accessibilityLabel(L10n.t("Auto.3ffc17563e"))
                                 }
                                 .font(.appFootnote)
                                 .foregroundColor(.secondary)
@@ -110,7 +110,7 @@ struct PeerInfoView: View {
                                         Image(systemName: "doc.on.doc")
                                     }
                                     .buttonStyle(.plain)
-                                    .accessibilityLabel("Скопировать тег")
+                                    .accessibilityLabel(L10n.t("Auto.b447298c5b"))
                                 }
                                 .font(.appFootnote)
                             }
@@ -166,10 +166,10 @@ struct PeerInfoView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Описание")
+                                Text(L10n.t("Auto.38ca0af80c"))
                                     .font(.appHeadline)
                                 if info.description.isEmpty {
-                                    Text("Описание отсутствует")
+                                    Text(L10n.t("Auto.9afa89a8ea"))
                                         .font(.appBody)
                                         .foregroundColor(.secondary)
                                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -187,14 +187,14 @@ struct PeerInfoView: View {
                             )
 
                             VStack(alignment: .leading, spacing: 10) {
-                                Text("Локальное название")
+                                Text(L10n.t("Auto.33b7f0848a"))
                                     .font(.appHeadline)
-                                Text("Видно только вам и не меняется у других пользователей.")
+                                Text(L10n.t("Auto.1d0747f186"))
                                     .font(.appCaption)
                                     .foregroundColor(.secondary)
-                                TextField("Название", text: $localAlias)
+                                TextField(L10n.t("Auto.602680ed89"), text: $localAlias)
                                     .textFieldStyle(.roundedBorder)
-                                Button("Сохранить локальное название") {
+                                Button(L10n.t("Auto.373f49e7c6")) {
                                     aliases.setChatAlias(localAlias, chatId: chatId)
                                     if let userId = ChatStore.shared.chats[chatId]?.privateUserId {
                                         aliases.setUserAlias(localAlias, userId: userId)
@@ -213,11 +213,11 @@ struct PeerInfoView: View {
                     }
                     .background(GlassBackgroundView(cornerRadius: 0).ignoresSafeArea())
                 } else {
-                    Text("Не удалось загрузить информацию")
+                    Text(L10n.t("Auto.1afac88324"))
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Информация")
+            .navigationTitle(L10n.t("Auto.a7fd9bee17"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -227,7 +227,7 @@ struct PeerInfoView: View {
                     if let info, info.typeText == "канал" || info.typeText == "группа" {
                         Menu {
                             Button { showEditor = true } label: {
-                                Label("Изменить", systemImage: "pencil")
+                                Label(L10n.t("Auto.47e2436e55"), systemImage: "pencil")
                             }
                             Divider()
                             Button(role: .destructive) { showLeaveConfirm = true } label: {
@@ -237,7 +237,7 @@ struct PeerInfoView: View {
                                 )
                             }
                         } label: {
-                            Text("Изменить")
+                            Text(L10n.t("Auto.47e2436e55"))
                         }
                     }
                 }
@@ -250,12 +250,12 @@ struct PeerInfoView: View {
                 isPresented: $showLeaveConfirm,
                 titleVisibility: .visible
             ) {
-                Button("Покинуть", role: .destructive) { leaveChat() }
+                Button(L10n.t("Auto.d1f6482cf4"), role: .destructive) { leaveChat() }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Вы перестанете получать сообщения из этого \(info?.typeText ?? "чата"). Действие нельзя отменить.")
             }
-            .alert("Нет доступной аватарки", isPresented: $showAvatarError) {
+            .alert(L10n.t("Auto.7ae167ed6e"), isPresented: $showAvatarError) {
                 Button("OK", role: .cancel) {}
             }
             .sheet(isPresented: $showGifts) {

@@ -101,7 +101,7 @@ struct LegacyChatListView: View {
                             Button {
                                 extraChats += max(20, limits.effectiveRenderedChats)
                             } label: {
-                                Text("Показать ещё")
+                                Text(L10n.t("Auto.e747ec0bb6"))
                                     .font(.footnote)
                                     .padding(.vertical, 10)
                                     .frame(maxWidth: .infinity)
@@ -119,10 +119,10 @@ struct LegacyChatListView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
                         Button { showSearchHistory = true } label: {
-                            Label("История поиска", systemImage: "magnifyingglass")
+                            Label(L10n.t("Auto.428f603037"), systemImage: "magnifyingglass")
                         }
                         Button { showVisitHistory = true } label: {
-                            Label("История заходов", systemImage: "clock.arrow.circlepath")
+                            Label(L10n.t("Auto.817d7c3aa6"), systemImage: "clock.arrow.circlepath")
                         }
                     } label: {
                         Image(systemName: "clock.arrow.circlepath")
@@ -132,13 +132,13 @@ struct LegacyChatListView: View {
                     HStack(spacing: 16) {
                         Menu {
                             Button { createKind = .channel } label: {
-                                Label("Новый канал", systemImage: "megaphone")
+                                Label(L10n.t("Auto.aa1f929b24"), systemImage: "megaphone")
                             }
                             Button { createKind = .group } label: {
-                                Label("Новая группа", systemImage: "person.2")
+                                Label(L10n.t("Auto.fb56a24964"), systemImage: "person.2")
                             }
                             Button { showNewChat = true } label: {
-                                Label("Новое сообщение", systemImage: "bubble.left.and.bubble.right")
+                                Label(L10n.t("Auto.1d497d266a"), systemImage: "bubble.left.and.bubble.right")
                             }
                         } label: {
                             Image(systemName: "square.and.pencil")
@@ -158,7 +158,7 @@ struct LegacyChatListView: View {
                                 Label(L10n.t("Common.Profile"), systemImage: "person.crop.circle")
                             }
                             Button { showAccounts = true } label: {
-                                Label("Аккаунты", systemImage: "person.2")
+                                Label(L10n.t("Auto.d699f70d7f"), systemImage: "person.2")
                             }
                             Button { showProxy = true } label: {
                                 Label(L10n.t("Common.Proxy"), systemImage: "network")
@@ -167,7 +167,7 @@ struct LegacyChatListView: View {
                                 Label(L10n.t("Common.Settings"), systemImage: "gearshape")
                             }
                             Button(role: .destructive) { confirmLogout = true } label: {
-                                Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+                                Label(L10n.t("Auto.0f05cf8ab6"), systemImage: "rectangle.portrait.and.arrow.right")
                             }
                         } label: {
                             Image(systemName: "person.crop.circle")
@@ -198,8 +198,8 @@ struct LegacyChatListView: View {
                     openTarget = ChatTarget(chatId: chatId, messageId: nil)
                 }
             }
-            .confirmationDialog("Выйти из аккаунта?", isPresented: $confirmLogout, titleVisibility: .visible) {
-                Button("Выйти", role: .destructive) { client.logOut() }
+            .confirmationDialog(L10n.t("Auto.c0bd86e469"), isPresented: $confirmLogout, titleVisibility: .visible) {
+                Button(L10n.t("Auto.0f05cf8ab6"), role: .destructive) { client.logOut() }
             }
             .background(link)
         }
@@ -228,12 +228,12 @@ struct LegacyChatListView: View {
                         .font(.headline)
                         .lineLimit(1)
                     if chat.id == savedId {
-                        Text("Избранное").font(.caption2.bold())
+                        Text(L10n.t("Auto.2fc4139291")).font(.caption2.bold())
                             .padding(.horizontal, 5)
                             .background(Capsule().fill(Color.accentColor.opacity(0.16)))
                             .foregroundColor(.accentColor)
                     } else if chat.id == store.lastOpenedChatId {
-                        Text("Недавний").font(.caption2).foregroundColor(.secondary)
+                        Text(L10n.t("Auto.fc6742b500")).font(.caption2).foregroundColor(.secondary)
                     }
                 }
                 Text(preview(chat))

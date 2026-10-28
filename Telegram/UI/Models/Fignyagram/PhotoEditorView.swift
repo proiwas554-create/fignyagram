@@ -105,7 +105,7 @@ struct PhotoEditorView: View {
                 controls
             }
             .background(Color.black)
-            .navigationTitle("Редактор")
+            .navigationTitle(L10n.t("Auto.7e2554f86f"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -186,7 +186,7 @@ struct PhotoEditorView: View {
                 .tint(.white)
 
                 if isCropping {
-                    Button("Применить") {
+                    Button(L10n.t("Auto.2cd844110d")) {
                         applyFreeCrop()
                     }
                     .font(.appFootnote)
@@ -202,20 +202,20 @@ struct PhotoEditorView: View {
                     Button("3:4") { crop(aspect: 3.0 / 4.0) }
                     Button("16:9") { crop(aspect: 16.0 / 9.0) }
                 } label: {
-                    Label("Обрезать", systemImage: "crop")
+                    Label(L10n.t("Auto.834cb36ec3"), systemImage: "crop")
                         .font(.appFootnote)
                 }
 
                 Button {
                     rotate()
                 } label: {
-                    Label("Повернуть", systemImage: "rotate.right")
+                    Label(L10n.t("Auto.8eb636439d"), systemImage: "rotate.right")
                         .font(.appFootnote)
                 }
 
                 Spacer()
 
-                Text("Маркер")
+                Text(L10n.t("Auto.5e52bb35c8"))
                     .font(.appCaption2)
                     .foregroundColor(.white.opacity(0.6))
             }

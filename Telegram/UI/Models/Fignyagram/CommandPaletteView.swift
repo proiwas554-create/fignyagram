@@ -15,16 +15,16 @@ struct CommandPaletteView: View {
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 14) {
-                Text("Что сделать?").font(.appHeadline)
+                Text(L10n.t("Auto.e4a32a17fc")).font(.appHeadline)
 
-                TextField("Например: очистить весь кэш", text: $command)
+                TextField(L10n.t("Auto.87b4c83b5f"), text: $command)
                     .textFieldStyle(.roundedBorder)
                     .autocorrectionDisabled()
 
                 Button {
                     execute()
                 } label: {
-                    Label("Выполнить", systemImage: "wand.and.stars")
+                    Label(L10n.t("Auto.bdf82a2a10"), systemImage: "wand.and.stars")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -39,13 +39,13 @@ struct CommandPaletteView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Text("Поддерживаются: «включить невидимку», «выключить невидимку», «очистить весь кэш», «включить показ удалённых», «выключить показ удалённых».")
+                Text(L10n.t("Auto.df07d75a54"))
                     .font(.appCaption)
                     .foregroundColor(.secondary)
                 Spacer()
             }
             .padding(18)
-            .navigationTitle("Команды")
+            .navigationTitle(L10n.t("Auto.ce87c3f7c4"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

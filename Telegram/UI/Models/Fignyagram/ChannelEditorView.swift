@@ -55,18 +55,18 @@ struct ChannelEditorView: View {
                                 size: 72
                             )
                         }
-                        Button("Изменить фото") { showPhotoPicker = true }
+                        Button(L10n.t("Auto.775d9c0733")) { showPhotoPicker = true }
                     }
                 }
 
-                Section("Название") {
-                    TextField("Название канала или группы", text: $title)
+                Section(L10n.t("Auto.602680ed89")) {
+                    TextField(L10n.t("Auto.a020d97275"), text: $title)
                 }
 
-                Section("Описание") {
+                Section(L10n.t("Auto.38ca0af80c")) {
                     ZStack(alignment: .topLeading) {
                         if description.isEmpty {
-                            Text("Описание")
+                            Text(L10n.t("Auto.38ca0af80c"))
                                 .foregroundColor(.secondary)
                                 .padding(.top, 8)
                                 .padding(.leading, 4)
@@ -85,14 +85,14 @@ struct ChannelEditorView: View {
                                 .autocorrectionDisabled()
                         }
                     } header: {
-                        Text("Публичная ссылка")
+                        Text(L10n.t("Auto.18f9b51832"))
                     } footer: {
-                        Text("Можно оставить пустым, чтобы убрать публичный username.")
+                        Text(L10n.t("Auto.f220aa2be6"))
                             .font(.appFootnote)
                     }
                 }
             }
-            .navigationTitle("Редактировать")
+            .navigationTitle(L10n.t("Auto.1706282c52"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -68,7 +68,7 @@ struct DeveloperTerminalView: View {
                 .padding(10)
                 .background(Color(.secondarySystemBackground))
             }
-            .navigationTitle("Терминал")
+            .navigationTitle(L10n.t("Auto.2069cc5c6b"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

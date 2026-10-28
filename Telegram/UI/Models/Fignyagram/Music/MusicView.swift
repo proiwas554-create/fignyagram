@@ -145,7 +145,7 @@ struct MusicView: View {
                     trackList
                 }
             }
-            .navigationTitle("Музыка")
+            .navigationTitle(L10n.t("Auto.0660a7580a"))
             .navigationBarHidden(classic.isEnabled)
 
             .task { await loadProfileAudios() }
@@ -199,26 +199,24 @@ struct MusicView: View {
                     selectedTrackIDs.removeAll()
                 }
             }
-            .confirmationDialog(
-                "Удалить всю музыку?",
+            .confirmationDialog(L10n.t("Auto.471357e4eb"),
                 isPresented: $showDeleteAllConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Удалить все треки", role: .destructive) {
+                Button(L10n.t("Auto.e343cc909a"), role: .destructive) {
                     player.stop()
                     library.deleteAll()
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Будут удалены все треки. Это действие нельзя отменить.")
+                Text(L10n.t("Auto.2b5d8b4a77"))
             }
-            .confirmationDialog(
-                "Куда добавить музыку?",
+            .confirmationDialog(L10n.t("Auto.e0f429ff67"),
                 isPresented: $showImportDestination,
                 titleVisibility: .visible
             ) {
-                Button("В основную библиотеку") { startImport(toMain: true) }
-                Button("В отдельную вкладку «Из чатов»") { startImport(toMain: false) }
+                Button(L10n.t("Auto.4a887e6a87")) { startImport(toMain: true) }
+                Button(L10n.t("Auto.771287d667")) { startImport(toMain: false) }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
                 Text("Все аудио из «\(pendingImportTitle)» будут скачаны в приложение.")
@@ -237,11 +235,11 @@ struct MusicView: View {
         if library.isImporting {
             VStack(spacing: 10) {
                 ProgressView()
-                Text("Импорт музыки…").font(.appFootnote)
+                Text(L10n.t("Auto.256aeb5a77")).font(.appFootnote)
                 Text(library.importProgress)
                     .font(.appCaption2)
                     .foregroundColor(.secondary)
-                Button("Остановить скачивание") {
+                Button(L10n.t("Auto.a4edb94a09")) {
                     library.cancelImport()
                 }
                 .buttonStyle(.bordered)
@@ -276,7 +274,7 @@ struct MusicView: View {
     private var musicSearchBar: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass").foregroundColor(.secondary)
-            TextField("Поиск треков", text: $search)
+            TextField(L10n.t("Auto.1f76be6ddc"), text: $search)
                 .focused($searchFocused)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
@@ -345,13 +343,13 @@ struct MusicView: View {
 
                 Menu {
                     Button { Task { await library.importSavedMessagesMusic() } } label: {
-                        Label("Импортировать из «Избранного»", systemImage: "bookmark")
+                        Label(L10n.t("Auto.cfc70daf8e"), systemImage: "bookmark")
                     }
                     Button { showProfileUserPicker = true } label: {
-                        Label("Музыка другого профиля", systemImage: "person.crop.circle.badge.music.note")
+                        Label(L10n.t("Auto.77dc4920b5"), systemImage: "person.crop.circle.badge.music.note")
                     }
                     Button(role: .destructive) { showDeleteAllConfirmation = true } label: {
-                        Label("Удалить все треки", systemImage: "trash")
+                        Label(L10n.t("Auto.e343cc909a"), systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle").font(.system(size: 22))
@@ -361,7 +359,7 @@ struct MusicView: View {
             .padding(.horizontal, 16)
             .padding(.top, 10)
 
-            Text("Музыка")
+            Text(L10n.t("Auto.0660a7580a"))
                 .font(FontManager.shared.font(size: 38, weight: .heavy))
                 .padding(.horizontal, 16)
                 .padding(.bottom, 2)
@@ -377,7 +375,7 @@ struct MusicView: View {
                 Image(systemName: "shuffle")
             }
             .disabled(library.tracks.isEmpty)
-            .accessibilityLabel("Микс")
+            .accessibilityLabel(L10n.t("Auto.f00f35b61d"))
 
             Button {
                 isSelecting.toggle()
@@ -405,27 +403,27 @@ struct MusicView: View {
                     } label: {
                         Image(systemName: "stop.fill")
                     }
-                    .accessibilityLabel("Остановить музыку")
+                    .accessibilityLabel(L10n.t("Auto.b1c7a97dfd"))
 
                     Button {
                         showFullPlayer = true
                     } label: {
                         Image(systemName: "play.circle")
                     }
-                    .accessibilityLabel("Открыть плеер")
+                    .accessibilityLabel(L10n.t("Auto.bd9bf3261d"))
                 }
                 Button {
                     showChatPicker = true
                 } label: {
                     Image(systemName: "square.and.arrow.down")
                 }
-                .accessibilityLabel("Импортировать музыку из чата")
+                .accessibilityLabel(L10n.t("Auto.e809b32a1f"))
                 Button {
                     showFilePicker = true
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("Добавить музыку")
+                .accessibilityLabel(L10n.t("Auto.95cd4ea4d0"))
 
                 if !library.tracks.isEmpty {
                     Menu {
@@ -433,14 +431,14 @@ struct MusicView: View {
                             Button {
                                 shareItem = ShareAudioFile(url: library.url(for: current))
                             } label: {
-                                Label("Сохранить в файлы", systemImage: "square.and.arrow.up")
+                                Label(L10n.t("Auto.0d8a4d5356"), systemImage: "square.and.arrow.up")
                             }
                         }
                         Menu {
                             Button(L10n.t("Cache.AutoCleanOff")) { SleepTimer.shared.set(minutes: 0) }
-                            Button("15 минут") { SleepTimer.shared.set(minutes: 15) }
-                            Button("30 минут") { SleepTimer.shared.set(minutes: 30) }
-                            Button("60 минут") { SleepTimer.shared.set(minutes: 60) }
+                            Button(L10n.t("Auto.a53e0a5f1b")) { SleepTimer.shared.set(minutes: 15) }
+                            Button(L10n.t("Auto.d2152c9c19")) { SleepTimer.shared.set(minutes: 30) }
+                            Button(L10n.t("Auto.5a838e04cc")) { SleepTimer.shared.set(minutes: 60) }
                         } label: {
                             Label(SleepTimer.shared.isActive
                                   ? "Таймер сна (\\(SleepTimer.shared.remainingText))"
@@ -450,22 +448,22 @@ struct MusicView: View {
                         Button {
                             Task { await library.importSavedMessagesMusic() }
                         } label: {
-                            Label("Импортировать из «Избранного»", systemImage: "bookmark")
+                            Label(L10n.t("Auto.cfc70daf8e"), systemImage: "bookmark")
                         }
                         Button {
                             showProfileUserPicker = true
                         } label: {
-                            Label("Музыка другого профиля", systemImage: "person.crop.circle.badge.music.note")
+                            Label(L10n.t("Auto.77dc4920b5"), systemImage: "person.crop.circle.badge.music.note")
                         }
                         Button(role: .destructive) {
                             showDeleteAllConfirmation = true
                         } label: {
-                            Label("Удалить все треки", systemImage: "trash")
+                            Label(L10n.t("Auto.e343cc909a"), systemImage: "trash")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
-                    .accessibilityLabel("Ещё")
+                    .accessibilityLabel(L10n.t("Auto.4533ba2a34"))
                 }
             }
         }
@@ -507,14 +505,14 @@ struct MusicView: View {
                 Image(systemName: "person.crop.circle")
                     .font(.system(size: 54))
                     .foregroundColor(.secondary)
-                Text("В профиле Telegram нет музыки")
+                Text(L10n.t("Auto.dea6e845aa"))
                     .font(.title3.bold())
-                Text("Добавьте трек в профиль через контекстное меню трека в разделе «Музыка» или в официальном Telegram.")
+                Text(L10n.t("Auto.536a5c04ec"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
-                Button("Обновить") {
+                Button(L10n.t("Auto.dbe5444a9a")) {
                     Task { await loadProfileAudios() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -530,15 +528,15 @@ struct MusicView: View {
                             isImportingProfile = false
                         }
                     } label: {
-                        Label("Добавить все в музыку", systemImage: "plus.circle")
+                        Label(L10n.t("Auto.510c09a51f"), systemImage: "plus.circle")
                     }
                     .disabled(isImportingProfile)
                 } footer: {
-                    Text("Треки из профиля Telegram будут скопированы в основную библиотеку.")
+                    Text(L10n.t("Auto.a984a231e4"))
                         .font(.appFootnote)
                 }
 
-                Section(header: Text("Музыка профиля")) {
+                Section(header: Text(L10n.t("Auto.cb2fdd59ac"))) {
                     ForEach(filteredProfileAudios, id: \.audio.id) { audio in
                         HStack(spacing: 10) {
                             ProfileAudioArtwork(audio: audio, size: 42)
@@ -583,7 +581,7 @@ struct MusicView: View {
                                     await loadProfileAudios()
                                 }
                             } label: {
-                                Label("Убрать из профиля", systemImage: "trash")
+                                Label(L10n.t("Auto.6ff3222195"), systemImage: "trash")
                             }
                         }
                         .contextMenu {
@@ -593,7 +591,7 @@ struct MusicView: View {
                                     await loadProfileAudios()
                                 }
                             } label: {
-                                Label("Переместить в начало", systemImage: "arrow.up.to.line")
+                                Label(L10n.t("Auto.d6d1c415dd"), systemImage: "arrow.up.to.line")
                             }
                             Button(role: .destructive) {
                                 Task {
@@ -601,7 +599,7 @@ struct MusicView: View {
                                     await loadProfileAudios()
                                 }
                             } label: {
-                                Label("Убрать из профиля", systemImage: "trash")
+                                Label(L10n.t("Auto.6ff3222195"), systemImage: "trash")
                             }
                         }
                     }
@@ -720,7 +718,7 @@ struct MusicView: View {
             Button {
                 editingTrack = track
             } label: {
-                Label("Изменить название и обложку", systemImage: "pencil")
+                Label(L10n.t("Auto.8d562f2d73"), systemImage: "pencil")
             }
             Button {
                 selectedTrackIDs = [track.id]
@@ -735,12 +733,12 @@ struct MusicView: View {
                     await loadProfileAudios()
                 }
             } label: {
-                Label("Добавить в профиль", systemImage: "person.crop.circle.badge.plus")
+                Label(L10n.t("Auto.6256120324"), systemImage: "person.crop.circle.badge.plus")
             }
             Button(role: .destructive) {
                 delete(track)
             } label: {
-                Label("Удалить из плейлиста", systemImage: "trash")
+                Label(L10n.t("Auto.570f024547"), systemImage: "trash")
             }
         }
     }
@@ -945,7 +943,7 @@ struct GlobalPlayerBar: View {
                     .foregroundColor(.secondary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Остановить музыку")
+            .accessibilityLabel(L10n.t("Auto.b1c7a97dfd"))
         }
         .id(player.current?.id)
         .transition(.asymmetric(
@@ -1055,7 +1053,7 @@ struct FullMusicPlayerView: View {
                         VStack(spacing: 3) {
                             Image(systemName: "shuffle")
                                 .font(.system(size: 20))
-                            Text("Микс")
+                            Text(L10n.t("Auto.f00f35b61d"))
                                 .font(.appCaption2)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -1077,23 +1075,23 @@ struct FullMusicPlayerView: View {
                         Button {
                             player.repeatMode = .off
                         } label: {
-                            Label("Повтор выключен", systemImage: player.repeatMode == .off ? "checkmark" : "circle")
+                            Label(L10n.t("Auto.554a88dabd"), systemImage: player.repeatMode == .off ? "checkmark" : "circle")
                         }
                         Button {
                             player.repeatMode = .all
                         } label: {
-                            Label("Повтор всех", systemImage: player.repeatMode == .all ? "checkmark" : "circle")
+                            Label(L10n.t("Auto.5cab2bd1c8"), systemImage: player.repeatMode == .all ? "checkmark" : "circle")
                         }
                         Button {
                             player.repeatMode = .one
                         } label: {
-                            Label("Повтор одного", systemImage: player.repeatMode == .one ? "checkmark" : "circle")
+                            Label(L10n.t("Auto.41fede13dc"), systemImage: player.repeatMode == .one ? "checkmark" : "circle")
                         }
                     } label: {
                         VStack(spacing: 3) {
                             Image(systemName: player.repeatMode.icon)
                                 .font(.system(size: 20))
-                            Text("Повтор")
+                            Text(L10n.t("Auto.dc09f296c9"))
                                 .font(.appCaption2)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.6)
@@ -1122,10 +1120,10 @@ struct FullMusicPlayerView: View {
                     }
 
                     Menu {
-                        Button("Выключить таймер") { cancelSleepTimer() }
-                        Button("15 минут") { setSleepTimer(minutes: 15) }
-                        Button("30 минут") { setSleepTimer(minutes: 30) }
-                        Button("60 минут") { setSleepTimer(minutes: 60) }
+                        Button(L10n.t("Auto.6474339fab")) { cancelSleepTimer() }
+                        Button(L10n.t("Auto.a53e0a5f1b")) { setSleepTimer(minutes: 15) }
+                        Button(L10n.t("Auto.d2152c9c19")) { setSleepTimer(minutes: 30) }
+                        Button(L10n.t("Auto.5a838e04cc")) { setSleepTimer(minutes: 60) }
                     } label: {
                         Label(sleepLabel, systemImage: "moon.zzz")
                             .font(.appFootnote)
@@ -1136,7 +1134,7 @@ struct FullMusicPlayerView: View {
                 Spacer(minLength: 20)
             }
             .padding()
-            .navigationTitle("Плеер")
+            .navigationTitle(L10n.t("Auto.0432bb2a6b"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -1150,7 +1148,7 @@ struct FullMusicPlayerView: View {
                             Image(systemName: track.isFavorite == true ? "heart.fill" : "heart")
                                 .foregroundColor(track.isFavorite == true ? .red : .primary)
                         }
-                        .accessibilityLabel("В любимые")
+                        .accessibilityLabel(L10n.t("Auto.ca3c267ce1"))
                         Button(role: .destructive) {
                             MusicLibrary.shared.delete(track)
                             player.stop()
@@ -1158,7 +1156,7 @@ struct FullMusicPlayerView: View {
                         } label: {
                             Image(systemName: "trash")
                         }
-                        .accessibilityLabel("Удалить трек")
+                        .accessibilityLabel(L10n.t("Auto.1c3a480cf1"))
                     }
                 }
             }

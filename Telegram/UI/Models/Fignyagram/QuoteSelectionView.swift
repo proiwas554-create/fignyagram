@@ -20,20 +20,20 @@ struct QuoteSelectionView: View {
                 .padding(12)
 
                 if selectedText.isEmpty {
-                    Text("Выделите часть текста, чтобы процитировать её")
+                    Text(L10n.t("Auto.6e03014a16"))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                         .padding(.bottom, 10)
                 }
             }
-            .navigationTitle("Цитировать")
+            .navigationTitle(L10n.t("Auto.58fbf742cd"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Цитировать") {
+                    Button(L10n.t("Auto.58fbf742cd")) {
                         onQuote(selectedText, selectedPosition)
                         dismiss()
                     }

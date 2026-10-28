@@ -20,7 +20,7 @@ struct ProfileMusicView: View {
                 if isLoading {
                     ProgressView("Загрузка музыки…")
                 } else if audios.isEmpty {
-                    Text("В профиле нет музыки")
+                    Text(L10n.t("Auto.187ec31e72"))
                         .foregroundColor(.secondary)
                 } else {
                     List(audios, id: \.audio.id) { audio in

@@ -42,12 +42,12 @@ struct TrackMetadataView: View {
                         }
 
                         VStack(alignment: .leading, spacing: 8) {
-                            Button("Выбрать обложку") {
+                            Button(L10n.t("Auto.22074ce35a")) {
                                 removeArtwork = false
                                 showPhotoPicker = true
                             }
                             if library.artworkURL(for: track) != nil || newArtwork != nil {
-                                Button("Удалить обложку", role: .destructive) {
+                                Button(L10n.t("Auto.7a7a3f51ae"), role: .destructive) {
                                     newArtwork = nil
                                     removeArtwork = true
                                 }
@@ -56,15 +56,15 @@ struct TrackMetadataView: View {
                     }
                 }
 
-                Section("Название") {
-                    TextField("Название трека", text: $title)
+                Section(L10n.t("Auto.602680ed89")) {
+                    TextField(L10n.t("Auto.7a08bd376b"), text: $title)
                 }
 
-                Section("Исполнитель") {
-                    TextField("Имя автора", text: $artist)
+                Section(L10n.t("Auto.1d3ab78a9a")) {
+                    TextField(L10n.t("Auto.cd7a9cf4fa"), text: $artist)
                 }
             }
-            .navigationTitle("Редактировать трек")
+            .navigationTitle(L10n.t("Auto.9fa697c59b"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

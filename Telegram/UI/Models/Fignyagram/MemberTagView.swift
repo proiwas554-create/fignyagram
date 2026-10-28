@@ -14,14 +14,14 @@ struct MemberTagView: View {
         NavigationView {
             Form {
                 Section {
-                    TextField("Тег (до 16 символов)", text: $tag)
+                    TextField(L10n.t("Auto.f35b973b1e"), text: $tag)
                 } footer: {
-                    Text("Тег виден рядом с именем участника в этом чате. Для выдачи тега нужны права администратора с разрешением на управление тегами.")
+                    Text(L10n.t("Auto.70d1571609"))
                         .font(.appFootnote)
                 }
                 if isLoading { Section { ProgressView() } }
             }
-            .navigationTitle("Тег участника")
+            .navigationTitle(L10n.t("Auto.3f1431786b"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button(L10n.t("Common.Cancel")) { dismiss() } }

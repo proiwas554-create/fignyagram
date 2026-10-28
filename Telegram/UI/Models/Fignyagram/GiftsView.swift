@@ -20,7 +20,7 @@ struct GiftsView: View {
                 if isLoading {
                     ProgressView("Загрузка подарков…")
                 } else if gifts.isEmpty {
-                    Text("Подарки недоступны").foregroundColor(.secondary)
+                    Text(L10n.t("Auto.496cd76e53")).foregroundColor(.secondary)
                 } else {
                     List(gifts, id: \.gift.id) { item in
                         HStack(spacing: 12) {
@@ -41,15 +41,14 @@ struct GiftsView: View {
                     }
                 }
             }
-            .navigationTitle("Подарки")
+            .navigationTitle(L10n.t("Auto.90300526d0"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
-            .confirmationDialog(
-                "Отправить подарок?",
+            .confirmationDialog(L10n.t("Auto.cdf2c569df"),
                 isPresented: Binding(get: { confirmGift != nil }, set: { if !$0 { confirmGift = nil } }),
                 titleVisibility: .visible
             ) {
@@ -60,7 +59,7 @@ struct GiftsView: View {
             } message: {
                 Text("Подарок будет отправлен в «\(title)» и спишет звёзды с баланса.")
             }
-            .alert("Подарок", isPresented: Binding(
+            .alert(L10n.t("Auto.c484149947"), isPresented: Binding(
                 get: { message != nil }, set: { if !$0 { message = nil } }
             )) {
                 Button("OK", role: .cancel) {}

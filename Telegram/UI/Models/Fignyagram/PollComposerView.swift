@@ -23,12 +23,12 @@ struct PollComposerView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Вопрос") {
-                    TextField("Задайте вопрос", text: $question)
+                Section(L10n.t("Auto.091100c8e6")) {
+                    TextField(L10n.t("Auto.9c0c211a0f"), text: $question)
                         .lineLimit(3)
                 }
 
-                Section("Варианты ответа") {
+                Section(L10n.t("Auto.c28cdf2fb3")) {
                     ForEach(options.indices, id: \.self) { index in
                         HStack {
                             TextField("Вариант \(index + 1)", text: $options[index])
@@ -47,20 +47,20 @@ struct PollComposerView: View {
                         Button {
                             options.append("")
                         } label: {
-                            Label("Добавить вариант", systemImage: "plus.circle")
+                            Label(L10n.t("Auto.76be6bc4d7"), systemImage: "plus.circle")
                         }
                     }
                 }
 
                 Section {
-                    Toggle("Анонимный опрос", isOn: $anonymous)
-                    Toggle("Несколько ответов", isOn: $multiple)
+                    Toggle(L10n.t("Auto.bf89d511d1"), isOn: $anonymous)
+                    Toggle(L10n.t("Auto.628a258108"), isOn: $multiple)
                 } footer: {
-                    Text("Анонимный опрос не показывает, кто как проголосовал. Несколькими ответами можно выбрать несколько вариантов.")
+                    Text(L10n.t("Auto.63bd5a2f79"))
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Новый опрос")
+            .navigationTitle(L10n.t("Auto.05c8ff5150"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

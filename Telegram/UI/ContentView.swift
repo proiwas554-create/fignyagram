@@ -33,16 +33,16 @@ struct ContentView: View {
                         TabView(selection: $selectedTab) {
                             ChatListView()
                                 .tag(0)
-                                .tabItem { Label("Чаты", systemImage: "bubble.left.and.bubble.right") }
+                                .tabItem { Label(L10n.t("Auto.19adecc3d1"), systemImage: "bubble.left.and.bubble.right") }
                             if showMusicTab {
                                 MusicView()
                                     .tag(1)
-                                    .tabItem { Label("Музыка", systemImage: "music.note") }
+                                    .tabItem { Label(L10n.t("Auto.0660a7580a"), systemImage: "music.note") }
                             }
                             if showNewsTab {
                                 NewsFeedView()
                                     .tag(2)
-                                    .tabItem { Label("Новости", systemImage: "newspaper") }
+                                    .tabItem { Label(L10n.t("Auto.69df1f85b0"), systemImage: "newspaper") }
                             }
                         }
                         .overlay(alignment: .bottom) {
@@ -97,8 +97,8 @@ struct ContentView: View {
             if appLock.isEnabled && appLock.isLocked {
                 VStack(spacing: 16) {
                     Image(systemName: "lock.fill").font(.system(size: 44))
-                    Text("Fignyagram заблокирован").font(.headline)
-                    Button("Разблокировать") { Task { await appLock.unlock() } }
+                    Text(L10n.t("Auto.3c8b3d7f53")).font(.headline)
+                    Button(L10n.t("Auto.e3d4814785")) { Task { await appLock.unlock() } }
                         .buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -186,7 +186,7 @@ struct ContentView: View {
                     } label: {
                         VStack(spacing: 3) {
                             Image(systemName: "bubble.left.and.bubble.right.fill").font(.system(size: 20))
-                            Text("Чаты").font(.appCaption2)
+                            Text(L10n.t("Auto.19adecc3d1")).font(.appCaption2)
                         }
                         .frame(maxWidth: .infinity)
                         .foregroundColor(selectedTab == 0 ? .accentColor : .secondary)
@@ -196,7 +196,7 @@ struct ContentView: View {
                     Button { selectedTab = 1 } label: {
                         VStack(spacing: 3) {
                             Image(systemName: "music.note").font(.system(size: 20))
-                            Text("Музыка").font(.appCaption2)
+                            Text(L10n.t("Auto.0660a7580a")).font(.appCaption2)
                         }
                         .frame(maxWidth: .infinity)
                         .foregroundColor(selectedTab == 1 ? .accentColor : .secondary)
@@ -242,7 +242,7 @@ struct ContentView: View {
                         VStack(spacing: 3) {
                             Image(systemName: "bubble.left.and.bubble.right.fill")
                                 .font(.system(size: 20))
-                            Text("Чаты").font(.appCaption2)
+                            Text(L10n.t("Auto.19adecc3d1")).font(.appCaption2)
                         }
                         .frame(maxWidth: .infinity)
                         .foregroundColor(selectedTab == 0 ? .accentColor : .secondary)
@@ -256,7 +256,7 @@ struct ContentView: View {
                         VStack(spacing: 3) {
                             Image(systemName: "music.note")
                                 .font(.system(size: 20))
-                            Text("Музыка").font(.appCaption2)
+                            Text(L10n.t("Auto.0660a7580a")).font(.appCaption2)
                         }
                         .frame(maxWidth: .infinity)
                         .foregroundColor(selectedTab == 1 ? .accentColor : .secondary)

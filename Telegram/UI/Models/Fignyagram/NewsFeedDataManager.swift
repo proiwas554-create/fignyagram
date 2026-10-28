@@ -277,9 +277,9 @@ struct NewsFeedView: View {
                         Image(systemName: "newspaper")
                             .font(.system(size: 34))
                             .foregroundColor(.secondary)
-                        Text("Пока нет постов")
+                        Text(L10n.t("Auto.28b9b1f2ba"))
                             .font(.appBody)
-                        Text("Подпишитесь на каналы — их публикации появятся здесь.")
+                        Text(L10n.t("Auto.85289b9129"))
                             .font(.appFootnote)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -315,7 +315,7 @@ struct NewsFeedView: View {
                     .refreshable { await manager.refresh(force: true) }
                 }
             }
-            .navigationTitle("Новости")
+            .navigationTitle(L10n.t("Auto.69df1f85b0"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -326,11 +326,11 @@ struct NewsFeedView: View {
                         Image(systemName: "line.3.horizontal.decrease.circle")
                     }
                     Menu {
-                        Button("Сначала новые") {
+                        Button(L10n.t("Auto.ea5256005b")) {
                             manager.sorting = .recent
                             manager.reapplySorting()
                         }
-                        Button("По вовлечённости") {
+                        Button(L10n.t("Auto.f196723646")) {
                             manager.sorting = .engagement
                             manager.reapplySorting()
                         }

@@ -25,7 +25,7 @@ struct CreateChatView: View {
             Form {
                 Section {
                     TextField(kind == .channel ? "Название канала" : "Название группы", text: $title)
-                    TextField("Описание", text: $description)
+                    TextField(L10n.t("Auto.38ca0af80c"), text: $description)
                     Toggle(kind == .channel ? "Публичный канал" : "Публичная группа", isOn: $isPublic)
                     if isPublic {
                         HStack {
@@ -50,7 +50,7 @@ struct CreateChatView: View {
                     Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Создать") { create() }
+                    Button(L10n.t("Auto.b059f7e15d")) { create() }
                         .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty || isCreating)
                 }
             }

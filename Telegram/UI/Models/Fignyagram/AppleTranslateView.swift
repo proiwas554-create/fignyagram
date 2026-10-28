@@ -17,21 +17,21 @@ struct AppleTranslateSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Оригинал") {
+                Section(L10n.t("Auto.34c4df5a64")) {
                     Text(text).textSelection(.enabled)
                 }
-                Section("Перевод (на устройстве)") {
+                Section(L10n.t("Auto.9e7529414c")) {
                     if output.isEmpty && !failed {
-                        HStack { ProgressView(); Text("Перевод…").foregroundColor(.secondary) }
+                        HStack { ProgressView(); Text(L10n.t("Auto.4801573e67")).foregroundColor(.secondary) }
                     } else if failed {
-                        Text("Не удалось перевести: языковая пара не поддерживается на этом устройстве.")
+                        Text(L10n.t("Auto.7e8e59212d"))
                             .foregroundColor(.secondary)
                     } else {
                         Text(output).textSelection(.enabled)
                     }
                 }
             }
-            .navigationTitle("Перевод Apple")
+            .navigationTitle(L10n.t("Auto.95ce00afa5"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -34,18 +34,18 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("Сеть") {
+                Section(L10n.t("Auto.547743e82f")) {
                     row("Прокси", icon: "network", value: .proxy)
                 }
 
                 Section {
-                    Toggle("Показывать недавние контакты", isOn: $recentContactsEnabled)
+                    Toggle(L10n.t("Auto.e64f567a69"), isOn: $recentContactsEnabled)
                     Button {
                         DeepLinkRouter.shared.pendingUsername = "fignyagram"
                         dismiss()
                     } label: {
                         HStack {
-                            Label("Официальный канал", systemImage: "megaphone")
+                            Label(L10n.t("Auto.6038f853ca"), systemImage: "megaphone")
                             Spacer()
                             Text("@fignyagram").foregroundColor(.secondary)
                         }
@@ -58,40 +58,40 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Toggle("Выделение текста в сообщениях", isOn: Binding(
+                    Toggle(L10n.t("Auto.86f3cdd961"), isOn: Binding(
                         get: { UserDefaults.standard.object(forKey: "textSelectionEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "textSelectionEnabled") }
                     ))
                     row("Шрифт", icon: "textformat", value: .fonts)
                 } header: {
-                    Text("Оформление")
+                    Text(L10n.t("Auto.065a4bdc2e"))
                 } footer: {
-                    Text("Интерфейс переводится системной локализацией iOS. Сообщения переводятся на устройстве через Apple Translation — без интернета и без сторонних сервисов.")
+                    Text(L10n.t("Auto.c34bbe2d43"))
                         .font(.appFootnote)
                 }
 
                 if ClassicDesignMode.isAvailable {
                     Section {
-                        Toggle("Классический дизайн iOS 18", isOn: Binding(
+                        Toggle(L10n.t("Auto.efa0e8679f"), isOn: Binding(
                             get: { classicDesign.isEnabled },
                             set: { classicDesign.setEnabled($0) }
                         ))
                     } header: {
-                        Text("Оформление")
+                        Text(L10n.t("Auto.065a4bdc2e"))
                     } footer: {
-                        Text("Пересоздаёт плоские панели и фон в стиле iOS 18 на уровне приложения. Системные элементы iOS 26, которыми управляет Apple, могут выглядеть иначе.")
+                        Text(L10n.t("Auto.14cc6719e6"))
                             .font(.appFootnote)
                     }
                 }
 
-                Section("Аккаунт") {
+                Section(L10n.t("Auto.a1ceab59e9")) {
                     row("Профиль", icon: "person.crop.circle", value: .profile)
                     row("Устройства и сессии", icon: "laptopcomputer.and.iphone", value: .sessions)
                     row("Облачный пароль", icon: "lock.shield", value: .cloudPassword)
                     Button {
                         showDeviceQR = true
                     } label: {
-                        Label("Подключить устройство по QR", systemImage: "qrcode.viewfinder")
+                        Label(L10n.t("Auto.eb2d0f70a4"), systemImage: "qrcode.viewfinder")
                     }
                     Toggle(L10n.t("Common.Notifications"), isOn: Binding(
                         get: { !notificationsDisabled },
@@ -109,33 +109,33 @@ struct SettingsView: View {
                 Section {
                     row("Команды", icon: "wand.and.stars", value: .commands)
                 } header: {
-                    Text("Быстрые действия")
+                    Text(L10n.t("Auto.b05019e764"))
                 } footer: {
-                    Text("Введите команду текстом — приложение выполнит её внутри себя.")
+                    Text(L10n.t("Auto.1b29542fbe"))
                         .font(.appFootnote)
                 }
 
-                Section("Инструменты") {
+                Section(L10n.t("Auto.5da932c117")) {
                     Button {
                         destination = .directStats
                     } label: {
-                        Label("Статистика личных сообщений", systemImage: "person.2.wave.2")
+                        Label(L10n.t("Auto.d4df6392c6"), systemImage: "person.2.wave.2")
                     }
                     Button {
                         destination = .scanner
                     } label: {
-                        Label("Сканер QR-кодов", systemImage: "qrcode.viewfinder")
+                        Label(L10n.t("Auto.32f7bac562"), systemImage: "qrcode.viewfinder")
                     }
                     if developer.isUnlocked {
                         Button {
                             destination = .developer
                         } label: {
-                            Label("Для разработчиков", systemImage: "hammer")
+                            Label(L10n.t("Auto.da0973949b"), systemImage: "hammer")
                         }
                     }
                 }
 
-                Section("Данные и память") {
+                Section(L10n.t("Auto.d884c5b006")) {
                     row("Скачанные файлы", icon: "internaldrive", value: .downloads)
                     row("Память и кэш", icon: "externaldrive", value: .cache)
                     row("Ограничения отображения", icon: "slider.horizontal.3", value: .limits)
@@ -144,12 +144,12 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    Toggle("Подписывать авторов в каналах", isOn: $showAdminAuthors)
-                    Toggle("Скрывать имена отправителей", isOn: $hideSenderNames)
-                    Toggle("Отключить автоматическую прокрутку", isOn: $disableAutoScroll)
-                    Toggle("Пересылать без автора", isOn: $anonymousForwarding)
-                    Toggle("Глобальный поиск", isOn: $globalSearch.isEnabled)
-                    Toggle("Показывать удалённые сообщения", isOn: Binding(
+                    Toggle(L10n.t("Auto.eb1a7197f3"), isOn: $showAdminAuthors)
+                    Toggle(L10n.t("Auto.85f8de3554"), isOn: $hideSenderNames)
+                    Toggle(L10n.t("Auto.d75198a220"), isOn: $disableAutoScroll)
+                    Toggle(L10n.t("Auto.4807ffc935"), isOn: $anonymousForwarding)
+                    Toggle(L10n.t("Auto.7ff2d24fae"), isOn: $globalSearch.isEnabled)
+                    Toggle(L10n.t("Auto.d936c359d6"), isOn: Binding(
                         get: { privacy.keepDeletedMessages },
                         set: { value in
                             privacy.keepDeletedMessages = value
@@ -223,24 +223,24 @@ struct SettingsView: View {
                         get: { privacy.ignoreCopyProtection },
                         set: { privacy.ignoreCopyProtection = $0 }
                     ))
-                    Toggle("Блокировка Face ID / Touch ID", isOn: Binding(
+                    Toggle(L10n.t("Auto.7964dec1cf"), isOn: Binding(
                         get: { AppLock.shared.isEnabled },
                         set: { value in
                             AppLock.shared.isEnabled = value
                             if value { AppLock.shared.lockIfNeeded() }
                         }
                     ))
-                    Toggle("Звонки через приложение", isOn: Binding(
+                    Toggle(L10n.t("Auto.1177821baa"), isOn: Binding(
                         get: { UserDefaults.standard.bool(forKey: "callViaApp") },
                         set: { UserDefaults.standard.set($0, forKey: "callViaApp") }
                     ))
                     .disabled(!VoIPBridge.engineAvailable())
                     if !VoIPBridge.engineAvailable() {
-                        Text("Встроенный VoIP-движок отключён: аудиозвонки идут через системную звонилку, видеозвонки недоступны. Для включения нужен готовый TelegramVoIP.framework.")
+                        Text(L10n.t("Auto.3fcc4e1302"))
                             .font(.appFootnote)
                             .foregroundColor(.secondary)
                     }
-                    Toggle("Режим невидимки", isOn: Binding(
+                    Toggle(L10n.t("Auto.2792349a96"), isOn: Binding(
                         get: { client.isInvisible },
                         set: { value in
                             Task {
@@ -250,7 +250,7 @@ struct SettingsView: View {
                         }
                     ))
                 } header: {
-                    Text("Приватность")
+                    Text(L10n.t("Auto.0899eda172"))
                 } footer: {
                     Text("Глобальный поиск ищет также сообщения и музыку. При выключении остаются поиск по чатам, каналам и контактам.\n\nСообщения, удалённые другими пользователями, останутся в локальном кэше этого устройства. Это работает только для уже загруженных сообщений. Всё на вашей совести.")
                         .font(.appFootnote)
@@ -261,7 +261,7 @@ struct SettingsView: View {
                         client.logOut()
                         dismiss()
                     } label: {
-                        Label("Выйти из аккаунта", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label(L10n.t("Auto.6d4183b79b"), systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
             }

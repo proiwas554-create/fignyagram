@@ -153,7 +153,7 @@ struct ChatListView: View {
                 List {
                     if player.current != nil { GlobalPlayerBar() }
                     if query.isEmpty && classic.isEnabled && searchFocused && !searchHistory.items.isEmpty {
-                        Section("Недавние запросы") {
+                        Section(L10n.t("Auto.059ea2ac4c")) {
                             ForEach(searchHistory.items, id: \.self) { item in
                                 Button {
                                     search = item
@@ -282,8 +282,8 @@ struct ChatListView: View {
             .sheet(isPresented: $showClassicProfileMenu) {
                 ClassicProfileMenuView(onSettings: { showSettings = true }, onLogout: { confirmLogout = true })
             }
-            .confirmationDialog("Выйти из аккаунта?", isPresented: $confirmLogout, titleVisibility: .visible) {
-                Button("Выйти", role: .destructive) { client.logOut() }
+            .confirmationDialog(L10n.t("Auto.c0bd86e469"), isPresented: $confirmLogout, titleVisibility: .visible) {
+                Button(L10n.t("Auto.0f05cf8ab6"), role: .destructive) { client.logOut() }
             }
             .safeAreaInset(edge: .bottom) {
                 ErrorBanner(message: client.errorMessage)
@@ -353,7 +353,7 @@ struct ChatListView: View {
         .contextMenu {
             if chat.id == store.lastOpenedChatId {
                 Button { showVisitHistory = true } label: {
-                    Label("История заходов", systemImage: "clock.arrow.circlepath")
+                    Label(L10n.t("Auto.817d7c3aa6"), systemImage: "clock.arrow.circlepath")
                 }
             }
             Button { togglePin(chat) } label: {
@@ -361,27 +361,27 @@ struct ChatListView: View {
             }
             if chat.privateUserId != nil || chat.isGroup || chat.isChannel {
                 Button { client.copyUsername(for: chat) } label: {
-                    Label("Скопировать юзернейм", systemImage: "at")
+                    Label(L10n.t("Auto.cafef2eacc"), systemImage: "at")
                 }
             }
             if chat.isGroup && !chat.isChannel {
                 Button {
                     Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: false) }
                 } label: {
-                    Label("Голосовой чат", systemImage: "waveform")
+                    Label(L10n.t("Auto.2083dc98d2"), systemImage: "waveform")
                 }
                 Button {
                     Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: true) }
                 } label: {
-                    Label("Видеочат", systemImage: "video.badge.waveform")
+                    Label(L10n.t("Auto.2d574feb87"), systemImage: "video.badge.waveform")
                 }
             }
             if let userId = chat.privateUserId, userId != client.me?.id {
                 Button { client.callUser(userId: userId, isVideo: false) } label: {
-                    Label("Позвонить", systemImage: "phone")
+                    Label(L10n.t("Auto.ccfa0757c1"), systemImage: "phone")
                 }
                 Button { client.callUser(userId: userId, isVideo: true) } label: {
-                    Label("Видеозвонок", systemImage: "video")
+                    Label(L10n.t("Auto.8142cd497d"), systemImage: "video")
                 }
             }
             if let userId = chat.privateUserId {
@@ -406,7 +406,7 @@ struct ChatListView: View {
     @ViewBuilder
     private var searchSection: some View {
         if !contactResults.isEmpty {
-            Section("Контакты") {
+            Section(L10n.t("Auto.75768c49c2")) {
                 ForEach(contactResults) { user in
                     Button {
                         Task { await openContact(user) }
@@ -429,7 +429,7 @@ struct ChatListView: View {
             }
         }
         if !channelResults.isEmpty {
-            Section("Каналы") {
+            Section(L10n.t("Auto.0c1119c13e")) {
                 ForEach(channelResults, id: \.self) { chatId in
                     if let chat = store.chats[chatId] {
                         Button { openTarget = ChatTarget(chatId: chatId, messageId: nil) } label: {
@@ -443,7 +443,7 @@ struct ChatListView: View {
             }
         }
         if !searchResults.isEmpty {
-            Section("Сообщения") {
+            Section(L10n.t("Auto.7e264844e4")) {
                 ForEach(searchResults, id: \.id) { message in
                     Button {
                         openTarget = ChatTarget(chatId: message.chatId, messageId: message.id)
@@ -545,13 +545,13 @@ struct ChatListView: View {
     private var composeMenu: some View {
         Menu {
             Button { createKind = .channel } label: {
-                Label("Новый канал", systemImage: "megaphone")
+                Label(L10n.t("Auto.aa1f929b24"), systemImage: "megaphone")
             }
             Button { createKind = .group } label: {
-                Label("Новая группа", systemImage: "person.2")
+                Label(L10n.t("Auto.fb56a24964"), systemImage: "person.2")
             }
             Button { showNewChat = true } label: {
-                Label("Новое сообщение", systemImage: "bubble.left.and.bubble.right")
+                Label(L10n.t("Auto.1d497d266a"), systemImage: "bubble.left.and.bubble.right")
             }
         } label: {
             Image(systemName: "square.and.pencil")
@@ -597,7 +597,7 @@ struct ChatListView: View {
     private var normalHeader: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass").foregroundColor(.secondary)
-            TextField("Поиск чатов, каналов, контактов", text: $search)
+            TextField(L10n.t("Auto.4319ae4cab"), text: $search)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
             if !search.isEmpty {
@@ -635,13 +635,13 @@ struct ChatListView: View {
                 )
             }
             Button { showAccounts = true } label: {
-                Label("Аккаунты", systemImage: "person.2")
+                Label(L10n.t("Auto.d699f70d7f"), systemImage: "person.2")
             }
             Button { showSettings = true } label: {
                 Label(L10n.t("Common.Settings"), systemImage: "gearshape")
             }
             Button(role: .destructive) { confirmLogout = true } label: {
-                Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+                Label(L10n.t("Auto.0f05cf8ab6"), systemImage: "rectangle.portrait.and.arrow.right")
             }
         } label: {
             Image(systemName: "person.crop.circle").font(.system(size: 21))
@@ -679,7 +679,7 @@ struct ChatListView: View {
             HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                TextField("Поиск чатов, каналов, контактов", text: $search)
+                TextField(L10n.t("Auto.4319ae4cab"), text: $search)
                     .focused($searchFocused)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()
@@ -720,7 +720,7 @@ struct ChatListView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .navigationTitle("История заходов")
+            .navigationTitle(L10n.t("Auto.817d7c3aa6"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -791,11 +791,11 @@ struct ChatRow: View {
                         .font(.appHeadline)
                         .lineLimit(1)
                     if isSaved {
-                        Text("Избранное").font(.appCaption2.bold()).padding(.horizontal, 5)
+                        Text(L10n.t("Auto.2fc4139291")).font(.appCaption2.bold()).padding(.horizontal, 5)
                             .background(Capsule().fill(Color.accentColor.opacity(0.16)))
                             .foregroundColor(.accentColor)
                     } else if isLastOpened {
-                        Text("Недавний").font(.appCaption2).foregroundColor(.secondary)
+                        Text(L10n.t("Auto.fc6742b500")).font(.appCaption2).foregroundColor(.secondary)
                     }
                     Spacer()
                     if let message = chat.lastMessage {

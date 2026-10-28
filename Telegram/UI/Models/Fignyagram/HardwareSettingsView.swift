@@ -19,13 +19,13 @@ struct HardwareSettingsView: View {
                     }
                     .pickerStyle(.segmented)
                 } header: {
-                    Text("Профиль нагрузки")
+                    Text(L10n.t("Auto.350332afc7"))
                 } footer: {
-                    Text("Экономия снижает декодирование и кэш. Производительность даёт больше параллельных декодирований и высокое качество. Баланс — компромисс.")
+                    Text(L10n.t("Auto.a5c2d2baf8"))
                         .font(.appFootnote)
                 }
 
-                Section("Устройство") {
+                Section(L10n.t("Auto.72275dacae")) {
                     row("Модель", tuning.device.marketingName)
                     row(L10n.t("Hw.Identifier"), tuning.device.identifier)
                     row(L10n.t("Hw.Class"), tuning.device.tier.title)
@@ -33,7 +33,7 @@ struct HardwareSettingsView: View {
                     row(L10n.t("Hw.MaxFreq"), "\(tuning.device.recommendedRefreshRate) Гц")
                 }
 
-                Section("Состояние устройства") {
+                Section(L10n.t("Auto.8f8c377196")) {
                     row("Термическое состояние", thermalTitle)
                     row("Режим энергосбережения", tuning.isLowPower ? "включён" : "выключен")
                     row("Память устройства", String(format: "%.0f ГБ", Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824))
@@ -48,20 +48,20 @@ struct HardwareSettingsView: View {
                     ))
                     .tint(.red)
                 } header: {
-                    Text("На свой страх и риск")
+                    Text(L10n.t("Auto.6dcb746d2e"))
                 } footer: {
-                    Text("Отключает защитный троттлинг, поднимает декодирование до 4 потоков, кэш до 128 МБ и качество до 2048 px. Устройство может сильнее нагреваться и быстрее разряжаться.")
+                    Text(L10n.t("Auto.06cdf21c6c"))
                         .font(.appFootnote)
                 }
 
                 Section {
                     Toggle(L10n.t("Hw.Throttle"), isOn: $tuning.autoThrottle)
                 } footer: {
-                    Text("При сильном нагреве или включённом энергосбережении приложение автоматически перейдёт в экономичный профиль. Это не меняет функции, только качество декодирования и кэш.")
+                    Text(L10n.t("Auto.54a9b2e388"))
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Производительность")
+            .navigationTitle(L10n.t("Auto.a12969d4c3"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -74,7 +74,7 @@ struct HardwareSettingsView: View {
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Нагрузка на процессор и нагрев возрастут. Стабильность не гарантируется.")
+                Text(L10n.t("Auto.e6e2ce4436"))
             }
         }
         .navigationViewStyle(.stack)

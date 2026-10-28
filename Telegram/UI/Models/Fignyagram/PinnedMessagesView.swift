@@ -18,7 +18,7 @@ struct PinnedMessagesView: View {
         NavigationView {
             List {
                 if pinned.isEmpty {
-                    Text("В этом чате нет закреплённых сообщений")
+                    Text(L10n.t("Auto.9ace9dc402"))
                         .foregroundColor(.secondary)
                 } else {
                     ForEach(pinned, id: \.id) { message in
@@ -57,7 +57,7 @@ struct PinnedMessagesView: View {
                     }
                 }
             }
-            .navigationTitle("Закреплённые")
+            .navigationTitle(L10n.t("Auto.7ae2c8b3f6"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

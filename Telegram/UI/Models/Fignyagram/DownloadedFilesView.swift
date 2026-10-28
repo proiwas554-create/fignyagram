@@ -62,14 +62,14 @@ struct DownloadedFilesView: View {
                             Button(role: .destructive) {
                                 TelegramClient.shared.deleteDownloadedFile(file)
                             } label: {
-                                Label("Удалить из памяти", systemImage: "trash")
+                                Label(L10n.t("Auto.3eab6a0974"), systemImage: "trash")
                             }
                         }
                     }
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Скачанные файлы")
+            .navigationTitle(L10n.t("Auto.c2f7359a1b"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $search, prompt: "Поиск по имени файла")
             .toolbar {
@@ -83,20 +83,19 @@ struct DownloadedFilesView: View {
                         Image(systemName: "trash")
                     }
                     .disabled(files.downloadedFiles.isEmpty)
-                    .accessibilityLabel("Очистить кэш файлов")
+                    .accessibilityLabel(L10n.t("Auto.f406b7a85e"))
                 }
             }
-            .confirmationDialog(
-                "Очистить кэш файлов?",
+            .confirmationDialog(L10n.t("Auto.baaebec86a"),
                 isPresented: $showClearConfirmation,
                 titleVisibility: .visible
             ) {
-                Button("Очистить весь кэш", role: .destructive) {
+                Button(L10n.t("Auto.610bc3b777"), role: .destructive) {
                     TelegramClient.shared.clearFileCache()
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Все скачанные файлы и миниатюры будут удалены из памяти приложения. Это действие нельзя отменить.")
+                Text(L10n.t("Auto.3f42ebe614"))
             }
             .sheet(item: $selectedFile) { item in
                 QuickLookView(url: item.url)

@@ -69,7 +69,7 @@ struct DownloadStatusView: View {
                     .font(.appCaption2)
                     .foregroundColor(.secondary)
                 if showCancel {
-                    Button("Отменить") {
+                    Button(L10n.t("Auto.ecdbdc8b4c")) {
                         TelegramClient.shared.cancelDownload(file)
                     }
                     .font(.appCaption2)
@@ -180,7 +180,7 @@ struct PhotoView: View {
         .blur(radius: hasSpoiler && !revealed ? 18 : 0)
         .overlay {
             if hasSpoiler && !revealed {
-                Label("Спойлер", systemImage: "eye.slash.fill")
+                Label(L10n.t("Auto.0e5d3ff03c"), systemImage: "eye.slash.fill")
                     .font(.caption.bold())
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
@@ -258,7 +258,7 @@ struct VideoView: View {
         .blur(radius: hasSpoiler && !revealed ? 18 : 0)
         .overlay {
             if hasSpoiler && !revealed {
-                Label("Спойлер", systemImage: "eye.slash.fill")
+                Label(L10n.t("Auto.0e5d3ff03c"), systemImage: "eye.slash.fill")
                     .font(.caption.bold())
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)

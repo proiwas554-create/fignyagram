@@ -28,10 +28,10 @@ struct CacheSettingsView: View {
                         set: { UserDefaults.standard.set($0, forKey: "autoCleanCacheLimitMB") }
                     )) {
                         Text(L10n.t("Cache.AutoCleanOff")).tag(0)
-                        Text("500 МБ").tag(500)
-                        Text("1 ГБ").tag(1024)
-                        Text("2 ГБ").tag(2048)
-                        Text("5 ГБ").tag(5120)
+                        Text(L10n.t("Auto.3523187d5b")).tag(500)
+                        Text(L10n.t("Auto.b4efb1d1ec")).tag(1024)
+                        Text(L10n.t("Auto.8969312952")).tag(2048)
+                        Text(L10n.t("Auto.b3c62d8079")).tag(5120)
                     }
                 } footer: {
                     Text(L10n.t("Cache.AutoCleanHint"))

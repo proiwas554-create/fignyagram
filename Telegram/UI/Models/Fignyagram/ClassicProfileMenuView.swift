@@ -44,11 +44,11 @@ struct ClassicProfileMenuView: View {
                             client.addAccount()
                             dismiss()
                         } label: {
-                            Label("Добавить аккаунт", systemImage: "plus.circle")
+                            Label(L10n.t("Auto.5253f2060d"), systemImage: "plus.circle")
                         }
                     } label: {
                         HStack {
-                            Label("Аккаунты", systemImage: "person.2")
+                            Label(L10n.t("Auto.d699f70d7f"), systemImage: "person.2")
                             Spacer()
                             Image(systemName: "chevron.right").font(.appCaption).foregroundColor(.secondary)
                         }
@@ -71,7 +71,7 @@ struct ClassicProfileMenuView: View {
                         dismiss()
                         onLogout()
                     } label: {
-                        Label("Выйти", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label(L10n.t("Auto.0f05cf8ab6"), systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
             }

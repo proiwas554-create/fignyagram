@@ -69,7 +69,7 @@ struct ChatMediaView: View {
                     Spacer(); ProgressView(); Spacer()
                 } else if filtered.isEmpty {
                     Spacer()
-                    Text("Ничего не найдено").foregroundColor(.secondary)
+                    Text(L10n.t("Auto.8767f9ec28")).foregroundColor(.secondary)
                     Spacer()
                 } else {
                     List(filtered, id: \.id) { message in
@@ -91,7 +91,7 @@ struct ChatMediaView: View {
                 }
             }
             .searchable(text: $search, prompt: "Поиск по названию")
-            .navigationTitle("Медиа и файлы")
+            .navigationTitle(L10n.t("Auto.aa5f13e475"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

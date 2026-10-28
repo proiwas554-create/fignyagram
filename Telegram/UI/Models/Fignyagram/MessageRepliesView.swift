@@ -23,7 +23,7 @@ struct MessageRepliesView: View {
                         .foregroundColor(.secondary)
                         .padding()
                 } else if messages.isEmpty {
-                    Text("Ответов пока нет")
+                    Text(L10n.t("Auto.72f6db2ff3"))
                         .foregroundColor(.secondary)
                 } else {
                     List(messages, id: \.id) { message in
@@ -56,7 +56,7 @@ struct MessageRepliesView: View {
                     .listStyle(.plain)
                 }
             }
-            .navigationTitle("Ответы")
+            .navigationTitle(L10n.t("Auto.27b2fd7f31"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

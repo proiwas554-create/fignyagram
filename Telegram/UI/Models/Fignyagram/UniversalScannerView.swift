@@ -13,15 +13,15 @@ struct UniversalScannerView: View {
                 Image(systemName: "qrcode.viewfinder")
                     .font(.system(size: 64))
                     .foregroundColor(.accentColor)
-                Text("Сканируйте любой QR-код: ссылку, текст, username или данные.")
+                Text(L10n.t("Auto.e83a0c54eb"))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 30)
-                Button("Открыть сканер") { showScanner = true }
+                Button(L10n.t("Auto.483c36c9a1")) { showScanner = true }
                     .buttonStyle(.borderedProminent)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .navigationTitle("QR-сканер")
+            .navigationTitle(L10n.t("Auto.107939c34e"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -34,9 +34,9 @@ struct UniversalScannerView: View {
                     showResult = true
                 }
             }
-            .alert("QR-код", isPresented: $showResult) {
+            .alert(L10n.t("Auto.26727ccb54"), isPresented: $showResult) {
                 if let scannedCode {
-                    Button("Копировать") {
+                    Button(L10n.t("Auto.112b141bc7")) {
                         UIPasteboard.general.string = scannedCode
                     }
                     if let url = URL(string: scannedCode),

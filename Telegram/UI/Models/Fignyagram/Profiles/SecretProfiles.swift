@@ -285,7 +285,7 @@ struct ProfilesSecurityView: View {
             }
 
             Section {
-                Text("При вводе ложного PIN приложение откроет скрытый контейнер TDLib; остальные профили не показываются, а сессии основного аккаунта останавливаются до следующего ввода основного PIN.")
+                Text(L10n.t("Auto.e3c6903148"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
             }

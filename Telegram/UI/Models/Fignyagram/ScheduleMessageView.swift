@@ -10,18 +10,17 @@ struct ScheduleMessageView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Когда отправить") {
-                    DatePicker(
-                        "Дата и время",
+                Section(L10n.t("Auto.bbb9de7a3d")) {
+                    DatePicker(L10n.t("Auto.b64c7c6e62"),
                         selection: $date,
                         in: Date().addingTimeInterval(60)...Date().addingTimeInterval(366 * 86400),
                         displayedComponents: [.date, .hourAndMinute]
                     )
                     HStack {
-                        Button("Через час") {
+                        Button(L10n.t("Auto.d1cfef3638")) {
                             date = Date().addingTimeInterval(3600)
                         }
-                        Button("Завтра") {
+                        Button(L10n.t("Auto.d102341998")) {
                             date = Date().addingTimeInterval(86400)
                         }
                     }
@@ -34,14 +33,14 @@ struct ScheduleMessageView: View {
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Отложенное сообщение")
+            .navigationTitle(L10n.t("Auto.ed61a83aab"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Common.Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Запланировать") {
+                    Button(L10n.t("Auto.5473e18b3b")) {
                         onSchedule(date)
                         dismiss()
                     }

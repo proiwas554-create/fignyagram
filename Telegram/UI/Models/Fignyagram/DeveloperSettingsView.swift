@@ -21,7 +21,7 @@ struct DeveloperSettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("Сборка") {
+                Section(L10n.t("Auto.0d7f2e6b48")) {
                     row(L10n.t("Dev.Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     row("iOS", UIDevice.current.systemVersion)
                     row("TDLib API", "1.8.68")
@@ -35,12 +35,12 @@ struct DeveloperSettingsView: View {
                     row(L10n.t("Dev.LoadedMessages"), "\(monitor.loadedMessages)")
                     row(L10n.t("Dev.LoadedChats"), "\(monitor.loadedChats)")
                     row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(monitor.cacheBytes))
-                    Button("Обновить сейчас") { monitor.sample() }
+                    Button(L10n.t("Auto.efc373dea9")) { monitor.sample() }
                 }
 
                 Section {
-                    Toggle("Показывать FPS", isOn: $showFPS)
-                    Toggle("Подробные логи TDLib", isOn: $verboseLogs)
+                    Toggle(L10n.t("Auto.4cea4bc37d"), isOn: $showFPS)
+                    Toggle(L10n.t("Auto.50770cdcde"), isOn: $verboseLogs)
                         .onChange(of: verboseLogs) { enabled in
                             client.setLogVerbosity(enabled ? 3 : 1)
                         }
@@ -48,7 +48,7 @@ struct DeveloperSettingsView: View {
                         ImageCache.clear()
                         monitor.sample()
                     }
-                    Button("Очистить кэш сообщений") {
+                    Button(L10n.t("Auto.08126612ba")) {
                         ChatStore.shared.clearLoadedMessages()
                         monitor.sample()
                     }
@@ -65,13 +65,13 @@ struct DeveloperSettingsView: View {
                         Text(storageInfo).font(.appCaption).foregroundColor(.secondary)
                     }
                 } header: {
-                    Text("Тесты")
+                    Text(L10n.t("Auto.7f488607de"))
                 } footer: {
-                    Text("Тестовые настройки не меняют данные аккаунта. FPS отображается поверх интерфейса после включения.")
+                    Text(L10n.t("Auto.ae0df04654"))
                         .font(.appFootnote)
                 }
 
-                Section("Состояние") {
+                Section(L10n.t("Auto.23bdac65fb")) {
                     row("Чатов", "\(store.chats.count)")
                     row("Пользователей", "\(store.users.count)")
                     row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(cache.totalBytes))
@@ -80,11 +80,11 @@ struct DeveloperSettingsView: View {
                 }
 
                 Section {
-                    Toggle("GPU-эффекты (Metal CoreImage)", isOn: Binding(
+                    Toggle(L10n.t("Auto.6e51b09768"), isOn: Binding(
                         get: { UserDefaults.standard.object(forKey: "gpuEffectsEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "gpuEffectsEnabled") }
                     ))
-                    Toggle("Пакетная отрисовка (CATransaction)", isOn: Binding(
+                    Toggle(L10n.t("Auto.5d46bb7fa7"), isOn: Binding(
                         get: { UserDefaults.standard.object(forKey: "renderBatchingEnabled") as? Bool ?? true },
                         set: { UserDefaults.standard.set($0, forKey: "renderBatchingEnabled") }
                     ))
@@ -98,7 +98,7 @@ struct DeveloperSettingsView: View {
                 } header: {
                     Text(L10n.t("Dev.Graphics"))
                 } footer: {
-                    Text("Управление Metal/ProMotion, пакетной отрисовкой и числом потоков декодирования изображений.")
+                    Text(L10n.t("Auto.d2cc8935b8"))
                         .font(.appFootnote)
                 }
 
@@ -106,7 +106,7 @@ struct DeveloperSettingsView: View {
                     Button {
                         showTerminal = true
                     } label: {
-                        Label("Командная строка / терминал", systemImage: "terminal")
+                        Label(L10n.t("Auto.4169915af6"), systemImage: "terminal")
                     }
                 }
 
@@ -121,7 +121,7 @@ struct DeveloperSettingsView: View {
                     NavigationLink(L10n.t("Settings.Automation.Macros")) {
                         MacroSettingsView()
                     }
-                    Button("Очистить весь кэш", role: .destructive) {
+                    Button(L10n.t("Auto.610bc3b777"), role: .destructive) {
                         cache.clearAll()
                     }
                     Button(L10n.t("Dev.Lock"), role: .destructive) {

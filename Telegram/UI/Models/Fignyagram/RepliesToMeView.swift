@@ -37,7 +37,7 @@ struct RepliesToMeView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .navigationTitle("Ответы вам")
+            .navigationTitle(L10n.t("Auto.2890c2d8bb"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

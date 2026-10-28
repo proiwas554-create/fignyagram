@@ -42,9 +42,9 @@ struct ProfileSettingsView: View {
                             size: 76
                         )
                         VStack(alignment: .leading, spacing: 8) {
-                            Button("Изменить фото") { showPhotoPicker = true }
+                            Button(L10n.t("Auto.775d9c0733")) { showPhotoPicker = true }
                             if profilePhotoInfo != nil {
-                                Button("Удалить фото", role: .destructive) {
+                                Button(L10n.t("Auto.3426999025"), role: .destructive) {
                                     Task {
                                         do { try await client.removeProfilePhoto() }
                                         catch { client.errorMessage = TelegramClient.describe(error) }
@@ -57,7 +57,7 @@ struct ProfileSettingsView: View {
 
                     if let phone = client.me?.phoneNumber, !phone.isEmpty {
                         HStack {
-                            Text("Номер телефона")
+                            Text(L10n.t("Auto.9fdc3f131f"))
                             Spacer()
                             Text("+\(phone)").foregroundColor(.secondary)
                             Button {
@@ -66,22 +66,22 @@ struct ProfileSettingsView: View {
                                 Image(systemName: "doc.on.doc")
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Скопировать номер телефона")
+                            .accessibilityLabel(L10n.t("Auto.3ffc17563e"))
                         }
-                        Button("Сменить номер") { showPhoneNotice = true }
+                        Button(L10n.t("Auto.86468346ae")) { showPhoneNotice = true }
                     }
                 } header: {
-                    Text("Аккаунт")
+                    Text(L10n.t("Auto.a1ceab59e9"))
                 }
 
-                Section("Имя") {
-                    TextField("Имя", text: $firstName)
+                Section(L10n.t("Auto.d38d6d925c")) {
+                    TextField(L10n.t("Auto.d38d6d925c"), text: $firstName)
                         .textContentType(.givenName)
-                    TextField("Фамилия", text: $lastName)
+                    TextField(L10n.t("Auto.a7b7df8362"), text: $lastName)
                         .textContentType(.familyName)
                 }
 
-                Section("О себе") {
+                Section(L10n.t("Auto.0b3b2f3a4d")) {
                     ZStack(alignment: .topLeading) {
                         if bio.isEmpty {
                             Text("Bio")
@@ -105,14 +105,14 @@ struct ProfileSettingsView: View {
                         Button {
                             UIPasteboard.general.string = "@\(username)"
                         } label: {
-                            Label("Копировать @username", systemImage: "doc.on.doc")
+                            Label(L10n.t("Auto.d5c3839dba"), systemImage: "doc.on.doc")
                         }
                         .font(.appFootnote)
                     }
                 } header: {
-                    Text("Юзернейм")
+                    Text(L10n.t("Auto.39a03f4151"))
                 } footer: {
-                    Text("Публичная ссылка вида t.me/username. Можно оставить пустым.")
+                    Text(L10n.t("Auto.9fb102bac1"))
                         .font(.appFootnote)
                 }
 
@@ -140,14 +140,14 @@ struct ProfileSettingsView: View {
                 }
                 .ignoresSafeArea()
             }
-            .confirmationDialog("Смена номера телефона", isPresented: $showPhoneNotice, titleVisibility: .visible) {
-                Button("Выйти и войти с другим номером", role: .destructive) {
+            .confirmationDialog(L10n.t("Auto.158031121d"), isPresented: $showPhoneNotice, titleVisibility: .visible) {
+                Button(L10n.t("Auto.1e1585a06b"), role: .destructive) {
                     client.logOut()
                     dismiss()
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Установленная версия TDLib не поддерживает смену номера без повторной авторизации. Можно выйти из аккаунта и войти заново с новым номером.")
+                Text(L10n.t("Auto.d333b5f799"))
             }
         }
         .navigationViewStyle(.stack)

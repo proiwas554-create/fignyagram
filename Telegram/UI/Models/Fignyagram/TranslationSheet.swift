@@ -11,10 +11,10 @@ struct TranslationSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Оригинал") {
+                Section(L10n.t("Auto.34c4df5a64")) {
                     Text(text).textSelection(.enabled)
                 }
-                Section("Перевод") {
+                Section(L10n.t("Auto.b93e8b66b6")) {
                     if let result {
                         Text(result).textSelection(.enabled)
                     } else if let errorText {
@@ -24,7 +24,7 @@ struct TranslationSheet: View {
                     }
                 }
             }
-            .navigationTitle("Перевод")
+            .navigationTitle(L10n.t("Auto.b93e8b66b6"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

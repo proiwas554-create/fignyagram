@@ -73,7 +73,7 @@ struct DirectMessageStatsView: View {
                 }
                 .listStyle(.plain)
             }
-            .navigationTitle("Личные сообщения")
+            .navigationTitle(L10n.t("Auto.4fd9ccbe36"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

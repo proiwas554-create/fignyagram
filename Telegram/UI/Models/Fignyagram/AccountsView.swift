@@ -36,7 +36,7 @@ struct AccountsView: View {
                                     client.switchAccount(to: account.id)
                                     dismiss()
                                 } label: {
-                                    Label("Переключиться", systemImage: "arrow.left.arrow.right")
+                                    Label(L10n.t("Auto.cdb3358d5c"), systemImage: "arrow.left.arrow.right")
                                 }
                             }
                             if account.id == accounts.currentId {
@@ -44,13 +44,13 @@ struct AccountsView: View {
                                     client.logOut()
                                     dismiss()
                                 } label: {
-                                    Label("Выйти из аккаунта", systemImage: "rectangle.portrait.and.arrow.right")
+                                    Label(L10n.t("Auto.6d4183b79b"), systemImage: "rectangle.portrait.and.arrow.right")
                                 }
                             } else {
                                 Button(role: .destructive) {
                                     accounts.remove(id: account.id)
                                 } label: {
-                                    Label("Удалить из списка", systemImage: "trash")
+                                    Label(L10n.t("Auto.50f4cfe1cc"), systemImage: "trash")
                                 }
                             }
                         }
@@ -62,19 +62,19 @@ struct AccountsView: View {
                         client.addAccount()
                         dismiss()
                     } label: {
-                        Label("Добавить аккаунт", systemImage: "plus.circle")
+                        Label(L10n.t("Auto.5253f2060d"), systemImage: "plus.circle")
                     }
                     if accounts.previousId != nil {
                         Button {
                             client.cancelAddAccount()
                             dismiss()
                         } label: {
-                            Label("Вернуться в предыдущий аккаунт", systemImage: "arrow.uturn.backward")
+                            Label(L10n.t("Auto.fe51c6478d"), systemImage: "arrow.uturn.backward")
                         }
                     }
                 }
             }
-            .navigationTitle("Аккаунты")
+            .navigationTitle(L10n.t("Auto.d699f70d7f"))
             .modifier(GlassListModifier())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

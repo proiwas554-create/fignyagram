@@ -10,27 +10,27 @@ struct PerformanceSettingsView: View {
         NavigationView {
             Form {
                 Section {
-                    Toggle("Ультра-оптимизация", isOn: Binding(
+                    Toggle(L10n.t("Auto.cd9fd52e97"), isOn: Binding(
                         get: { ultra.isEnabled },
                         set: { ultra.setEnabled($0) }
                     ))
                 } header: {
-                    Text("Ультра-режим")
+                    Text(L10n.t("Auto.35ed94d179"))
                 } footer: {
-                    Text("Оставляет чаты, отправку сообщений, прокси и музыкальный плеер. Скрывает вложения, поиск по лишним разделам, теги, реакции и украшения, уменьшает кэш и количество отрисовываемых сообщений.")
+                    Text(L10n.t("Auto.87770be0e8"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    Toggle("Режим оптимизации", isOn: $performance.isEnabled)
+                    Toggle(L10n.t("Auto.707bd05a2d"), isOn: $performance.isEnabled)
                 } footer: {
-                    Text("Уменьшает кэш и качество декодирования изображений, а также временно ограничивает количество отрисовываемых сообщений и чатов. Полезно для экономии батареи и памяти.")
+                    Text(L10n.t("Auto.e77ab56b9b"))
                         .font(.appFootnote)
                 }
 
                 if performance.isEnabled {
-                    Section("Степень оптимизации") {
-                        Picker("Степень", selection: $performance.level) {
+                    Section(L10n.t("Auto.c09fb627f9")) {
+                        Picker(L10n.t("Auto.6e1572de13"), selection: $performance.level) {
                             ForEach(PerformanceLevel.allCases) { level in
                                 Text(level.title).tag(level)
                             }
@@ -39,8 +39,8 @@ struct PerformanceSettingsView: View {
                     }
                 }
 
-                Section("Что меняется") {
-                    Label("Меньше одновременных декодирований изображений", systemImage: "photo")
+                Section(L10n.t("Auto.2cbb35de48")) {
+                    Label(L10n.t("Auto.d51dc53ea8"), systemImage: "photo")
                     Label("Кэш изображений до \(performance.level.cacheLimit / (1024 * 1024)) МБ", systemImage: "internaldrive")
                     Label("Фото декодируются с разрешением до \(Int(performance.level.maxPixel)) px", systemImage: "arrow.down.right.and.arrow.up.left")
                     Label("До \(limits.effectiveMessagesPerChat) сообщений в чате вместо \(limits.maxMessagesPerChat)", systemImage: "bubble.left.and.bubble.right")
@@ -48,15 +48,15 @@ struct PerformanceSettingsView: View {
                 }
 
                 Section {
-                    Button("Очистить кэш изображений") {
+                    Button(L10n.t("Auto.5b898b4bb0")) {
                         ImageCache.clear()
                     }
                 } footer: {
-                    Text("Изображения загрузятся заново при следующем открытии.")
+                    Text(L10n.t("Auto.8b480c6ab4"))
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Оптимизация")
+            .navigationTitle(L10n.t("Auto.c09fb8d62b"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

@@ -18,31 +18,31 @@ struct ProxySettingsView: View {
         NavigationView {
             Form {
                 Section {
-                    Toggle("Встроенный прокси", isOn: Binding(
+                    Toggle(L10n.t("Auto.ea3f897602"), isOn: Binding(
                         get: { proxy.isEnabled },
                         set: { proxy.setEnabled($0) }
                     ))
                     HStack {
-                        Text("Статус")
+                        Text(L10n.t("Auto.7203f7a4ff"))
                         Spacer()
                         Text(proxy.status)
                             .foregroundColor(statusColor)
                     }
                     HStack {
-                        Text("Адрес")
+                        Text(L10n.t("Auto.80148fa5ad"))
                         Spacer()
                         Text("\(proxy.host):\(proxy.port)")
                             .foregroundColor(.secondary)
                             .monospacedDigit()
                     }
                 } footer: {
-                    Text("Трафик Telegram идёт с локального адреса 127.0.0.1 через WebSocket-серверы Telegram (wss://kws*.web.telegram.org). Внешний прокси-сервер не используется.")
+                    Text(L10n.t("Auto.58ef8f1b55"))
                         .font(.appFootnote)
                 }
 
                 if proxy.health == .directFallback {
                     Section {
-                        Text("WebSocket Telegram недоступен, поэтому прокси использует прямое TCP-соединение. Приложение работает, но обход блокировки не выполняется.")
+                        Text(L10n.t("Auto.ecb5a83403"))
                             .font(.appFootnote)
                             .foregroundColor(.orange)
                     }
@@ -57,41 +57,41 @@ struct ProxySettingsView: View {
                 }
 
                 Section {
-                    TextField("Свой Cloudflare-домен (kws*.example.com)", text: $cfProxyDomain)
+                    TextField(L10n.t("Auto.b71a93fe03"), text: $cfProxyDomain)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("Сохранить домен и перезапустить") {
+                    Button(L10n.t("Auto.8195122655")) {
                         proxy.restart()
                     }
                 } header: {
-                    Text("Cloudflare-прокси")
+                    Text(L10n.t("Auto.468ccab82d"))
                 } footer: {
-                    Text("Добавьте в Cloudflare A-записи kws1…kws203 на IP Telegram (SSL/TLS → Flexible). Свой домен обходит блокировку общих CF-доменов.")
+                    Text(L10n.t("Auto.088bcce067"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    Button("Перезапустить прокси") {
+                    Button(L10n.t("Auto.23ac877659")) {
                         proxy.restart()
                     }
                     .disabled(!proxy.isEnabled)
                 } footer: {
-                    Text("Прокси работает, пока приложение запущено. После выгрузки приложения из памяти он останавливается, и Telegram снова подключается напрямую.")
+                    Text(L10n.t("Auto.8bf265db3b"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    Text("Внешний MTProto-прокси")
+                    Text(L10n.t("Auto.096027824a"))
                         .font(.appHeadline)
-                    TextField("Сервер, например proxy.example.com", text: $externalServer)
+                    TextField(L10n.t("Auto.58a3058697"), text: $externalServer)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    TextField("Порт", text: $externalPort)
+                    TextField(L10n.t("Auto.8964d94a1b"), text: $externalPort)
                         .keyboardType(.numberPad)
-                    TextField("Секрет (hex, можно с dd)", text: $externalSecret)
+                    TextField(L10n.t("Auto.5be5d37eb8"), text: $externalSecret)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("Подключить внешний прокси") {
+                    Button(L10n.t("Auto.9fb3aee2a6")) {
                         connectExternal()
                     }
                     .disabled(externalServer.isEmpty || externalSecret.isEmpty)
@@ -100,22 +100,22 @@ struct ProxySettingsView: View {
                             .font(.appFootnote)
                             .foregroundColor(.red)
                     }
-                    Button("Отключить все прокси", role: .destructive) {
+                    Button(L10n.t("Auto.0c013a6ba3"), role: .destructive) {
                         proxy.setEnabled(false)
                         Task { await TelegramClient.shared.disableAllProxies() }
                     }
                 } header: {
-                    Text("Аварийный вариант")
+                    Text(L10n.t("Auto.3e88bd6b62"))
                 } footer: {
-                    Text("Используйте только доверенный прокси: через него проходит весь трафик Telegram. Встроенный прокси при этом отключается.")
+                    Text(L10n.t("Auto.9e39e64e42"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    TextField("Вставьте ключ: vless://, vmess://, trojan://, ss://, tg://proxy…", text: $vpnKeyInput)
+                    TextField(L10n.t("Auto.79d810398a"), text: $vpnKeyInput)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
-                    Button("Добавить VPN-ключ") {
+                    Button(L10n.t("Auto.b2f9091164")) {
                         if vpnKeys.add(vpnKeyInput) {
                             vpnKeyInput = ""
                             vpnKeyMessage = "Ключ сохранён"
@@ -131,11 +131,11 @@ struct ProxySettingsView: View {
                         VStack(alignment: .leading, spacing: 5) {
                             Text(key.title).font(.caption.bold())
                             HStack(spacing: 10) {
-                                Button("Копировать") {
+                                Button(L10n.t("Auto.112b141bc7")) {
                                     UIPasteboard.general.string = key.raw
                                 }
                                 if key.mtproto != nil {
-                                    Button("Подключить") {
+                                    Button(L10n.t("Auto.ad5c2ce8c2")) {
                                         connectVPNKey(key)
                                     }
                                 }
@@ -147,14 +147,14 @@ struct ProxySettingsView: View {
                         }
                     }
                 } header: {
-                    Text("VPN-ключи")
+                    Text(L10n.t("Auto.c3b49ab87c"))
                 } footer: {
-                    Text("MTProto-ключи можно сразу подключить как внешний прокси. Ключи VLESS/VMess/Trojan/WireGuard сохраняются для передачи в VPN-клиент: iOS не позволяет стороннему приложению без VPN-расширения поднимать системный туннель.")
+                    Text(L10n.t("Auto.e08c99052e"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    Text("Реализация основана на tg-ws-proxy (MIT, Flowseal) и его iOS-порте (NeonchikMPT).")
+                    Text(L10n.t("Auto.386d4adfab"))
                         .font(.appCaption2)
                         .foregroundColor(.secondary)
                 }

@@ -97,7 +97,7 @@ struct MessageRow: View {
                         secretMediaPath = path
                         showSecretMedia = true
                     } label: {
-                        Label("Сохранено", systemImage: "eye.fill")
+                        Label(L10n.t("Auto.54a59b19f9"), systemImage: "eye.fill")
                             .font(.appCaption2)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -286,14 +286,14 @@ struct MessageRow: View {
             NavigationView {
                 Form {
                     Section {
-                        TextField("Мой тег", text: $myTagDraft)
+                        TextField(L10n.t("Auto.0607c10758"), text: $myTagDraft)
                             .textInputAutocapitalization(.never)
                     } footer: {
-                        Text("Тег виден участникам этого чата. Пустое поле убирает тег.")
+                        Text(L10n.t("Auto.b09d471ad9"))
                             .font(.appFootnote)
                     }
                 }
-                .navigationTitle("Задать мой тег")
+                .navigationTitle(L10n.t("Auto.006eaace9f"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .cancellationAction) {
@@ -373,7 +373,7 @@ struct MessageRow: View {
     private var footer: some View {
         HStack(spacing: 3) {
             Spacer(minLength: 0)
-            if message.editDate > 0 { Text("изм.") }
+            if message.editDate > 0 { Text(L10n.t("Auto.4984c792b1")) }
             Text(MessageFormatter.time(message.date))
             if message.isOutgoing { statusIcon }
         }
@@ -553,7 +553,7 @@ struct PollMessageView: View {
             }
 
             if poll.allowsMultipleAnswers, canVote, !selected.isEmpty {
-                Button("Голосовать") {
+                Button(L10n.t("Auto.23d28c6e2e")) {
                     TelegramClient.shared.votePoll(
                         chatId: chatId,
                         messageId: messageId,
@@ -567,10 +567,10 @@ struct PollMessageView: View {
 
             HStack(spacing: 8) {
                 Text("\(poll.totalVoterCount) голосов")
-                if poll.isAnonymous { Text("анонимный") }
-                if poll.isClosed { Text("закрыт") }
+                if poll.isAnonymous { Text(L10n.t("Auto.e0502502c5")) }
+                if poll.isClosed { Text(L10n.t("Auto.1c4ad3217f")) }
                 if let reason = poll.voteRestrictionReason {
-                    Text("голосование недоступно")
+                    Text(L10n.t("Auto.c956a139e6"))
                 }
             }
             .font(.appCaption2)
@@ -696,7 +696,7 @@ struct SpoilerTextView: View {
                 Text("… ещё \(formatted.text.count - Self.inlineLimit) символов")
                     .font(.appCaption)
                     .foregroundColor(.secondary)
-                Button("Показать полностью") { showFullText = true }
+                Button(L10n.t("Auto.94225430c8")) { showFullText = true }
                     .font(.appCaption.bold())
                     .buttonStyle(.plain)
                     .foregroundColor(.accentColor)
@@ -712,7 +712,7 @@ struct SpoilerTextView: View {
                     RoundedRectangle(cornerRadius: 6)
                         .fill(Color.primary.opacity(0.16))
                         .overlay(
-                            Text("Спойлер")
+                            Text(L10n.t("Auto.0e5d3ff03c"))
                                 .font(.caption.bold())
                                 .foregroundColor(.secondary)
                         )
@@ -784,25 +784,25 @@ struct MessageActionsSheet: View {
                 }
                 Section {
                     if properties?.canBeReplied ?? true {
-                        Button { act(.reply) } label: { Label("Ответить", systemImage: "arrowshape.turn.up.left") }
+                        Button { act(.reply) } label: { Label(L10n.t("Auto.e5681e2700"), systemImage: "arrowshape.turn.up.left") }
                     }
                     if let text = MessageFormatter.caption(of: message.content)?.text, !text.isEmpty {
-                        Button { act(.copy) } label: { Label("Копировать", systemImage: "doc.on.doc") }
+                        Button { act(.copy) } label: { Label(L10n.t("Auto.112b141bc7"), systemImage: "doc.on.doc") }
                     }
                     if properties?.canBeEdited == true {
-                        Button { act(.edit) } label: { Label("Изменить", systemImage: "pencil") }
+                        Button { act(.edit) } label: { Label(L10n.t("Auto.47e2436e55"), systemImage: "pencil") }
                     }
                     if properties?.canBeForwarded == true {
-                        Button { act(.forward) } label: { Label("Переслать", systemImage: "arrowshape.turn.up.right") }
+                        Button { act(.forward) } label: { Label(L10n.t("Auto.b45ce2bd22"), systemImage: "arrowshape.turn.up.right") }
                     }
                     if case .messageAudio(let audio) = message.content {
                         Button { act(.addToMusic(audio.audio)) } label: {
-                            Label("Добавить в плеер", systemImage: "music.note.list")
+                            Label(L10n.t("Auto.2bf8c48847"), systemImage: "music.note.list")
                         }
                     }
                     if (message.interactionInfo?.replyInfo?.replyCount ?? 0) > 0 {
                         Button { act(.replies) } label: {
-                            Label("Посмотреть ответы", systemImage: "arrowshape.turn.up.left.2")
+                            Label(L10n.t("Auto.7fa00ebcfc"), systemImage: "arrowshape.turn.up.left.2")
                         }
                     }
                     if properties?.canBePinned == true {
@@ -818,21 +818,21 @@ struct MessageActionsSheet: View {
                         Button {
                             act(.setMemberTag(userId: sender.userId))
                         } label: {
-                            Label("Выдать тег", systemImage: "tag")
+                            Label(L10n.t("Auto.958ac8dd2a"), systemImage: "tag")
                         }
                     }
                     if case .messageSticker(let sticker) = message.content, sticker.sticker.setId != 0 {
                         Button {
                             act(.stickerSet(sticker.sticker.setId))
                         } label: {
-                            Label("Просмотреть набор", systemImage: "square.grid.2x2")
+                            Label(L10n.t("Auto.7313e5d1ce"), systemImage: "square.grid.2x2")
                         }
                     }
                     if let text = MessageFormatter.caption(of: message.content)?.text, !text.isEmpty {
                         Button {
                             act(.quote(text))
                         } label: {
-                            Label("Цитировать фрагмент", systemImage: "quote.bubble")
+                            Label(L10n.t("Auto.d2067bdc84"), systemImage: "quote.bubble")
                         }
                         if AutoTranslationSettings.shared.mode != .disabled {
                         Button {
@@ -853,7 +853,7 @@ struct MessageActionsSheet: View {
                                 Button {
                                     AutoTranslationManager.shared.requestManual(message: message, text: text)
                                 } label: {
-                                    Label("Перевести на " + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
+                                    Label(L10n.t("Auto.dea5da37e1") + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
                                           systemImage: "globe")
                                 }
                             }
@@ -866,7 +866,7 @@ struct MessageActionsSheet: View {
                         Button {
                             AutoTranslationManager.shared.requestManual(message: message, text: body.text.text)
                         } label: {
-                            Label("Перевести на " + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
+                            Label(L10n.t("Auto.dea5da37e1") + (AutoTranslationSettings.supportedLanguages.first { $0.code == AutoTranslationSettings.shared.targetLanguage }?.title ?? AutoTranslationSettings.shared.targetLanguage),
                                   systemImage: "globe")
                         }
                     }
@@ -875,26 +875,26 @@ struct MessageActionsSheet: View {
                         Button {
                             act(.decryptNote)
                         } label: {
-                            Label("Расшифровать заметку", systemImage: "lock.open")
+                            Label(L10n.t("Auto.a9a0b9e1c2"), systemImage: "lock.open")
                         }
                     }
                     if case .messageAnimation = message.content {
                         Button { act(.saveGif) } label: {
-                            Label("Сохранить гифку", systemImage: "rectangle.stack.badge.plus")
+                            Label(L10n.t("Auto.0afdb01ce5"), systemImage: "rectangle.stack.badge.plus")
                         }
                         Button { act(.favoriteAnimation) } label: {
-                            Label("В избранные стикеры", systemImage: "star")
+                            Label(L10n.t("Auto.aa243ad72f"), systemImage: "star")
                         }
                         Button { act(.sendAnimationSticker) } label: {
-                            Label("Отправить как стикер", systemImage: "face.smiling")
+                            Label(L10n.t("Auto.67cd94300e"), systemImage: "face.smiling")
                         }
                     }
                     if case .messageSticker = message.content {
                         Button { act(.saveSticker) } label: {
-                            Label("В избранные стикеры", systemImage: "star")
+                            Label(L10n.t("Auto.aa243ad72f"), systemImage: "star")
                         }
                         Button { act(.saveStickerPack) } label: {
-                            Label("Установить стикерпак", systemImage: "square.stack.3d.down.right")
+                            Label(L10n.t("Auto.1e158fecdf"), systemImage: "square.stack.3d.down.right")
                         }
                     } else if message.content.saveableFile != nil,
                        (properties?.canBeSaved != false || PrivacyPreferences.shared.ignoreCopyProtection) {
@@ -909,7 +909,7 @@ struct MessageActionsSheet: View {
                             Button {
                                 act(.call(phoneNumber: user.phoneNumber))
                             } label: {
-                                Label("Позвонить", systemImage: "phone")
+                                Label(L10n.t("Auto.ccfa0757c1"), systemImage: "phone")
                             }
                         }
                         Button {
@@ -922,24 +922,24 @@ struct MessageActionsSheet: View {
                             )
                         }
                     } footer: {
-                        Text("Блокировка действует везде: в личных чатах, группах и каналах.")
+                        Text(L10n.t("Auto.ef57d16ba1"))
                             .font(.appFootnote)
                     }
                 }
                 Section {
                     if message.chatId != TelegramClient.shared.me?.id {
                         Button { act(.saveToSaved) } label: {
-                            Label("Сохранить в «Избранное»", systemImage: "bookmark")
+                            Label(L10n.t("Auto.9bfb801b51"), systemImage: "bookmark")
                         }
                     }
                     if properties?.canBeDeletedForAllUsers == true {
                         Button(role: .destructive) { act(.delete(forAll: true)) } label: {
-                            Label("Удалить у всех", systemImage: "trash")
+                            Label(L10n.t("Auto.b90cd4f134"), systemImage: "trash")
                         }
                     }
                     if properties?.canBeDeletedOnlyForSelf == true {
                         Button(role: .destructive) { act(.delete(forAll: false)) } label: {
-                            Label("Удалить у меня", systemImage: "trash")
+                            Label(L10n.t("Auto.49a7890ba6"), systemImage: "trash")
                         }
                     }
                 }

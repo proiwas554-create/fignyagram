@@ -31,7 +31,7 @@ struct AuthView: View {
                     Button {
                         proxy.setEnabled(true)
                     } label: {
-                        Label("Включить прокси для входа", systemImage: "network")
+                        Label(L10n.t("Auto.cd120292f5"), systemImage: "network")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -39,7 +39,7 @@ struct AuthView: View {
                 Button {
                     showQRScanner = true
                 } label: {
-                    Label("Сканировать QR-код для входа", systemImage: "qrcode.viewfinder")
+                    Label(L10n.t("Auto.f1f0dc55ce"), systemImage: "qrcode.viewfinder")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.bordered)
@@ -115,20 +115,20 @@ struct AuthView: View {
 
     private var stallCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Подключение зависло", systemImage: "exclamationmark.triangle.fill")
+            Label(L10n.t("Auto.841f592c32"), systemImage: "exclamationmark.triangle.fill")
                 .font(.appHeadline)
                 .foregroundColor(.orange)
             Text(proxy.lastError ?? "Прокси не отвечает. Можно войти напрямую или перезапустить подключение.")
                 .font(.appFootnote)
                 .foregroundColor(.secondary)
             HStack {
-                Button("Войти без прокси") {
+                Button(L10n.t("Auto.4c0352f9e6")) {
                     proxy.setEnabled(false)
                     stalled = false
                     client.restartConnection()
                 }
                 .buttonStyle(.borderedProminent)
-                Button("Перезапустить") {
+                Button(L10n.t("Auto.4f8110f3d7")) {
                     stalled = false
                     client.restartConnection()
                 }
@@ -180,7 +180,7 @@ struct AuthView: View {
             case .qrCode(let link):
                 qrForm(link: link)
             case .premiumRequired:
-                Text("Для входа с этого номера Telegram требует подписку Premium. Оформите её в официальном приложении.")
+                Text(L10n.t("Auto.e795bc484a"))
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
             case .loggingOut:
@@ -193,8 +193,8 @@ struct AuthView: View {
 
     private var phoneForm: some View {
         VStack(spacing: 14) {
-            Text("Введите номер телефона").font(.appHeadline)
-            Text("Номер в международном формате, например +79991234567")
+            Text(L10n.t("Auto.cc031a9155")).font(.appHeadline)
+            Text(L10n.t("Auto.309fdf0839"))
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
             TextField("+7 999 123 45 67", text: $phone)
                 .textFieldStyle(.roundedBorder)
@@ -203,29 +203,29 @@ struct AuthView: View {
             Button {
                 client.sendPhoneNumber(phone)
             } label: {
-                Text("Далее").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.c453091253")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(phone.isEmpty || client.isBusy)
 
-            Button("Войти по QR-коду") { client.requestQrCode() }
+            Button(L10n.t("Auto.9631fc9963")) { client.requestQrCode() }
                 .disabled(client.isBusy)
         }
     }
 
     private func codeForm(_ info: TDLibKit.AuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
-            Text("Введите код").font(.appHeadline)
+            Text(L10n.t("Auto.3c41d442de")).font(.appHeadline)
             Text("\(Self.codeDestination(info.type)) на номер \(info.phoneNumber)")
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
-            TextField("Код", text: $code)
+            TextField(L10n.t("Auto.3f34a617ce"), text: $code)
                 .textFieldStyle(.roundedBorder)
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
             Button {
                 client.sendCode(code)
             } label: {
-                Text("Подтвердить").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.e2603bcce7")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(code.isEmpty || client.isBusy)
@@ -234,14 +234,14 @@ struct AuthView: View {
                 Button("Отправить код \(Self.codeDestination(next).lowercased())") { client.resendCode() }
                     .disabled(client.isBusy)
             }
-            Button("Другой номер") { editingPhone = true }
+            Button(L10n.t("Auto.e74fdbe75f")) { editingPhone = true }
         }
     }
 
     private var emailForm: some View {
         VStack(spacing: 14) {
-            Text("Укажите email").font(.appHeadline)
-            Text("Telegram требует почту для входа с нового устройства")
+            Text(L10n.t("Auto.87285e0948")).font(.appHeadline)
+            Text(L10n.t("Auto.9e7cc5b5f5"))
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
             TextField("email@example.com", text: $email)
                 .textFieldStyle(.roundedBorder)
@@ -251,7 +251,7 @@ struct AuthView: View {
             Button {
                 client.sendEmail(email)
             } label: {
-                Text("Далее").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.c453091253")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(email.isEmpty || client.isBusy)
@@ -260,17 +260,17 @@ struct AuthView: View {
 
     private func emailCodeForm(_ info: TDLibKit.EmailAddressAuthenticationCodeInfo) -> some View {
         VStack(spacing: 14) {
-            Text("Код из письма").font(.appHeadline)
+            Text(L10n.t("Auto.0e6ee45cf3")).font(.appHeadline)
             Text("Отправлен на \(info.emailAddressPattern)")
                 .font(.appFootnote).foregroundColor(.secondary)
-            TextField("Код", text: $emailCode)
+            TextField(L10n.t("Auto.3f34a617ce"), text: $emailCode)
                 .textFieldStyle(.roundedBorder)
                 .keyboardType(.numberPad)
                 .textContentType(.oneTimeCode)
             Button {
                 client.sendEmailCode(emailCode)
             } label: {
-                Text("Подтвердить").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.e2603bcce7")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(emailCode.isEmpty || client.isBusy)
@@ -279,13 +279,13 @@ struct AuthView: View {
 
     private var registrationForm: some View {
         VStack(spacing: 14) {
-            Text("Новый аккаунт").font(.appHeadline)
-            TextField("Имя", text: $firstName).textFieldStyle(.roundedBorder).textContentType(.givenName)
-            TextField("Фамилия (необязательно)", text: $lastName).textFieldStyle(.roundedBorder).textContentType(.familyName)
+            Text(L10n.t("Auto.1bb53524f7")).font(.appHeadline)
+            TextField(L10n.t("Auto.d38d6d925c"), text: $firstName).textFieldStyle(.roundedBorder).textContentType(.givenName)
+            TextField(L10n.t("Auto.de830cd96b"), text: $lastName).textFieldStyle(.roundedBorder).textContentType(.familyName)
             Button {
                 client.register(firstName: firstName, lastName: lastName)
             } label: {
-                Text("Зарегистрироваться").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.fb9e993e98")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(firstName.isEmpty || client.isBusy)
@@ -294,8 +294,8 @@ struct AuthView: View {
 
     private func passwordForm(hint: String) -> some View {
         VStack(spacing: 14) {
-            Text("Облачный пароль").font(.appHeadline)
-            Text("На аккаунте включена двухэтапная аутентификация")
+            Text(L10n.t("Auto.5a77c57a29")).font(.appHeadline)
+            Text(L10n.t("Auto.383e346138"))
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
             SecureField(hint.isEmpty ? "Пароль" : "Подсказка: \(hint)", text: $password)
                 .textFieldStyle(.roundedBorder)
@@ -303,7 +303,7 @@ struct AuthView: View {
             Button {
                 client.sendPassword(password)
             } label: {
-                Text("Войти").frame(maxWidth: .infinity)
+                Text(L10n.t("Auto.63a753751e")).frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
             .disabled(password.isEmpty || client.isBusy)
@@ -312,8 +312,8 @@ struct AuthView: View {
 
     private func qrForm(link: String) -> some View {
         VStack(spacing: 14) {
-            Text("Вход по QR-коду").font(.appHeadline)
-            Text("Откройте Telegram на другом устройстве → Настройки → Устройства → Подключить устройство и отсканируйте код")
+            Text(L10n.t("Auto.8a3c96389c")).font(.appHeadline)
+            Text(L10n.t("Auto.1a435ad693"))
                 .font(.appFootnote).foregroundColor(.secondary).multilineTextAlignment(.center)
             if let image = QRCode.image(for: link) {
                 Image(uiImage: image)
@@ -324,7 +324,7 @@ struct AuthView: View {
                     .background(Color.white)
                     .cornerRadius(12)
             }
-            Button("Войти по номеру телефона") { editingPhone = true }
+            Button(L10n.t("Auto.128576be08")) { editingPhone = true }
         }
     }
 

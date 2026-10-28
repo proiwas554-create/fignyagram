@@ -135,11 +135,11 @@ struct ChatView: View {
                 Divider()
                 HStack(spacing: 8) {
                     Image(systemName: "nosign").foregroundColor(.secondary)
-                    Text("Пользователь заблокирован")
+                    Text(L10n.t("Auto.3662d0d731"))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Button("Разблокировать") {
+                    Button(L10n.t("Auto.e3d4814785")) {
                         client.setUserBlocked(userId: userId, isBlocked: false)
                     }
                     .font(.appFootnote)
@@ -153,7 +153,7 @@ struct ChatView: View {
                 inputArea
             } else if chat?.isChannel == true {
                 Divider()
-                Text("Публиковать в этом канале могут только администраторы")
+                Text(L10n.t("Auto.f28cd83fd1"))
                     .font(.appFootnote).foregroundColor(.secondary)
                     .padding(10)
             }
@@ -188,7 +188,7 @@ struct ChatView: View {
                     Image(systemName: "magnifyingglass")
                         .classicIconButton()
                 }
-                .accessibilityLabel("Поиск в чате")
+                .accessibilityLabel(L10n.t("Auto.acb2a19055"))
 
                 Menu {
                     Button {
@@ -246,21 +246,21 @@ struct ChatView: View {
                         Button {
                             showRepliesToMe = true
                         } label: {
-                            Label("История ответов мне", systemImage: "at")
+                            Label(L10n.t("Auto.f6f01e43ef"), systemImage: "at")
                         }
                     }
                     if let linkedChatId {
                         Button {
                             taggedChatId = linkedChatId
                         } label: {
-                            Label("Перейти в обсуждение", systemImage: "bubble.left.and.bubble.right")
+                            Label(L10n.t("Auto.1a0f12efeb"), systemImage: "bubble.left.and.bubble.right")
                         }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                         .classicIconButton()
                 }
-                .accessibilityLabel("Ещё")
+                .accessibilityLabel(L10n.t("Auto.4533ba2a34"))
                 }
             }
         }
@@ -350,7 +350,7 @@ struct ChatView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                 }
-                .navigationTitle("Кратко")
+                .navigationTitle(L10n.t("Auto.3578533a2a"))
                 .navigationBarTitleDisplayMode(.inline)
             }
             .navigationViewStyle(.stack)
@@ -364,7 +364,7 @@ struct ChatView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding()
                 }
-                .navigationTitle("Расшифрованная заметка")
+                .navigationTitle(L10n.t("Auto.c731ce246f"))
                 .navigationBarTitleDisplayMode(.inline)
             }
             .navigationViewStyle(.stack)
@@ -718,11 +718,11 @@ struct ChatView: View {
                         if isLoading {
                             ProgressView("Загрузка…")
                         } else if !messages.isEmpty {
-                            Text("Сообщения скрыты").foregroundColor(.secondary)
+                            Text(L10n.t("Auto.1665d3aa71")).foregroundColor(.secondary)
                         } else {
                             VStack(spacing: 12) {
-                                Text("Сообщений нет").foregroundColor(.secondary)
-                                Button("Обновить") { client.loadHistory(chatId: chatId) }.buttonStyle(.bordered)
+                                Text(L10n.t("Auto.0c40ace71e")).foregroundColor(.secondary)
+                                Button(L10n.t("Auto.dbe5444a9a")) { client.loadHistory(chatId: chatId) }.buttonStyle(.bordered)
                             }
                         }
                     }
@@ -758,7 +758,7 @@ struct ChatView: View {
                                 }
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Ответы на мои сообщения")
+                            .accessibilityLabel(L10n.t("Auto.62bd46f487"))
                         }
                         if !isAtBottom && didInitialScroll {
                             scrollDownButton(proxy)
@@ -883,7 +883,7 @@ struct ChatView: View {
             .frame(width: 42, height: 42)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Прокрутить к последним сообщениям")
+        .accessibilityLabel(L10n.t("Auto.fef0964189"))
     }
 
     // MARK: - Input
@@ -1024,20 +1024,20 @@ struct ChatView: View {
                         .font(.system(size: 20))
                         .classicIconButton()
                 }
-                .accessibilityLabel("Отправить текст файлом")
+                .accessibilityLabel(L10n.t("Auto.d580ab37e0"))
             }
             if editing == nil && !text.isEmpty {
                 Menu {
-                    Button("Перевернуть") { text = TextTransformers.reversed(text) }
+                    Button(L10n.t("Auto.a60a3d9ef1")) { text = TextTransformers.reversed(text) }
                     Button("SpongeBob") { text = TextTransformers.spongebob(text) }
-                    Button("Убрать лишние пробелы") { text = TextTransformers.collapsedSpaces(text) }
-                    Button("Зашифровать и отправить") { showEncryptPrompt = true }
+                    Button(L10n.t("Auto.1891ac7c0d")) { text = TextTransformers.collapsedSpaces(text) }
+                    Button(L10n.t("Auto.8fefe57978")) { showEncryptPrompt = true }
                 } label: {
                     Image(systemName: "wand.and.stars")
                         .font(.system(size: 19))
                         .classicIconButton()
                 }
-                .accessibilityLabel("Трансформировать текст")
+                .accessibilityLabel(L10n.t("Auto.51dc2bc15d"))
             }
             if editing == nil {
                 Button {
@@ -1047,7 +1047,7 @@ struct ChatView: View {
                         .font(.system(size: 20))
                         .classicIconButton()
                 }
-                .accessibilityLabel("Кружок из галереи")
+                .accessibilityLabel(L10n.t("Auto.874fc331f3"))
             }
             if editing == nil {
                 Button {
@@ -1064,7 +1064,7 @@ struct ChatView: View {
                     }
                     .frame(width: 38, height: 38)
                 }
-                .accessibilityLabel("Вложения")
+                .accessibilityLabel(L10n.t("Auto.0525239ed9"))
             }
 
             Group {
@@ -1086,7 +1086,7 @@ struct ChatView: View {
                     Divider()
                 }
                 if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Button("Сохранить как шаблон") {
+                    Button(L10n.t("Auto.5a0999c6c9")) {
                         snippets.add(text)
                     }
                 }
@@ -1444,7 +1444,7 @@ struct ChatView: View {
                     Image(systemName: "pin.fill")
                         .foregroundColor(.orange)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("Закреплённое сообщение")
+                        Text(L10n.t("Auto.7176bf6438"))
                             .font(.caption2.bold())
                             .foregroundColor(.secondary)
                         Text(Self.pinnedPreview(message))
@@ -1464,7 +1464,7 @@ struct ChatView: View {
                 Image(systemName: "list.bullet")
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Все закреплённые")
+            .accessibilityLabel(L10n.t("Auto.b1387595b5"))
             Button {
                 client.unpinMessage(message)
             } label: {
@@ -1727,7 +1727,7 @@ struct ChatSearchView: View {
 
                 if !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                    results.isEmpty, !isSearching, errorText == nil {
-                    Text("Ничего не найдено")
+                    Text(L10n.t("Auto.8767f9ec28"))
                         .foregroundColor(.secondary)
                 }
             }
@@ -1746,7 +1746,7 @@ struct ChatSearchView: View {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 36))
                             .foregroundColor(.secondary)
-                        Text("Введите слово или фразу")
+                        Text(L10n.t("Auto.24226394d4"))
                             .foregroundColor(.secondary)
                     }
                 }
@@ -1869,7 +1869,7 @@ struct ChatNotificationSettingsView: View {
                             }
                         ))
                         if effectiveMuteFor > 0 {
-                            Picker("Не беспокоить", selection: Binding(
+                            Picker(L10n.t("Auto.00596788f6"), selection: Binding(
                                 get: { MuteOption(rawValue: effectiveMuteFor) ?? .forever },
                                 set: { option in
                                     update { $0.replacing(muteFor: option.rawValue, useDefaultMuteFor: false) }
@@ -1880,7 +1880,7 @@ struct ChatNotificationSettingsView: View {
                                 }
                             }
                         }
-                        Toggle("Звук", isOn: Binding(
+                        Toggle(L10n.t("Auto.9329d824a2"), isOn: Binding(
                             get: { effectiveSoundOn },
                             set: { enabled in
                                 update {
@@ -1891,7 +1891,7 @@ struct ChatNotificationSettingsView: View {
                                 }
                             }
                         ))
-                        Toggle("Показывать текст сообщения", isOn: Binding(
+                        Toggle(L10n.t("Auto.2c72211cb1"), isOn: Binding(
                             get: { effectivePreview },
                             set: { enabled in
                                 update { $0.replacing(showPreview: enabled, useDefaultShowPreview: false) }
@@ -1900,7 +1900,7 @@ struct ChatNotificationSettingsView: View {
                     } header: {
                         Text(chat?.title ?? "Чат")
                     } footer: {
-                        Text("Индивидуальные настройки этого чата имеют приоритет над настройками для всего типа чатов.")
+                        Text(L10n.t("Auto.9308ac5fb9"))
                             .font(.appFootnote)
                     }
 
@@ -1916,11 +1916,11 @@ struct ChatNotificationSettingsView: View {
                                 }
                             }
                         ))
-                        Button("Сбросить настройки чата") {
+                        Button(L10n.t("Auto.37b7313f13")) {
                             update { _ in settings.resettingToDefaults() }
                         }
                     } footer: {
-                        Text("Сброс возвращает наследование настроек категории.")
+                        Text(L10n.t("Auto.8a07d418aa"))
                             .font(.appFootnote)
                     }
 
@@ -1930,7 +1930,7 @@ struct ChatNotificationSettingsView: View {
                         }
                     }
                 } else {
-                    Text("Чат не найден").foregroundColor(.secondary)
+                    Text(L10n.t("Auto.ba4f4f8b1a")).foregroundColor(.secondary)
                 }
             }
             .navigationTitle(L10n.t("Common.Notifications"))

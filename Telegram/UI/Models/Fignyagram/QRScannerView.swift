@@ -32,7 +32,7 @@ struct QRCodeScannerSheet: View {
                     Spacer()
                 }
             }
-            .navigationTitle("QR-код")
+            .navigationTitle(L10n.t("Auto.26727ccb54"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

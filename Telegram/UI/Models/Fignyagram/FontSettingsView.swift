@@ -9,7 +9,7 @@ struct FontSettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section("Системные шрифты") {
+                Section(L10n.t("Auto.719a59ad42")) {
                     ForEach(FontManager.Builtin.allCases) { font in
                         Button {
                             fonts.select(font.rawValue)
@@ -26,7 +26,7 @@ struct FontSettingsView: View {
                 }
 
                 if !fonts.customNames.isEmpty {
-                    Section("Загруженные шрифты") {
+                    Section(L10n.t("Auto.ba5bf371c4")) {
                         ForEach(fonts.customNames, id: \.self) { name in
                             Button {
                                 fonts.select(name)
@@ -48,10 +48,10 @@ struct FontSettingsView: View {
 
                 Section {
                     Button { showPicker = true } label: {
-                        Label("Загрузить свой шрифт", systemImage: "square.and.arrow.down")
+                        Label(L10n.t("Auto.1c10432344"), systemImage: "square.and.arrow.down")
                     }
                 } footer: {
-                    Text("Поддерживаются TTF, OTF и TTC. Шрифт сохраняется в приложении и применяется ко всем экранам.")
+                    Text(L10n.t("Auto.6af9a33acd"))
                         .font(.footnote)
                 }
 
@@ -59,7 +59,7 @@ struct FontSettingsView: View {
                     Text(errorText).foregroundColor(.red).font(.footnote)
                 }
             }
-            .navigationTitle("Шрифт")
+            .navigationTitle(L10n.t("Auto.e479fdc532"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

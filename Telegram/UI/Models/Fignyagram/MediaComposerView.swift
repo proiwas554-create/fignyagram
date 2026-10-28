@@ -84,7 +84,7 @@ struct MediaComposerView: View {
                         .frame(minHeight: 90, maxHeight: 140)
                         .padding(4)
                     if caption.isEmpty {
-                        Text("Подпись к медиа…")
+                        Text(L10n.t("Auto.ba2d616efc"))
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 9)
                             .padding(.vertical, 12)

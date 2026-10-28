@@ -53,7 +53,7 @@ struct StickerPickerView: View {
 
                 tabContent
             }
-            .navigationTitle("Стикеры и гифки")
+            .navigationTitle(L10n.t("Auto.301763c9c8"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -106,8 +106,8 @@ struct StickerPickerView: View {
     private var gifContent: some View {
         VStack(spacing: 0) {
             Picker("", selection: $gifFilter) {
-                Text("Сохранённые").tag(0)
-                Text("Недавние").tag(1)
+                Text(L10n.t("Auto.2b56e539f3")).tag(0)
+                Text(L10n.t("Auto.83c8b9632d")).tag(1)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 12)
@@ -120,7 +120,7 @@ struct StickerPickerView: View {
                     Spacer()
                 } else if telegramGifs.isEmpty {
                     Spacer()
-                    Text("В Telegram пока нет сохранённых гифок. Сохраните гифку через долгое нажатие на сообщение.")
+                    Text(L10n.t("Auto.5835924ef2"))
                         .font(.appFootnote)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -139,7 +139,7 @@ struct StickerPickerView: View {
                                         await loadTelegramGifs()
                                     }
                                 } label: {
-                                    Label("Убрать из сохранённых", systemImage: "trash")
+                                    Label(L10n.t("Auto.729c583c40"), systemImage: "trash")
                                 }
                             }
                         }
@@ -147,7 +147,7 @@ struct StickerPickerView: View {
                 }
             } else if gifLibrary.recent.isEmpty {
                 Spacer()
-                Text("Вы ещё не отправляли гифки")
+                Text(L10n.t("Auto.fb2d59cbdf"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
                 Spacer()
@@ -163,7 +163,7 @@ struct StickerPickerView: View {
                             Button(role: .destructive) {
                                 gifLibrary.delete(gif)
                             } label: {
-                                Label("Удалить гифку", systemImage: "trash")
+                                Label(L10n.t("Auto.2ea6230ef2"), systemImage: "trash")
                             }
                         }
                     }

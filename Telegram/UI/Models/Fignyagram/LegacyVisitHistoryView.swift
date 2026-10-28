@@ -26,7 +26,7 @@ struct LegacyVisitHistoryView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .navigationTitle("История заходов")
+            .navigationTitle(L10n.t("Auto.817d7c3aa6"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

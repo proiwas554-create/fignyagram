@@ -53,14 +53,14 @@ struct ChatMembersView: View {
                                             .font(.subheadline.bold())
                                             .lineLimit(1)
                                         if member.isCreator {
-                                            Text("создатель")
+                                            Text(L10n.t("Auto.2dd8047b9f"))
                                                 .font(.caption2.bold())
                                                 .padding(.horizontal, 5)
                                                 .padding(.vertical, 1)
                                                 .background(Capsule().fill(Color.green.opacity(0.18)))
                                                 .foregroundColor(.green)
                                         } else if member.isAdmin {
-                                            Text("админ")
+                                            Text(L10n.t("Auto.e61dfbc3c9"))
                                                 .font(.caption2.bold())
                                                 .padding(.horizontal, 5)
                                                 .padding(.vertical, 1)
@@ -85,7 +85,7 @@ struct ChatMembersView: View {
                                     Button {
                                         tagMember = member
                                     } label: {
-                                        Label("Выдать тег", systemImage: "tag")
+                                        Label(L10n.t("Auto.958ac8dd2a"), systemImage: "tag")
                                     }
                                     Button {
                                         rightsMember = member
@@ -109,7 +109,7 @@ struct ChatMembersView: View {
                     .onChange(of: query) { _ in Task { await load() } }
                 }
             }
-            .navigationTitle("Участники")
+            .navigationTitle(L10n.t("Auto.85b226b500"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -210,7 +210,7 @@ private struct AddChatMemberView: View {
                     }
                 }
             }
-            .navigationTitle("Добавить участника")
+            .navigationTitle(L10n.t("Auto.393f688cda"))
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $query, prompt: "Имя или @username")
             .onChange(of: query) { value in
@@ -254,20 +254,20 @@ private struct MemberRightsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Права администратора") {
-                    Toggle("Изменять информацию", isOn: $canChangeInfo)
-                    Toggle("Удалять сообщения", isOn: $canDeleteMessages)
-                    Toggle("Приглашать участников", isOn: $canInviteUsers)
-                    Toggle("Закреплять сообщения", isOn: $canPinMessages)
-                    Toggle("Управлять тегами", isOn: $canManageTags)
-                    Toggle("Ограничивать участников", isOn: $canRestrictMembers)
-                    Toggle("Назначать админов", isOn: $canPromoteMembers)
-                    Toggle("Управлять видеочатами", isOn: $canManageVideoChats)
-                    Toggle("Анонимный админ", isOn: $isAnonymous)
+                Section(L10n.t("Auto.ef6810058a")) {
+                    Toggle(L10n.t("Auto.dfae6632a3"), isOn: $canChangeInfo)
+                    Toggle(L10n.t("Auto.feed53a8d8"), isOn: $canDeleteMessages)
+                    Toggle(L10n.t("Auto.b8621e1357"), isOn: $canInviteUsers)
+                    Toggle(L10n.t("Auto.0c2e4aadaf"), isOn: $canPinMessages)
+                    Toggle(L10n.t("Auto.4827b13f99"), isOn: $canManageTags)
+                    Toggle(L10n.t("Auto.5638cbc3c3"), isOn: $canRestrictMembers)
+                    Toggle(L10n.t("Auto.602a0eb978"), isOn: $canPromoteMembers)
+                    Toggle(L10n.t("Auto.d3b3c39034"), isOn: $canManageVideoChats)
+                    Toggle(L10n.t("Auto.45b7e78fc4"), isOn: $isAnonymous)
                 }
                 if member.isAdmin {
                     Section {
-                        Button("Снять права администратора", role: .destructive) {
+                        Button(L10n.t("Auto.2c64c95dee"), role: .destructive) {
                             Task {
                                 do {
                                     try await client.demoteChatMember(chatId: chatId, userId: member.id)

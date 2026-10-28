@@ -22,16 +22,16 @@ struct ShareComposerView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("Текст") {
+                Section(L10n.t("Auto.8c45d9cf57")) {
                     TextEditor(text: $text).frame(minHeight: 100)
                 }
                 if !files.isEmpty {
-                    Section("Файлы") {
+                    Section(L10n.t("Auto.200cd7baf7")) {
                         ForEach(files.indices, id: \.self) { index in
                             VStack(alignment: .leading, spacing: 5) {
                                 HStack {
                                     Image(systemName: icon(for: files[index]))
-                                    TextField("Имя файла", text: $fileNames[index])
+                                    TextField(L10n.t("Auto.1aa39e331d"), text: $fileNames[index])
                                         .textInputAutocapitalization(.never)
                                         .autocorrectionDisabled()
                                     Button(role: .destructive) {
@@ -51,11 +51,11 @@ struct ShareComposerView: View {
                 }
                 Section {
                     Button { showChatPicker = true } label: {
-                        Label("Выбрать чат или канал", systemImage: "paperplane")
+                        Label(L10n.t("Auto.724d5961a1"), systemImage: "paperplane")
                     }
                 }
             }
-            .navigationTitle("Поделиться в Fignyagram")
+            .navigationTitle(L10n.t("Auto.29eeabd94c"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

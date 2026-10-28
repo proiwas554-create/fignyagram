@@ -33,7 +33,7 @@ struct SearchHistoryView: View {
         NavigationView {
             List {
                 if recentContactsEnabled, !recent.userIds.isEmpty {
-                    Section("Недавние контакты") {
+                    Section(L10n.t("Auto.908a0e3b6d")) {
                         ForEach(recent.userIds, id: \.self) { userId in
                             if let user = store.users[userId] {
                                 Button {
@@ -56,14 +56,14 @@ struct SearchHistoryView: View {
                                     Button(role: .destructive) {
                                         recent.remove(userId)
                                     } label: {
-                                        Label("Убрать", systemImage: "person.badge.minus")
+                                        Label(L10n.t("Auto.1acab36443"), systemImage: "person.badge.minus")
                                     }
                                 }
                                 .contextMenu {
                                     Button(role: .destructive) {
                                         recent.remove(userId)
                                     } label: {
-                                        Label("Убрать из недавних", systemImage: "person.badge.minus")
+                                        Label(L10n.t("Auto.8dbda610da"), systemImage: "person.badge.minus")
                                     }
                                 }
                             }
@@ -71,7 +71,7 @@ struct SearchHistoryView: View {
                     }
                 }
                 if recentContactsEnabled, contactsEnabledFromServer, !serverContacts.isEmpty {
-                    Section("Контакты Telegram") {
+                    Section(L10n.t("Auto.417fd2d8ab")) {
                         ForEach(serverContacts, id: \.self) { userId in
                             if let user = store.users[userId] {
                                 Button {
@@ -98,7 +98,7 @@ struct SearchHistoryView: View {
                     }
                 }
                 if history.items.isEmpty {
-                    Text("История поиска пуста")
+                    Text(L10n.t("Auto.1b6ba6e8b8"))
                         .foregroundColor(.secondary)
                 } else {
                     ForEach(history.items, id: \.self) { item in
@@ -117,7 +117,7 @@ struct SearchHistoryView: View {
                     }
                 }
             }
-            .navigationTitle("История поиска")
+            .navigationTitle(L10n.t("Auto.428f603037"))
             .modifier(GlassListModifier())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -126,7 +126,7 @@ struct SearchHistoryView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !history.items.isEmpty {
-                        Button("Очистить", role: .destructive) { history.clear() }
+                        Button(L10n.t("Auto.7074366a75"), role: .destructive) { history.clear() }
                     }
                 }
             }

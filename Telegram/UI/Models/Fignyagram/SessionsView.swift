@@ -21,7 +21,7 @@ struct SessionsView: View {
                                 Text(session.deviceModel.isEmpty ? session.applicationName : session.deviceModel)
                                     .font(.appHeadline)
                                 if session.isCurrent {
-                                    Text("это устройство")
+                                    Text(L10n.t("Auto.75f8aea5aa"))
                                         .font(.appCaption2)
                                         .padding(.horizontal, 6).padding(.vertical, 2)
                                         .background(Capsule().fill(Color.accentColor.opacity(0.15)))
@@ -45,7 +45,7 @@ struct SessionsView: View {
                                         await reload()
                                     }
                                 } label: {
-                                    Label("Завершить сессию", systemImage: "xmark.circle")
+                                    Label(L10n.t("Auto.dd1975906b"), systemImage: "xmark.circle")
                                 }
                             }
                         }
@@ -55,19 +55,19 @@ struct SessionsView: View {
                     Button(role: .destructive) {
                         confirmTerminateAll = true
                     } label: {
-                        Label("Завершить все другие сессии", systemImage: "rectangle.portrait.and.arrow.right")
+                        Label(L10n.t("Auto.11b067d1d2"), systemImage: "rectangle.portrait.and.arrow.right")
                     }
                 }
             }
-            .navigationTitle("Устройства")
+            .navigationTitle(L10n.t("Auto.5172b9d52e"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
-            .confirmationDialog("Завершить все другие сессии?", isPresented: $confirmTerminateAll, titleVisibility: .visible) {
-                Button("Завершить", role: .destructive) {
+            .confirmationDialog(L10n.t("Auto.8b3d82f340"), isPresented: $confirmTerminateAll, titleVisibility: .visible) {
+                Button(L10n.t("Auto.b0e3a5e058"), role: .destructive) {
                     Task {
                         try? await client.terminateOtherSessions()
                         await reload()
@@ -75,7 +75,7 @@ struct SessionsView: View {
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Все устройства, кроме этого, будут разлогинены.")
+                Text(L10n.t("Auto.9d8c631cbf"))
             }
             .task { await reload() }
         }

@@ -38,7 +38,7 @@ struct GroupCallView: View {
                     .foregroundColor(.white.opacity(0.85))
 
                 if !group.speakerTitles.isEmpty {
-                    Text("Говорят: " + group.speakerTitles.joined(separator: ", "))
+                    Text(L10n.t("Auto.71fb649861") + group.speakerTitles.joined(separator: ", "))
                         .font(.appCaption)
                         .foregroundColor(.green)
                         .multilineTextAlignment(.center)
@@ -108,7 +108,7 @@ struct GroupCallView: View {
                                 .frame(width: 58, height: 58)
                                 .background(Circle().fill(Color.red))
                                 .foregroundColor(.white)
-                            Text("Выйти")
+                            Text(L10n.t("Auto.0f05cf8ab6"))
                                 .font(.appCaption)
                                 .foregroundColor(.white.opacity(0.8))
                         }

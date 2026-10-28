@@ -44,7 +44,7 @@ struct AvatarViewerView: View {
                         .font(.system(size: 22))
                         .foregroundColor(.white)
                 }
-                .accessibilityLabel("Сохранить аватарку")
+                .accessibilityLabel(L10n.t("Auto.8c6d68db53"))
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -52,7 +52,7 @@ struct AvatarViewerView: View {
         .statusBar(hidden: true)
         .overlay(alignment: .bottom) {
             if saved {
-                Text("Сохранено")
+                Text(L10n.t("Auto.54a59b19f9"))
                     .font(.appCaption)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -102,7 +102,7 @@ private struct AvatarImagePage: View {
             } else if failed {
                 VStack(spacing: 10) {
                     Image(systemName: "photo").font(.system(size: 44))
-                    Text("Не удалось загрузить аватарку").font(.appFootnote)
+                    Text(L10n.t("Auto.fb2e743f49")).font(.appFootnote)
                 }
                 .foregroundColor(.white.opacity(0.7))
             } else {

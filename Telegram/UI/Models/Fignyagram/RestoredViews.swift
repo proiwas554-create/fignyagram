@@ -34,17 +34,17 @@ struct NotificationSettingsView: View {
         NavigationView {
             Form {
                 Section {
-                    Toggle("Уведомления включены", isOn: $enabled)
+                    Toggle(L10n.t("Auto.1d2f7bc0f8"), isOn: $enabled)
                 } footer: {
-                    Text("Полностью отключает все локальные уведомления, включая личные сообщения и группы.")
+                    Text(L10n.t("Auto.5c33723f7e"))
                         .font(.appFootnote)
                 }
 
                 Section {
-                    Toggle("Только личные сообщения", isOn: $onlyPrivate)
-                    Toggle("Только от людей", isOn: $onlyHumans)
+                    Toggle(L10n.t("Auto.5bdd925f3c"), isOn: $onlyPrivate)
+                    Toggle(L10n.t("Auto.1275887465"), isOn: $onlyHumans)
                 } footer: {
-                    Text("Первый переключатель отключает уведомления из групп и каналов. Второй скрывает уведомления от ботов — сообщения обычных людей продолжат приходить по настройкам ниже.")
+                    Text(L10n.t("Auto.6d52bc1eed"))
                         .font(.appFootnote)
                 }
                 .disabled(!enabled)
@@ -52,33 +52,33 @@ struct NotificationSettingsView: View {
                 Section {
                     NavigationLink {
                         NotificationScopeDetailView(title: "Личные чаты", icon: "person", key: "Private")
-                    } label: { Label("Личные чаты", systemImage: "person") }
+                    } label: { Label(L10n.t("Auto.e1087ec78b"), systemImage: "person") }
                     NavigationLink {
                         NotificationScopeDetailView(title: "Группы", icon: "person.2", key: "Groups")
-                    } label: { Label("Группы", systemImage: "person.2") }
+                    } label: { Label(L10n.t("Auto.ebc417c95a"), systemImage: "person.2") }
                     NavigationLink {
                         NotificationScopeDetailView(title: "Каналы", icon: "megaphone", key: "Channels")
-                    } label: { Label("Каналы", systemImage: "megaphone") }
+                    } label: { Label(L10n.t("Auto.0c1119c13e"), systemImage: "megaphone") }
                 } header: {
-                    Text("Источники уведомлений")
+                    Text(L10n.t("Auto.f33dc46aa9"))
                 } footer: {
-                    Text("Отдельные чаты и каналы можно замьютить колокольчиком в верхней панели чата.")
+                    Text(L10n.t("Auto.8e4ac9c845"))
                         .font(.appFootnote)
                 }
                 .disabled(!enabled)
 
                 Section {
                     HStack {
-                        Text("Разрешение iOS")
+                        Text(L10n.t("Auto.543ee0732d"))
                         Spacer()
                         Text(permissionText).foregroundColor(.secondary)
                     }
-                    Button("Запросить разрешение") {
+                    Button(L10n.t("Auto.63106994e4")) {
                         AppNotifications.shared.requestAuthorization()
                         refreshPermission()
                     }
                 } footer: {
-                    Text("Локальные уведомления работают, пока приложение запущено или ещё не выгружено из памяти.")
+                    Text(L10n.t("Auto.8cfc442457"))
                         .font(.appFootnote)
                 }
             }
@@ -133,17 +133,17 @@ struct NotificationScopeDetailView: View {
         Form {
             Section {
                 Toggle(L10n.t("Common.Notifications"), isOn: $enabled)
-                Picker("Не беспокоить", selection: $mute) {
-                    Text("По умолчанию").tag(0)
-                    Text("1 час").tag(3600)
-                    Text("8 часов").tag(28800)
-                    Text("1 день").tag(86400)
-                    Text("Навсегда").tag(-1)
+                Picker(L10n.t("Auto.00596788f6"), selection: $mute) {
+                    Text(L10n.t("Auto.d3b9e44014")).tag(0)
+                    Text(L10n.t("Auto.b56e1c416c")).tag(3600)
+                    Text(L10n.t("Auto.1536267a9f")).tag(28800)
+                    Text(L10n.t("Auto.cf9000d173")).tag(86400)
+                    Text(L10n.t("Auto.b2eda19397")).tag(-1)
                 }
-                Toggle("Текст сообщения", isOn: $preview)
-                Toggle("Звук", isOn: $sound)
+                Toggle(L10n.t("Auto.2c476e3938"), isOn: $preview)
+                Toggle(L10n.t("Auto.9329d824a2"), isOn: $sound)
             } footer: {
-                Text("Эти настройки применяются ко всем чатам этого типа, если у чата нет индивидуальных настроек.")
+                Text(L10n.t("Auto.475d9aff6c"))
                     .font(.appFootnote)
             }
         }
@@ -166,7 +166,7 @@ struct LimitsSettingsView: View {
                             in: DisplayLimits.messageRange,
                             step: 20) {
                         HStack {
-                            Text("Сообщений в чате")
+                            Text(L10n.t("Auto.a4578ef34d"))
                             Spacer()
                             Text("\(limits.maxMessagesPerChat)").monospacedDigit().foregroundColor(.secondary)
                         }
@@ -175,17 +175,17 @@ struct LimitsSettingsView: View {
                             in: DisplayLimits.chatRange,
                             step: 10) {
                         HStack {
-                            Text("Чатов в списке")
+                            Text(L10n.t("Auto.b4dd5aed0c"))
                             Spacer()
                             Text("\(limits.maxRenderedChats)").monospacedDigit().foregroundColor(.secondary)
                         }
                     }
                 } footer: {
-                    Text("Ограничения влияют только на объём одновременно отображаемых данных и не удаляют историю.")
+                    Text(L10n.t("Auto.f9e9f90115"))
                         .font(.appFootnote)
                 }
             }
-            .navigationTitle("Лимиты отображения")
+            .navigationTitle(L10n.t("Auto.73e8dc0ad7"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

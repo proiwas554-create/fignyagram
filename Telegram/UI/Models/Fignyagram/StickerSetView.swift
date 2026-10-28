@@ -40,7 +40,7 @@ struct StickerSetView: View {
                     Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
-            .confirmationDialog("Отправить стикер?", isPresented: Binding(
+            .confirmationDialog(L10n.t("Auto.4120436f22"), isPresented: Binding(
                 get: { pendingSticker != nil },
                 set: { if !$0 { pendingSticker = nil } }
             ), titleVisibility: .visible) {
@@ -52,7 +52,7 @@ struct StickerSetView: View {
                 }
                 Button(L10n.t("Common.Cancel"), role: .cancel) { pendingSticker = nil }
             } message: {
-                Text("Стикер будет отправлен в текущий чат.")
+                Text(L10n.t("Auto.e1ce074887"))
             }
             .task {
                 do { set = try await client.stickerSet(id: setId) }

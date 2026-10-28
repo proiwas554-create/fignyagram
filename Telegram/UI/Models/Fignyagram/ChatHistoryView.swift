@@ -12,7 +12,7 @@ struct ChatHistoryView: View {
         NavigationView {
             List {
                 if history.visits.isEmpty {
-                    Text("История посещений пуста")
+                    Text(L10n.t("Auto.eb556d7cf5"))
                         .foregroundColor(.secondary)
                 } else {
                     ForEach(history.visits) { visit in
@@ -43,7 +43,7 @@ struct ChatHistoryView: View {
                 }
             }
             .listStyle(.plain)
-            .navigationTitle("История заходов")
+            .navigationTitle(L10n.t("Auto.817d7c3aa6"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -51,7 +51,7 @@ struct ChatHistoryView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if !history.visits.isEmpty {
-                        Button("Очистить", role: .destructive) {
+                        Button(L10n.t("Auto.7074366a75"), role: .destructive) {
                             history.clear()
                         }
                     }

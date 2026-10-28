@@ -44,7 +44,7 @@ struct VideoEditorView: View {
 
                 VStack(spacing: 10) {
                     HStack {
-                        Text("Начало")
+                        Text(L10n.t("Auto.0d1e0cd7fc"))
                         Spacer()
                         Text(time(start))
                             .monospacedDigit()
@@ -60,7 +60,7 @@ struct VideoEditorView: View {
                     ), in: 0...max(duration, 0.3))
 
                     HStack {
-                        Text("Конец")
+                        Text(L10n.t("Auto.3573878627"))
                         Spacer()
                         Text(time(end))
                             .monospacedDigit()
@@ -79,15 +79,15 @@ struct VideoEditorView: View {
                         Text("Длительность: \(time(end - start))")
                             .font(.appFootnote)
                         Spacer()
-                        Toggle("Без звука", isOn: $muted)
+                        Toggle(L10n.t("Auto.9f63511c00"), isOn: $muted)
                             .labelsHidden()
-                        Text("Без звука")
+                        Text(L10n.t("Auto.9f63511c00"))
                             .font(.appFootnote)
                     }
                 }
                 .padding(.horizontal, 18)
 
-                Button("Сбросить обрезку") {
+                Button(L10n.t("Auto.5e754d48c7")) {
                     start = 0
                     end = duration
                     seek(0)
@@ -97,7 +97,7 @@ struct VideoEditorView: View {
                 Spacer(minLength: 0)
             }
             .padding(.top, 10)
-            .navigationTitle("Видеоредактор")
+            .navigationTitle(L10n.t("Auto.d6b0988dca"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -115,7 +115,7 @@ struct VideoEditorView: View {
                     VStack(spacing: 10) {
                         ProgressView(value: progress)
                             .frame(width: 180)
-                        Text("Обработка видео…").font(.appFootnote)
+                        Text(L10n.t("Auto.658bc8927a")).font(.appFootnote)
                         if let errorText {
                             Text(errorText)
                                 .font(.appCaption)

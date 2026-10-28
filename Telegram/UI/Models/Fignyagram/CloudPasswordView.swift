@@ -33,7 +33,7 @@ struct CloudPasswordView: View {
                         changeSection
                         resetSection
                         Section {
-                            Button("Отключить облачный пароль", role: .destructive) {
+                            Button(L10n.t("Auto.cf6defa853"), role: .destructive) {
                                 showDisable = true
                             }
                         }
@@ -41,11 +41,11 @@ struct CloudPasswordView: View {
                         setupSection
                     }
                 } else {
-                    Text("Не удалось загрузить состояние пароля")
+                    Text(L10n.t("Auto.7930ea6a43"))
                         .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Облачный пароль")
+            .navigationTitle(L10n.t("Auto.5a77c57a29"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -53,15 +53,14 @@ struct CloudPasswordView: View {
                 }
             }
             .task { await load() }
-            .confirmationDialog(
-                "Отключить облачный пароль?",
+            .confirmationDialog(L10n.t("Auto.420f12339f"),
                 isPresented: $showDisable,
                 titleVisibility: .visible
             ) {
-                Button("Отключить", role: .destructive) { disablePassword() }
+                Button(L10n.t("Auto.b278285aef"), role: .destructive) { disablePassword() }
                 Button(L10n.t("Common.Cancel"), role: .cancel) {}
             } message: {
-                Text("Для отключения введите текущий пароль в поле «Текущий пароль».")
+                Text(L10n.t("Auto.3fd310bfbb"))
             }
         }
         .navigationViewStyle(.stack)
@@ -70,7 +69,7 @@ struct CloudPasswordView: View {
     private func statusSection(_ state: PasswordState) -> some View {
         Section {
             HStack {
-                Text("Двухэтапная проверка")
+                Text(L10n.t("Auto.2be9fce5be"))
                 Spacer()
                 Text(state.hasPassword ? "Включена" : "Выключена")
                     .foregroundColor(state.hasPassword ? .green : .secondary)
@@ -81,7 +80,7 @@ struct CloudPasswordView: View {
                     .foregroundColor(.secondary)
             }
             if state.hasRecoveryEmailAddress {
-                Text("Резервная почта привязана")
+                Text(L10n.t("Auto.faa814c89d"))
                     .font(.appFootnote)
                     .foregroundColor(.secondary)
             }
@@ -92,15 +91,15 @@ struct CloudPasswordView: View {
         Section {
             SecureField("Новый пароль", text: $newPassword)
             SecureField("Повторите пароль", text: $confirmPassword)
-            TextField("Подсказка (необязательно)", text: $hint)
-            TextField("Резервная почта (необязательно)", text: $recoveryEmail)
+            TextField(L10n.t("Auto.9b11400452"), text: $hint)
+            TextField(L10n.t("Auto.abc95e528d"), text: $recoveryEmail)
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
-            Button("Установить пароль") { save() }
+            Button(L10n.t("Auto.a5c96f7eb2")) { save() }
                 .disabled(isSaving || !canSubmit)
         } footer: {
-            Text("Пароль запрашивается при входе в аккаунт на новом устройстве.")
+            Text(L10n.t("Auto.7be4b3b199"))
                 .font(.appFootnote)
         }
     }
@@ -110,13 +109,13 @@ struct CloudPasswordView: View {
             SecureField("Текущий пароль", text: $oldPassword)
             SecureField("Новый пароль", text: $newPassword)
             SecureField("Повторите новый пароль", text: $confirmPassword)
-            TextField("Новая подсказка", text: $hint)
-            Button("Сохранить пароль") { save() }
+            TextField(L10n.t("Auto.69af60dcda"), text: $hint)
+            Button(L10n.t("Auto.9ddb6c7f01")) { save() }
                 .disabled(isSaving || oldPassword.isEmpty || !canSubmit)
         } header: {
-            Text("Изменить пароль")
+            Text(L10n.t("Auto.66fe09f030"))
         } footer: {
-            Text("Чтобы отключить пароль, оставьте новые поля пустыми и подтвердите действие.")
+            Text(L10n.t("Auto.f4246ba3a4"))
                 .font(.appFootnote)
         }
     }
@@ -124,12 +123,12 @@ struct CloudPasswordView: View {
     private var resetSection: some View {
         Section {
             if !showReset {
-                Button("Забыли пароль?") {
+                Button(L10n.t("Auto.38bb0dceae")) {
                     showReset = true
                 }
             } else {
                 if !resetRequested {
-                    Button("Отправить код на резервную почту") {
+                    Button(L10n.t("Auto.80c7108e42")) {
                         Task {
                             do {
                                 let info = try await client.requestPasswordRecovery()
@@ -143,19 +142,19 @@ struct CloudPasswordView: View {
                 } else {
                     Text("Код отправлен на \(resetEmailPattern)")
                         .font(.appFootnote)
-                    TextField("Код из письма", text: $resetCode)
+                    TextField(L10n.t("Auto.0e6ee45cf3"), text: $resetCode)
                         .keyboardType(.numberPad)
                     SecureField("Новый пароль", text: $newPassword)
                     SecureField("Повторите пароль", text: $confirmPassword)
-                    TextField("Новая подсказка", text: $hint)
-                    Button("Сбросить пароль") { recover() }
+                    TextField(L10n.t("Auto.69af60dcda"), text: $hint)
+                    Button(L10n.t("Auto.8513955adb")) { recover() }
                         .disabled(isSaving || resetCode.isEmpty || !canSubmit)
                 }
             }
         } header: {
-            Text("Восстановление")
+            Text(L10n.t("Auto.a6822a598f"))
         } footer: {
-            Text("Если пароль забыт, код придёт на почту, которую вы привязали заранее.")
+            Text(L10n.t("Auto.4942872d4a"))
                 .font(.appFootnote)
         }
     }
