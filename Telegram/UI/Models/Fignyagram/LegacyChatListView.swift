@@ -23,10 +23,10 @@ struct LegacyChatListView: View {
     @State private var extraChats = 0
     @State private var showProfile = false
     @State private var showVisitHistory = false
-    @State private var actionChat: ChatItem?
 
     private var currentVisibleCount: Int {
-        extraChats > 0 ? extraChats : limits.effectiveRenderedChats
+        // Start at 10 like the flagship "Show more 10" and grow by 10.
+        extraChats > 0 ? extraChats : 10
     }
 
     private var orderedIds: [Int64] {
@@ -85,16 +85,50 @@ struct LegacyChatListView: View {
                                 .tint(.orange)
                             }
                         }
-                        // iOS 15: full action list without the heavy blurred
-                        // context-menu preview (flat confirmation sheet instead).
-                        .contentShape(Rectangle())
-                        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 40) {
-                            actionChat = chat
+                        .contextMenu {
+                            if chat.id == store.lastOpenedChatId {
+                                Button { showVisitHistory = true } label: {
+                                    Label(L10n.t("Auto.817d7c3aa6"), systemImage: "clock.arrow.circlepath")
+                                }
+                            }
+                            Button { client.setPinned(chatId: chat.id, isPinned: !isPinned(chat)) } label: {
+                                Label(isPinned(chat) ? NSLocalizedString("Generated.798e51f8c12e", comment: "")
+                                                     : NSLocalizedString("Generated.c7266fe01d12", comment: ""), systemImage: "pin")
+                            }
+                            if chat.privateUserId != nil || chat.isGroup || chat.isChannel {
+                                Button { client.copyUsername(for: chat) } label: {
+                                    Label(L10n.t("Auto.cafef2eacc"), systemImage: "at")
+                                }
+                            }
+                            if chat.isGroup && !chat.isChannel {
+                                Button {
+                                    Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: false) }
+                                } label: { Label(L10n.t("Auto.2083dc98d2"), systemImage: "waveform") }
+                                Button {
+                                    Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: true) }
+                                } label: { Label(L10n.t("Auto.2d574feb87"), systemImage: "video.badge.waveform") }
+                            }
+                            if let userId = chat.privateUserId, userId != client.me?.id {
+                                Button { client.callUser(userId: userId, isVideo: false) } label: {
+                                    Label(L10n.t("Auto.ccfa0757c1"), systemImage: "phone")
+                                }
+                                Button { client.callUser(userId: userId, isVideo: true) } label: {
+                                    Label(L10n.t("Auto.8142cd497d"), systemImage: "video")
+                                }
+                            }
+                            if let userId = chat.privateUserId {
+                                Button {
+                                    client.setUserBlocked(userId: userId, isBlocked: !store.isUserBlocked(userId))
+                                } label: {
+                                    Label(store.isUserBlocked(userId) ? NSLocalizedString("Generated.ed4323481ea0", comment: "")
+                                                                      : NSLocalizedString("Generated.619f0805b541", comment: ""), systemImage: "hand.raised")
+                                }
+                            }
                         }
                         }
                     }
                     .listStyle(.plain)
-                    .overlay(alignment: .bottom) {
+                    .safeAreaInset(edge: .bottom, spacing: 0) {
                         if totalChatCount > currentVisibleCount {
                             Button {
                                 extraChats = max(10, currentVisibleCount) + 10
@@ -175,44 +209,6 @@ struct LegacyChatListView: View {
             }
             .sheet(isPresented: $showSettings) { SettingsView() }
             .sheet(isPresented: $showProfile) { ProfileSettingsView() }
-            .confirmationDialog(
-                actionChat?.title ?? "",
-                isPresented: Binding(get: { actionChat != nil },
-                                     set: { if !$0 { actionChat = nil } }),
-                titleVisibility: .visible
-            ) {
-                if let chat = actionChat {
-                    if chat.id == store.lastOpenedChatId {
-                        Button(L10n.t("Auto.817d7c3aa6")) { showVisitHistory = true }
-                    }
-                    Button(isPinned(chat) ? NSLocalizedString("Generated.798e51f8c12e", comment: "")
-                                          : NSLocalizedString("Generated.c7266fe01d12", comment: "")) {
-                        client.setPinned(chatId: chat.id, isPinned: !isPinned(chat))
-                    }
-                    if chat.privateUserId != nil || chat.isGroup || chat.isChannel {
-                        Button(L10n.t("Auto.cafef2eacc")) { client.copyUsername(for: chat) }
-                    }
-                    if chat.isGroup && !chat.isChannel {
-                        Button(L10n.t("Auto.2083dc98d2")) {
-                            Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: false) }
-                        }
-                        Button(L10n.t("Auto.2d574feb87")) {
-                            Task { await GroupCallManager.shared.startOrJoin(chatId: chat.id, title: chat.title, video: true) }
-                        }
-                    }
-                    if let userId = chat.privateUserId, userId != client.me?.id {
-                        Button(L10n.t("Auto.ccfa0757c1")) { client.callUser(userId: userId, isVideo: false) }
-                        Button(L10n.t("Auto.8142cd497d")) { client.callUser(userId: userId, isVideo: true) }
-                    }
-                    if let userId = chat.privateUserId {
-                        Button(store.isUserBlocked(userId) ? NSLocalizedString("Generated.ed4323481ea0", comment: "")
-                                                           : NSLocalizedString("Generated.619f0805b541", comment: "")) {
-                            client.setUserBlocked(userId: userId, isBlocked: !store.isUserBlocked(userId))
-                        }
-                    }
-                    Button(L10n.t("Common.Cancel"), role: .cancel) {}
-                }
-            }
             .sheet(isPresented: $showVisitHistory) {
                 LegacyVisitHistoryView { chatId in
                     showVisitHistory = false
