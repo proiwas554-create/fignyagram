@@ -25,9 +25,12 @@ struct LegacyChatListView: View {
     @State private var showVisitHistory = false
     @State private var actionChat: ChatItem?
 
+    private var currentVisibleCount: Int {
+        extraChats > 0 ? extraChats : limits.effectiveRenderedChats
+    }
+
     private var orderedIds: [Int64] {
-        let limit = max(20, limits.effectiveRenderedChats) + extraChats
-        var ids = Array(store.mainChatIds.prefix(limit))
+        var ids = Array(store.mainChatIds.prefix(max(1, currentVisibleCount)))
         if let saved = store.chats.first(where: { $0.value.privateUserId == client.me?.id })?.key {
             ids.removeAll { $0 == saved }
             ids.insert(saved, at: 0)
@@ -84,14 +87,17 @@ struct LegacyChatListView: View {
                         }
                         // iOS 15: full action list without the heavy blurred
                         // context-menu preview (flat confirmation sheet instead).
-                        .onLongPressGesture { actionChat = chat }
+                        .contentShape(Rectangle())
+                        .onLongPressGesture(minimumDuration: 0.5, maximumDistance: 40) {
+                            actionChat = chat
+                        }
                         }
                     }
                     .listStyle(.plain)
                     .overlay(alignment: .bottom) {
-                        if totalChatCount > max(20, limits.effectiveRenderedChats) + extraChats {
+                        if totalChatCount > currentVisibleCount {
                             Button {
-                                extraChats += max(20, limits.effectiveRenderedChats)
+                                extraChats = max(10, currentVisibleCount) + 10
                             } label: {
                                 Text(L10n.t("Auto.e747ec0bb6"))
                                     .font(.footnote)
