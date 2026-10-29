@@ -1972,4 +1972,4 @@
 "Feed.Tab.Title" = "News";
 "Settings.FixedFPS" = "Feste FPS";
 "Settings.FPSLimit" = "Bildrate-Limit";
-"Settings.FixedFPSHint" = "Begrenzt die Bildrate.";
+"Settings.FixedFPSHint" = "Begrenzt die Display-Link-Animationen. iOS erlaubt keine Änderung der Panel-Bildrate.";

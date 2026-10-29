@@ -10,6 +10,7 @@ struct FignyagramApp: App {
     init() {
         CrashTrace.installExceptionHandler()
         CrashTrace.step("app init start")
+        FrameRateController.startGovernor()
         ConsoleCapture.install()
         ImageCache.configureForDevice()
         _ = HardwareTuning.shared

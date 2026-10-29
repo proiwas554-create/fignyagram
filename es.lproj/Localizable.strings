@@ -1972,4 +1972,4 @@
 "Feed.Tab.Title" = "Noticias";
 "Settings.FixedFPS" = "FPS fijo";
 "Settings.FPSLimit" = "Límite de fotogramas";
-"Settings.FixedFPSHint" = "Limita la tasa de fotogramas.";
+"Settings.FixedFPSHint" = "Limita las animaciones de la app. iOS no permite cambiar la frecuencia del panel.";

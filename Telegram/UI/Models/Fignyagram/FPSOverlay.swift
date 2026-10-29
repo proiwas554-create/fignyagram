@@ -44,7 +44,9 @@ struct FPSOverlayView: View {
     @State private var proxy = FPSProxy()
 
     var body: some View {
-        Text("FPS \(Int(fps.rounded()))")
+        Text(FrameRateController.isEnabled
+             ? "FPS \(Int(fps.rounded())) · cap \(FrameRateController.value)"
+             : "FPS \(Int(fps.rounded()))")
             .font(.caption2.monospacedDigit().bold())
             .padding(.horizontal, 8)
             .padding(.vertical, 4)

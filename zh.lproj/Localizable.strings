@@ -1972,4 +1972,4 @@
 "Feed.Tab.Title" = "新闻";
 "Settings.FixedFPS" = "固定帧率";
 "Settings.FPSLimit" = "帧率限制";
-"Settings.FixedFPSHint" = "将帧率限制为所选值。";
+"Settings.FixedFPSHint" = "限制应用的显示链接动画。iOS 不允许第三方应用更改面板刷新率。";
