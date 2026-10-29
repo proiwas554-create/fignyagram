@@ -25,6 +25,8 @@ struct ContentView: View {
                 Group {
                     if classic.isEnabled {
                         classicRoot
+                    } else if #available(iOS 16.0, *) {
+                        modernRoot
                     } else {
                         MainRootView()
                     }
@@ -120,6 +122,25 @@ struct ContentView: View {
     /// NavigationViews / searchable controllers), which crashed iOS 15.
     private var legacyRoot: some View {
         MainRootView()
+    }
+
+    /// Original flagship root (iOS 16+): native TabView and its look.
+    private var modernRoot: some View {
+        TabView(selection: $selectedTab) {
+            ChatListView()
+                .tag(0)
+                .tabItem { Label(L10n.t("Auto.19adecc3d1"), systemImage: "bubble.left.and.bubble.right") }
+            if showMusicTab {
+                MusicView()
+                    .tag(1)
+                    .tabItem { Label(L10n.t("Auto.0660a7580a"), systemImage: "music.note") }
+            }
+            if showNewsTab {
+                NewsFeedView()
+                    .tag(2)
+                    .tabItem { Label(L10n.t("Auto.69df1f85b0"), systemImage: "newspaper") }
+            }
+        }
     }
 
     private var classicRoot: some View {

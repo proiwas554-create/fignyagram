@@ -645,10 +645,14 @@ struct ChatView: View {
         }
     }
 
+    @ViewBuilder
     private var messageList: some View {
-        // Single implementation for every device: SwiftUI List aborts on iOS 15,
-        // a LazyVStack scroll view behaves identically everywhere.
-        legacyMessageList
+        if #available(iOS 16.0, *) {
+            modernMessageList
+        } else {
+            // iOS 15: SwiftUI List aborts with a type-metadata crash.
+            legacyMessageList
+        }
     }
 
     private var legacyMessageList: some View {

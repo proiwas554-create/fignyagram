@@ -128,27 +128,8 @@ struct ChatListView: View {
         return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
-    private func displayTitle(_ chat: ChatItem) -> String {
-        // The row itself resolves the translated title (debounced, cached), so
-        // the whole list never re-renders when a translation arrives.
-        aliases.chatAlias(chat.id) ?? chat.title
-    }
-
-    private func isPinned(_ chat: ChatItem) -> Bool {
-        chat.id == savedChatId || chat.isPinned || store.isLocallyPinned(chat.id)
-    }
-
-    private func togglePin(_ chat: ChatItem) {
-        if chat.id == savedChatId { return }
-        client.setPinned(chatId: chat.id, isPinned: !isPinned(chat))
-    }
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                if classic.isEnabled { classicHeader }
-                ScrollView {
-                LazyVStack(spacing: 0) {
+    @ViewBuilder
+    private var chatListRows: some View {
                     if player.current != nil { GlobalPlayerBar() }
                     if query.isEmpty && classic.isEnabled && searchFocused && !searchHistory.items.isEmpty {
                         Section(L10n.t("Auto.059ea2ac4c")) {
@@ -207,7 +188,36 @@ struct ChatListView: View {
                             .glassPanel(cornerRadius: 14)
                             .listRowSeparator(.hidden)
                     }
-                }
+    }
+
+    private func displayTitle(_ chat: ChatItem) -> String {
+        // The row itself resolves the translated title (debounced, cached), so
+        // the whole list never re-renders when a translation arrives.
+        aliases.chatAlias(chat.id) ?? chat.title
+    }
+
+    private func isPinned(_ chat: ChatItem) -> Bool {
+        chat.id == savedChatId || chat.isPinned || store.isLocallyPinned(chat.id)
+    }
+
+    private func togglePin(_ chat: ChatItem) {
+        if chat.id == savedChatId { return }
+        client.setPinned(chatId: chat.id, isPinned: !isPinned(chat))
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                if classic.isEnabled { classicHeader }
+                Group {
+                    if #available(iOS 16.0, *) {
+                        List { chatListRows }
+                            .listStyle(.plain)
+                    } else {
+                        // iOS 15: SwiftUI List aborts with a type-metadata crash,
+                        // so the same rows live in a plain scroll container.
+                        ScrollView { LazyVStack(spacing: 0) { chatListRows } }
+                    }
                 }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
