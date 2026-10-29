@@ -15,8 +15,8 @@
 		849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */ = {isa = PBXBuildFile; productRef = 849E0116308A83FA008B5F4E /* TDLibKit */; };
 		849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; };
 		A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; };
-		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; };
+		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
@@ -56,7 +56,7 @@
 			dstSubfolder = Frameworks;
 			files = (
 				A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */,
-				A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.framework in Embed Frameworks */,
+				A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 		};
@@ -88,7 +88,7 @@
 		844C68FF30824E740030F13D /* StdOutLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StdOutLogger.swift; sourceTree = "<group>"; };
 		84808575308210CA00D269FE /* Fignyagram.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Fignyagram.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = LiveKitWebRTC.xcframework; sourceTree = "<group>"; };
-		A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ThirdParty/TgVoipWebrtc.framework; sourceTree = SOURCE_ROOT; };
+		A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = ThirdParty/TgVoipWebrtc.xcframework; sourceTree = SOURCE_ROOT; };
 		AA1000000000000000000002 /* FignyagramShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FignyagramShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA1000000000000000000003 /* ShareViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		AA1000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -127,7 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */,
-				A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.framework in Frameworks */,
+				A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */,
 				849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */,
 			);
 		};
@@ -469,6 +469,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "$(inherited)";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -526,6 +527,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				OTHER_LDFLAGS = "$(inherited)";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
