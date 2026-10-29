@@ -40,6 +40,44 @@ nonisolated enum ImageCache {
         return cache
     }()
 
+    // MARK: - Legacy auto-eviction
+
+    private static let evictionLock = NSLock()
+    private static var bytesSinceEviction = 0
+    private static var cellsSinceEviction = 0
+    private static let legacyByteLimit = 15 * 1024 * 1024
+    private static let legacyCellLimit = 18
+
+    /// Called when a cell leaves the screen. On legacy devices keeps a small
+    /// rolling budget and evicts decoded textures in the background.
+    static func noteCellDisappeared() {
+        guard LegacyShield.shared.isLegacy else { return }
+        evictionLock.lock()
+        cellsSinceEviction += 1
+        let shouldEvict = cellsSinceEviction >= legacyCellLimit
+        if shouldEvict { cellsSinceEviction = 0 }
+        evictionLock.unlock()
+        if shouldEvict { scheduleLegacyEviction() }
+    }
+
+    static func noteDecoded(bytes: Int) {
+        guard LegacyShield.shared.isLegacy else { return }
+        evictionLock.lock()
+        bytesSinceEviction += bytes
+        let shouldEvict = bytesSinceEviction >= legacyByteLimit
+        if shouldEvict { bytesSinceEviction = 0 }
+        evictionLock.unlock()
+        if shouldEvict { scheduleLegacyEviction() }
+    }
+
+    /// Drops textures strictly off the main thread so scrolling never hiccups.
+    static func scheduleLegacyEviction() {
+        DispatchQueue.global(qos: .background).async {
+            cache.removeAllObjects()
+            miniCache.removeAllObjects()
+        }
+    }
+
     /// Decodes and pre-masks an avatar into a circular bitmap on a background
     /// queue, so the main thread only blits a ready texture (no clipShape pass).
     static func circularImageAsync(atPath path: String, maxPixel: CGFloat = 160) async -> UIImage? {
@@ -79,7 +117,9 @@ nonisolated enum ImageCache {
             ] as CFDictionary
             guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
             let image = UIImage(cgImage: cgImage)
-            cache.setObject(image, forKey: key, cost: cgImage.bytesPerRow * cgImage.height)
+            let cost = cgImage.bytesPerRow * cgImage.height
+            cache.setObject(image, forKey: key, cost: cost)
+            noteDecoded(bytes: cost)
             return image
         }
     }
