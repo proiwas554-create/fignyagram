@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import Security
 import os.log
 
 private let proxySocketLogger = Logger(subsystem: "com.fignyagram.app", category: "ProxyWebSocket")
@@ -77,6 +78,17 @@ actor ProxyWebSocket {
         if port == 443 {
             let options = NWProtocolTLS.Options()
             sec_protocol_options_set_tls_server_name(options.securityProtocolOptions, domain)
+            let loopback = ip == "127.0.0.1" || ip == "::1" || ip == "localhost" ||
+                           domain == "localhost" || domain.hasPrefix("127.")
+            if loopback {
+                // Only the local tunnel endpoint may present a self-signed cert;
+                // remote Telegram fronts keep full TLS validation.
+                sec_protocol_options_set_verify_block(
+                    options.securityProtocolOptions,
+                    { _, _, complete in complete(true) },
+                    DispatchQueue.global(qos: .utility)
+                )
+            }
             tlsOptions = options
         }
         let tcpOptions = NWProtocolTCP.Options()

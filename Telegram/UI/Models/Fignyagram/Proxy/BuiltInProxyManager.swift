@@ -378,6 +378,8 @@ final class BuiltInProxyManager: ObservableObject {
     func restart() {
         operation?.cancel()
         operation = nil
+        healthTimeoutTask?.cancel()
+        healthTimeoutTask = nil
 
         let proxy = server
         server = nil
