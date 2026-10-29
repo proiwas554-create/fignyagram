@@ -30,6 +30,7 @@ struct FignyagramApp: App {
         WindowGroup {
             ContentView()
                 .id(uiRefreshTrigger)
+                .frameSaverAware()
                 .onOpenURL { url in
                     ShareInbox.shared.handle(url)
                 }

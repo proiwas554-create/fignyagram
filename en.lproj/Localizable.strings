@@ -1973,3 +1973,5 @@
 "Settings.FixedFPS" = "Fixed FPS";
 "Settings.FPSLimit" = "Frame Rate Limit";
 "Settings.FixedFPSHint" = "Caps the app's display-link animations. iOS does not allow third-party apps to change the panel refresh rate.";
+"Settings.FrameSaver" = "Frame economy";
+"Settings.FrameSaverHint" = "Disables blur, shadows and animations — a real GPU load reduction. Panel refresh rate is unchanged.";

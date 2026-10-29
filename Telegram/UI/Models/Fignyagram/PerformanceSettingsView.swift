@@ -7,6 +7,7 @@ struct PerformanceSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage(FrameRateController.fixedEnabledKey) private var fixedFPS = false
     @AppStorage(FrameRateController.fixedValueKey) private var fpsValue = 60
+    @AppStorage(FrameSaver.key) private var frameSaver = false
 
     var body: some View {
         NavigationView {
@@ -39,6 +40,15 @@ struct PerformanceSettingsView: View {
                         }
                         .pickerStyle(.segmented)
                     }
+                }
+
+                Section {
+                    Toggle(L10n.t("Settings.FrameSaver"), isOn: $frameSaver)
+                } header: {
+                    Text(L10n.t("Settings.FrameSaver"))
+                } footer: {
+                    Text(L10n.t("Settings.FrameSaverHint"))
+                        .font(.appFootnote)
                 }
 
                 Section {

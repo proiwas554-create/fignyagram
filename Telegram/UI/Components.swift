@@ -324,7 +324,7 @@ struct AvatarView: View {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .blur(radius: 2)
+                    .blur(radius: FrameSaver.isEnabled ? 0 : 2)
             } else {
                 ZStack {
                     LinearGradient(
