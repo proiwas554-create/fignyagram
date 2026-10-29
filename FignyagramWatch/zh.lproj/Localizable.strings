@@ -1,3 +1,8 @@
 "Watch.ShowMore" = "显示更多";
 "Watch.Empty" = "暂无聊天。";
 "Watch.DetailSoon" = "消息即将推出。";
+"Watch.Messages" = "消息";
+"Watch.Reply" = "回复";
+"Watch.TypeMessage" = "输入消息…";
+"Watch.Send" = "发送";
+"Watch.NoMessages" = "暂无消息";

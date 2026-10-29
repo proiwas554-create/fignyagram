@@ -8,7 +8,7 @@ struct WatchContentView: View {
         NavigationView {
             List {
                 ForEach(bridge.chats) { chat in
-                    NavigationLink(destination: WatchChatDetailPlaceholder(chat: chat)) {
+                    NavigationLink(destination: WatchChatView(chat: chat)) {
                         WatchChatRowView(chat: chat)
                     }
                 }
@@ -32,16 +32,6 @@ struct WatchContentView: View {
         .onAppear {
             bridge.activate()
             bridge.requestChats(limit: visible)
-        }
-    }
-}
-
-struct WatchChatDetailPlaceholder: View {
-    let chat: WatchChat
-    var body: some View {
-        VStack {
-            Text(chat.title).font(.headline)
-            Text(L10n.t("Watch.DetailSoon")).font(.footnote).foregroundColor(.secondary)
         }
     }
 }

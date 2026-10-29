@@ -1,3 +1,8 @@
 "Watch.ShowMore" = "Show more";
 "Watch.Empty" = "No chats. Open Fignyagram on iPhone.";
 "Watch.DetailSoon" = "Messages arrive in the next update.";
+"Watch.Messages" = "Messages";
+"Watch.Reply" = "Reply";
+"Watch.TypeMessage" = "Type message…";
+"Watch.Send" = "Send";
+"Watch.NoMessages" = "No messages yet";

@@ -1,3 +1,8 @@
 "Watch.ShowMore" = "Mehr anzeigen";
 "Watch.Empty" = "Keine Chats.";
 "Watch.DetailSoon" = "Nachrichten folgen.";
+"Watch.Messages" = "Nachrichten";
+"Watch.Reply" = "Antworten";
+"Watch.TypeMessage" = "Nachricht eingeben…";
+"Watch.Send" = "Senden";
+"Watch.NoMessages" = "Noch keine Nachrichten";
