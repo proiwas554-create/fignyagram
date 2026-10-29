@@ -1970,3 +1970,6 @@
 "SettingsGen.8a2442ab77" = "). Кэш: \\(MessageFormatter.fileSize(cache.totalBytes)).";
 "Dev.TDLib" = "TDLib";
 "Feed.Tab.Title" = "新闻";
+"Settings.FixedFPS" = "固定帧率";
+"Settings.FPSLimit" = "帧率限制";
+"Settings.FixedFPSHint" = "将帧率限制为所选值。";

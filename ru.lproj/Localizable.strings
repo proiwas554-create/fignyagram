@@ -1970,3 +1970,6 @@
 "SettingsGen.8a2442ab77" = "). Кэш: \\(MessageFormatter.fileSize(cache.totalBytes)).";
 "Dev.TDLib" = "TDLib";
 "Feed.Tab.Title" = "Новости";
+"Settings.FixedFPS" = "Фиксированный FPS";
+"Settings.FPSLimit" = "Лимит кадров";
+"Settings.FixedFPSHint" = "Ограничивает частоту кадров выбранным значением. Выключено — максимум экрана (до 120 Гц).";

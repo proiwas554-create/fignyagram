@@ -1970,3 +1970,6 @@
 "SettingsGen.8a2442ab77" = "). Кэш: \\(MessageFormatter.fileSize(cache.totalBytes)).";
 "Dev.TDLib" = "TDLib";
 "Feed.Tab.Title" = "Noticias";
+"Settings.FixedFPS" = "FPS fijo";
+"Settings.FPSLimit" = "Límite de fotogramas";
+"Settings.FixedFPSHint" = "Limita la tasa de fotogramas.";

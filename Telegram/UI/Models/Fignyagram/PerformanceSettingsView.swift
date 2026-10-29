@@ -5,6 +5,8 @@ struct PerformanceSettingsView: View {
     @ObservedObject private var limits = DisplayLimits.shared
     @ObservedObject private var ultra = UltraMode.shared
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(FrameRateController.fixedEnabledKey) private var fixedFPS = false
+    @AppStorage(FrameRateController.fixedValueKey) private var fpsValue = 60
 
     var body: some View {
         NavigationView {
@@ -37,6 +39,25 @@ struct PerformanceSettingsView: View {
                         }
                         .pickerStyle(.segmented)
                     }
+                }
+
+                Section {
+                    Toggle(L10n.t("Settings.FixedFPS"), isOn: $fixedFPS)
+                        .onChange(of: fixedFPS) { _ in FrameRateController.refreshActiveLinks() }
+                    if fixedFPS {
+                        Picker(L10n.t("Settings.FPSLimit"), selection: $fpsValue) {
+                            Text("30 FPS").tag(30)
+                            Text("60 FPS").tag(60)
+                            Text("90 FPS").tag(90)
+                            Text("120 FPS").tag(120)
+                        }
+                        .onChange(of: fpsValue) { _ in FrameRateController.refreshActiveLinks() }
+                    }
+                } header: {
+                    Text(L10n.t("Settings.FixedFPS"))
+                } footer: {
+                    Text(L10n.t("Settings.FixedFPSHint"))
+                        .font(.appFootnote)
                 }
 
                 Section(L10n.t("Auto.2cbb35de48")) {
