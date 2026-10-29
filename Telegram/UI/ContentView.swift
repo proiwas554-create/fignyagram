@@ -222,7 +222,7 @@ struct MainRootView: View {
     var body: some View {
         Group {
             if selectedTab == 0 {
-                ChatListView()
+                LegacyChatListView()
             } else if selectedTab == 1 {
                 MusicView()
             } else {
