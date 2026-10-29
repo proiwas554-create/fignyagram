@@ -147,7 +147,8 @@ struct ChatListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if classic.isEnabled { classicHeader }
-                List {
+                ScrollView {
+                LazyVStack(spacing: 0) {
                     if player.current != nil { GlobalPlayerBar() }
                     if query.isEmpty && classic.isEnabled && searchFocused && !searchHistory.items.isEmpty {
                         Section(L10n.t("Auto.059ea2ac4c")) {
@@ -207,7 +208,7 @@ struct ChatListView: View {
                             .listRowSeparator(.hidden)
                     }
                 }
-                .listStyle(.plain)
+                }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {

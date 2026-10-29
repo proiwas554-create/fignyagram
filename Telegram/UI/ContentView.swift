@@ -23,53 +23,10 @@ struct ContentView: View {
         Group {
             if client.isAuthorized {
                 Group {
-                    if DevicePerformance.isLowMemory && !classic.isEnabled {
-                        legacyRoot
-                    } else if classic.isEnabled {
-                        // On 2 GB devices the custom root avoids the native
-                        // TabView, which was crashing right after authorization
-                        // on iOS 15 (app restarted immediately).
+                    if classic.isEnabled {
                         classicRoot
                     } else {
-                        TabView(selection: $selectedTab) {
-                            ChatListView()
-                                .tag(0)
-                                .tabItem { Label(L10n.t("Auto.19adecc3d1"), systemImage: "bubble.left.and.bubble.right") }
-                            if showMusicTab {
-                                MusicView()
-                                    .tag(1)
-                                    .tabItem { Label(L10n.t("Auto.0660a7580a"), systemImage: "music.note") }
-                            }
-                            if showNewsTab {
-                                NewsFeedView()
-                                    .tag(2)
-                                    .tabItem { Label(L10n.t("Auto.69df1f85b0"), systemImage: "newspaper") }
-                            }
-                        }
-                        .overlay(alignment: .bottom) {
-                            if !chatPresentation.isChatOpen {
-                            HStack(spacing: 0) {
-                                Color.clear
-                                    .frame(height: 49)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        if selectedTab == 0 {
-                                            secretChatTaps += 1
-                                            if secretChatTaps >= 10 {
-                                                secretChatTaps = 0
-                                                DeveloperMode.shared.unlock()
-                                                showDeveloper = true
-                                            }
-                                        } else {
-                                            selectedTab = 0
-                                            secretChatTaps = 0
-                                        }
-                                    }
-                                Color.clear.frame(height: 49)
-                            }
-                            .frame(height: 49)
-                            }
-                        }
+                        MainRootView()
                     }
                 }
                 .overlay {
@@ -162,7 +119,7 @@ struct ContentView: View {
     /// Legacy devices: only one screen exists at a time (no ZStack with two
     /// NavigationViews / searchable controllers), which crashed iOS 15.
     private var legacyRoot: some View {
-        LegacyRootView()
+        MainRootView()
     }
 
     private var classicRoot: some View {
@@ -233,24 +190,18 @@ struct ContentView: View {
 
 /// Crash-safe root for 2 GB devices: no native TabView (it crashed on iOS 15),
 /// but the same screens and features as the modern root.
-struct LegacyRootView: View {
+struct MainRootView: View {
     @State private var selectedTab = 0
     @State private var secretChatTaps = 0
     @State private var showDeveloper = false
+    @AppStorage("showMusicTab") private var showMusicTab = true
     @AppStorage("showNewsTab") private var showNewsTab = false
     @ObservedObject private var chatPresentation = ChatPresentationState.shared
 
     var body: some View {
         Group {
             if selectedTab == 0 {
-                // SwiftUI List in ChatListView aborts with a type-metadata crash
-                // on iOS 15 (swift_getAssociatedTypeWitness). The legacy list is
-                // crash-free and keeps context menus, swipe actions and history.
-                if DevicePerformance.isLowMemory {
-                    LegacyChatListView()
-                } else {
-                    ChatListView()
-                }
+                ChatListView()
             } else if selectedTab == 1 {
                 MusicView()
             } else {
@@ -261,7 +212,9 @@ struct LegacyRootView: View {
             if !chatPresentation.isChatOpen {
                 HStack(spacing: 0) {
                     tabButton(index: 0, icon: "bubble.left.and.bubble.right.fill", title: L10n.t("Auto.19adecc3d1"))
-                    tabButton(index: 1, icon: "music.note", title: L10n.t("Auto.0660a7580a"))
+                    if showMusicTab {
+                        tabButton(index: 1, icon: "music.note", title: L10n.t("Auto.0660a7580a"))
+                    }
                     if showNewsTab {
                         tabButton(index: 2, icon: "newspaper", title: L10n.t("Feed.Tab.Title"))
                     }

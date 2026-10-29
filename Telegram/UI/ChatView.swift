@@ -645,15 +645,10 @@ struct ChatView: View {
         }
     }
 
-    @ViewBuilder
     private var messageList: some View {
-        // iOS 15 + SwiftUI List hits a type-metadata abort (see crash log), so
-        // legacy devices use a LazyVStack scroll view instead.
-        if DevicePerformance.isLowMemory {
-            legacyMessageList
-        } else {
-            modernMessageList
-        }
+        // Single implementation for every device: SwiftUI List aborts on iOS 15,
+        // a LazyVStack scroll view behaves identically everywhere.
+        legacyMessageList
     }
 
     private var legacyMessageList: some View {
