@@ -42,7 +42,9 @@ struct ChatListView: View {
     @State private var channelResults: [Int64] = []
     @State private var searching = false
     @State private var searchTask: Task<Void, Never>?
-    @State private var extraChats = 0
+    /// Data-driven pagination: the ForEach only ever receives this slice, so
+    /// hidden chats never get a row/ViewModel on the main thread.
+    @State private var currentVisibleCount = 0
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -123,8 +125,12 @@ struct ChatListView: View {
         }
     }
 
+    private var effectiveVisibleChats: Int {
+        currentVisibleCount > 0 ? currentVisibleCount : limits.effectiveRenderedChats
+    }
+
     private var displayedChatIds: [Int64] {
-        var limit = max(1, limits.effectiveRenderedChats + extraChats)
+        let limit = max(1, effectiveVisibleChats)
         return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
@@ -183,7 +189,7 @@ struct ChatListView: View {
                             .padding(.vertical, 12)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                extraChats += max(10, limits.effectiveRenderedChats)
+                                currentVisibleCount = max(10, effectiveVisibleChats) + 10
                             }
                             .glassPanel(cornerRadius: 14)
                             .listRowSeparator(.hidden)
@@ -219,6 +225,7 @@ struct ChatListView: View {
                         ScrollView { LazyVStack(spacing: 0) { chatListRows } }
                     }
                 }
+                .onChange(of: limits.effectiveRenderedChats) { _ in currentVisibleCount = 0 }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {

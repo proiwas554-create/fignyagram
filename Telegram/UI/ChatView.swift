@@ -32,7 +32,8 @@ struct ChatView: View {
     /// A message was received while the user was reading history; shown on the button.
     @State private var unseenWhileScrolledUp = 0
     @State private var previousLastMessageId: Int64?
-    @State private var extraMessages = 0
+    /// Data-driven pagination for the message list.
+    @State private var currentVisibleMessages = 0
 
     @State private var replyTo: TDLibKit.Message?
     @State private var editing: TDLibKit.Message?
@@ -102,8 +103,12 @@ struct ChatView: View {
 
     /// Only the newest N unblocked messages are rendered; the rest stay in memory
     /// and can be revealed with the NSLocalizedString("Generated.d5d69fbc52d8", comment: "") button.
+    private var effectiveVisibleMessages: Int {
+        currentVisibleMessages > 0 ? currentVisibleMessages : limits.effectiveMessagesPerChat
+    }
+
     private var visibleMessages: [TDLibKit.Message] {
-        let limit = max(1, limits.effectiveMessagesPerChat + extraMessages)
+        let limit = max(1, effectiveVisibleMessages)
         let source = unblockedMessages
         guard source.count > limit else { return source }
         return Array(source.suffix(limit))
@@ -589,7 +594,7 @@ struct ChatView: View {
             onScrollTargetHandled: { scrollTarget = nil },
             onReachTop: {
                 if visibleMessages.count < unblockedMessages.count {
-                    extraMessages += limits.effectiveMessagesPerChat
+                    currentVisibleMessages = max(10, effectiveVisibleMessages) + 10
                 } else if !store.fullyLoadedChats.contains(chatId) {
                     olderAnchorId = messages.first?.id
                     client.loadOlderMessages(chatId: chatId)
@@ -661,7 +666,7 @@ struct ChatView: View {
                 LazyVStack(spacing: 4) {
                     if visibleMessages.count < unblockedMessages.count {
                         Button {
-                            extraMessages += limits.effectiveMessagesPerChat
+                            currentVisibleMessages = max(10, effectiveVisibleMessages) + 10
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "chevron.up")
@@ -716,7 +721,7 @@ struct ChatView: View {
             List {
                 if visibleMessages.count < unblockedMessages.count {
                     Button {
-                        extraMessages += limits.effectiveMessagesPerChat
+                        currentVisibleMessages = max(10, effectiveVisibleMessages) + 10
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.up")
@@ -879,7 +884,7 @@ struct ChatView: View {
                         unseenWhileScrolledUp += 1
                     }
                 }
-                .onChange(of: limits.effectiveMessagesPerChat) { _ in extraMessages = 0 }
+                .onChange(of: limits.effectiveMessagesPerChat) { _ in currentVisibleMessages = 0 }
                 .onChange(of: messages.first?.id) { _ in
                     if let anchor = olderAnchorId {
                         if visibleMessages.contains(where: { $0.id == anchor }) {
@@ -1743,8 +1748,8 @@ struct ChatView: View {
         guard let index = unblockedMessages.firstIndex(where: { $0.id == messageId }) else { return }
         let needed = unblockedMessages.count - index
         let base = max(1, limits.effectiveMessagesPerChat)
-        if needed > base + extraMessages {
-            extraMessages = needed - base
+        if needed > base + currentVisibleMessages {
+            currentVisibleMessages = needed - base
         }
     }
 
