@@ -57,8 +57,13 @@ final class AutoTranslationSettings: ObservableObject {
         if let raw = UserDefaults.standard.string(forKey: Keys.mode),
            let stored = Mode(rawValue: raw) {
             mode = stored
-        } else {
+        } else if UserDefaults.standard.object(forKey: Keys.enabled) != nil {
             mode = UserDefaults.standard.bool(forKey: Keys.enabled) ? .auto : .manual
+        } else {
+            // No stored preference: keep the flagship feature enabled.
+            mode = .auto
+            UserDefaults.standard.set(Mode.auto.rawValue, forKey: Keys.mode)
+            UserDefaults.standard.set(true, forKey: Keys.enabled)
         }
         targetLanguage = UserDefaults.standard.string(forKey: Keys.language) ?? "ru"
     }
@@ -564,6 +569,16 @@ struct AutoTranslatedMessageText: View {
             guard !Task.isCancelled else { return }
             // Do not compete with active scrolling: wait for the finger to stop.
             manager.requestIfNeeded(message: message, text: text, role: role)
+            // Poll the cache for a moment: guarantees the translation appears
+            // even if the published counters are coalesced by SwiftUI.
+            for _ in 0..<24 {
+                if let value = manager.translation(for: message, text: text, role: role) {
+                    await MainActor.run { translated = value }
+                    return
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                if Task.isCancelled { return }
+            }
         }
     }
 

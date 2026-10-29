@@ -41,6 +41,14 @@ final class ChatRowViewModel: ObservableObject {
             try? await Task.sleep(nanoseconds: await LegacyShield.shared.translationDebounce)
             guard !Task.isCancelled else { return }
             await AutoTranslationManager.shared.requestChatTitle(chatId: chatId, title: originalTitle)
+            for _ in 0..<24 {
+                if let value = await AutoTranslationManager.shared.translation(forChatId: chatId, title: originalTitle) {
+                    await MainActor.run { self.translatedTitle = value }
+                    return
+                }
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                if Task.isCancelled { return }
+            }
         }
     }
 
