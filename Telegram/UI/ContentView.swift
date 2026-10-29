@@ -163,7 +163,7 @@ struct ContentView: View {
     private var legacyRoot: some View {
         Group {
             if selectedTab == 0 {
-                LegacyChatListView()
+                ChatListView()
             } else if selectedTab == 1 {
                 MusicView()
             } else {
