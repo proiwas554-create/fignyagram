@@ -42,9 +42,7 @@ struct ChatListView: View {
     @State private var channelResults: [Int64] = []
     @State private var searching = false
     @State private var searchTask: Task<Void, Never>?
-    /// Data-driven pagination: the ForEach only ever receives this slice, so
-    /// hidden chats never get a row/ViewModel on the main thread.
-    @State private var currentVisibleCount = 0
+    @State private var extraChats = 0
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -125,12 +123,8 @@ struct ChatListView: View {
         }
     }
 
-    private var effectiveVisibleChats: Int {
-        currentVisibleCount > 0 ? currentVisibleCount : limits.effectiveRenderedChats
-    }
-
     private var displayedChatIds: [Int64] {
-        let limit = max(1, effectiveVisibleChats)
+        var limit = max(1, limits.effectiveRenderedChats + extraChats)
         return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
@@ -189,11 +183,19 @@ struct ChatListView: View {
                             .padding(.vertical, 12)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                currentVisibleCount = max(10, effectiveVisibleChats) + 10
+                                extraChats += max(10, limits.effectiveRenderedChats)
                             }
                             .glassPanel(cornerRadius: 14)
                             .listRowSeparator(.hidden)
                     }
+    }
+
+    private var modernChatList: some View {
+        List { chatListRows }.listStyle(.plain)
+    }
+
+    private var legacyChatList: some View {
+        ScrollView { LazyVStack(spacing: 0) { chatListRows } }
     }
 
     private func displayTitle(_ chat: ChatItem) -> String {
@@ -215,11 +217,15 @@ struct ChatListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if classic.isEnabled { classicHeader }
-                // SwiftUI List aborts on iOS 15 with swift_getAssociatedTypeWitness
-                // (see crash log), even inside an availability branch. A plain
-                // scroll container is used everywhere to keep one crash-free path.
-                ScrollView { LazyVStack(spacing: 0) { chatListRows } }
-                .onChange(of: limits.effectiveRenderedChats) { _ in currentVisibleCount = 0 }
+                Group {
+                    // AnyView erases the generic type: on iOS 15 the List
+                    // metadata is never instantiated (that was the crash).
+                    if #available(iOS 16.0, *) {
+                        AnyView(modernChatList)
+                    } else {
+                        AnyView(legacyChatList)
+                    }
+                }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {

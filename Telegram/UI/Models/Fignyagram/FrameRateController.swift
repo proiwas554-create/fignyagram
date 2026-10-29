@@ -35,13 +35,14 @@ enum FrameRateController {
     static func register(_ link: CADisplayLink) {
         links.removeAll { $0.link == nil }
         links.append(WeakLink(link: link))
-        link.preferredFrameRateRange = range
+        if #available(iOS 16.0, *) { link.preferredFrameRateRange = range }
     }
 
     /// A long-lived display link keeps the requested cadence applied to
     /// app-driven CoreAnimation. iOS exposes no public switch for the panel's
     /// refresh rate, so system rendering stays at the display's own rate.
     static func startGovernor() {
+        guard #available(iOS 16.0, *) else { return }
         guard governor == nil else { refreshActiveLinks(); return }
         let link = CADisplayLink(target: GovernorTarget.shared, selector: #selector(GovernorTarget.tick))
         if #available(iOS 15.0, *) { link.preferredFrameRateRange = range }
@@ -54,8 +55,8 @@ enum FrameRateController {
             governor.preferredFrameRateRange = range
         }
         links.removeAll { $0.link == nil }
-        for item in links {
-            item.link?.preferredFrameRateRange = range
+        if #available(iOS 16.0, *) {
+            for item in links { item.link?.preferredFrameRateRange = range }
         }
     }
 }

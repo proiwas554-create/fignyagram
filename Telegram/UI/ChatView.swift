@@ -32,8 +32,7 @@ struct ChatView: View {
     /// A message was received while the user was reading history; shown on the button.
     @State private var unseenWhileScrolledUp = 0
     @State private var previousLastMessageId: Int64?
-    /// Data-driven pagination for the message list.
-    @State private var currentVisibleMessages = 0
+    @State private var extraMessages = 0
 
     @State private var replyTo: TDLibKit.Message?
     @State private var editing: TDLibKit.Message?
@@ -103,12 +102,8 @@ struct ChatView: View {
 
     /// Only the newest N unblocked messages are rendered; the rest stay in memory
     /// and can be revealed with the NSLocalizedString("Generated.d5d69fbc52d8", comment: "") button.
-    private var effectiveVisibleMessages: Int {
-        currentVisibleMessages > 0 ? currentVisibleMessages : limits.effectiveMessagesPerChat
-    }
-
     private var visibleMessages: [TDLibKit.Message] {
-        let limit = max(1, effectiveVisibleMessages)
+        let limit = max(1, limits.effectiveMessagesPerChat + extraMessages)
         let source = unblockedMessages
         guard source.count > limit else { return source }
         return Array(source.suffix(limit))
@@ -594,7 +589,7 @@ struct ChatView: View {
             onScrollTargetHandled: { scrollTarget = nil },
             onReachTop: {
                 if visibleMessages.count < unblockedMessages.count {
-                    currentVisibleMessages = max(10, effectiveVisibleMessages) + 10
+                    extraMessages += limits.effectiveMessagesPerChat
                 } else if !store.fullyLoadedChats.contains(chatId) {
                     olderAnchorId = messages.first?.id
                     client.loadOlderMessages(chatId: chatId)
@@ -650,10 +645,14 @@ struct ChatView: View {
         }
     }
 
+    @ViewBuilder
     private var messageList: some View {
-        // One crash-free path: SwiftUI List aborts on iOS 15 even when it is
-        // only referenced from an availability branch.
-        legacyMessageList
+        // AnyView keeps List type metadata out of the iOS 15 graph.
+        if #available(iOS 16.0, *) {
+            AnyView(modernMessageList)
+        } else {
+            AnyView(legacyMessageList)
+        }
     }
 
     private var legacyMessageList: some View {
@@ -662,7 +661,7 @@ struct ChatView: View {
                 LazyVStack(spacing: 4) {
                     if visibleMessages.count < unblockedMessages.count {
                         Button {
-                            currentVisibleMessages = max(10, effectiveVisibleMessages) + 10
+                            extraMessages += limits.effectiveMessagesPerChat
                         } label: {
                             HStack(spacing: 6) {
                                 Image(systemName: "chevron.up")
@@ -712,6 +711,216 @@ struct ChatView: View {
         }
     }
 
+    private var modernMessageList: some View {
+        ScrollViewReader { proxy in
+            List {
+                if visibleMessages.count < unblockedMessages.count {
+                    Button {
+                        extraMessages += limits.effectiveMessagesPerChat
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.up")
+                            Text(String(format: L10n.t("ChatList.ShowMore"), min(limits.effectiveMessagesPerChat, unblockedMessages.count - visibleMessages.count)))
+                        }
+                        .font(.appFootnote)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                } else if !messages.isEmpty && !store.fullyLoadedChats.contains(chatId) {
+                    Button {
+                        olderAnchorId = messages.first?.id
+                        client.loadOlderMessages(chatId: chatId)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.up")
+                            Text(String(format: L10n.t("ChatList.ShowMore"), limits.effectiveMessagesPerChat))
+                        }
+                        .font(.appFootnote)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                }
+                ForEach(visibleMessages, id: \.id) { message in
+                    messageRowCell(message)
+                        .listRowInsets(EdgeInsets(top: 2, leading: 8, bottom: 2, trailing: 8))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .id(message.id)
+                }
+
+                // Bottom marker: drives the "jump to latest" button without a
+                // per-frame geometry observer, which invalidated the whole list.
+                Color.clear
+                    .frame(height: 1)
+                    .id(Self.bottomAnchor)
+                    .listRowInsets(EdgeInsets())
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    .onAppear {
+                        if !isAtBottom {
+                            isAtBottom = true
+                            unseenWhileScrolledUp = 0
+                        }
+                    }
+                    .onDisappear {
+                        if isAtBottom { isAtBottom = false }
+                    }
+            }
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 1)
+                .coordinateSpace(name: Self.scrollSpace)
+                .overlay(alignment: .top) {
+                    if let text = headerDateText, !isAtBottom {
+                        Text(text)
+                            .font(.appCaption.bold())
+                            .foregroundColor(.secondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(.regularMaterial))
+                            .padding(.top, 6)
+                            .transition(.opacity)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .overlay {
+                    if messages.isEmpty || unblockedMessages.isEmpty {
+                        if isLoading {
+                            ProgressView(NSLocalizedString("Generated.aa819ceed5c2", comment: ""))
+                        } else if !messages.isEmpty {
+                            Text(L10n.t("Auto.1665d3aa71")).foregroundColor(.secondary)
+                        } else {
+                            VStack(spacing: 12) {
+                                Text(L10n.t("Auto.0c40ace71e")).foregroundColor(.secondary)
+                                Button(L10n.t("Auto.dbe5444a9a")) { client.loadHistory(chatId: chatId) }.buttonStyle(.bordered)
+                            }
+                        }
+                    }
+                }
+                .onChange(of: isAtBottom) { atBottom in
+                    if atBottom { unseenWhileScrolledUp = 0 }
+                }
+                .overlay(alignment: .bottomTrailing) {
+                    VStack(spacing: 8) {
+                        if !unseenRepliesToMe.isEmpty {
+                            Button {
+                                markRepliesSeen()
+                                showRepliesToMe = true
+                            } label: {
+                                ZStack(alignment: .topTrailing) {
+                                    Circle()
+                                        .fill(.clear)
+                                        .background(GlassBackgroundView(cornerRadius: 21))
+                                        .frame(width: 42, height: 42)
+                                    Image(systemName: "at")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.accentColor)
+                                        .frame(width: 42, height: 42)
+                                    if unseenRepliesToMe.count > 1 {
+                                        Text("\(min(unseenRepliesToMe.count, 99))")
+                                            .font(.system(size: 9, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 2)
+                                            .background(Capsule().fill(Color.red))
+                                            .offset(x: 3, y: -2)
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(L10n.t("Auto.62bd46f487"))
+                        }
+                        if !isAtBottom && didInitialScroll {
+                            scrollDownButton(proxy)
+                                .transition(.scale(scale: 0.7).combined(with: .opacity))
+                        }
+                    }
+                    .padding(.trailing, 12)
+                    .padding(.bottom, 10)
+                }
+                .onAppear {
+                    // Wait for the first LazyVStack layout, otherwise scrollTo may miss the anchor.
+                    DispatchQueue.main.async {
+                        previousLastMessageId = messages.last?.id
+                        didInitialScroll = true
+                        // A search result should win over the usual "jump to latest".
+                        if focusMessageId == nil {
+                            scrollToBottom(proxy, animated: false)
+                        }
+                    }
+                }
+                .onChange(of: messages.last?.id) { newValue in
+                    let oldId = previousLastMessageId
+                    previousLastMessageId = newValue
+
+                    guard didInitialScroll else {
+                        guard newValue != nil else { return }
+                        scrollToBottom(proxy, animated: false)
+                        didInitialScroll = true
+                        return
+                    }
+                    // Deletions and other reloads can move the last id backwards; ignore those.
+                    guard let newId = newValue else { return }
+                    if let oldId = oldId, newId <= oldId { return }
+                    if let last = messages.last, store.isSenderBlocked(last.senderId) { return }
+
+                    if disableAutoScroll {
+                        unseenWhileScrolledUp += 1
+                    } else if messages.last?.isOutgoing == true || isAtBottom {
+                        scrollToBottom(proxy, animated: true)
+                        unseenWhileScrolledUp = 0
+                    } else {
+                        // The user is reading history: don't yank the list, badge the button instead.
+                        unseenWhileScrolledUp += 1
+                    }
+                }
+                .onChange(of: limits.effectiveMessagesPerChat) { _ in extraMessages = 0 }
+                .onChange(of: messages.first?.id) { _ in
+                    if let anchor = olderAnchorId {
+                        if visibleMessages.contains(where: { $0.id == anchor }) {
+                            proxy.scrollTo(anchor, anchor: .top)
+                        }
+                        olderAnchorId = nil
+                    }
+                }
+                .onChange(of: scrollTarget) { target in
+                    guard let target else { return }
+                    if visibleMessages.contains(where: { $0.id == target }) {
+                        withAnimation { proxy.scrollTo(target, anchor: .center) }
+                    } else if let blocked = messages.first(where: { $0.id == target }),
+                              store.isSenderBlocked(blocked.senderId) {
+                        client.errorMessage = NSLocalizedString("Generated.c22fc8fce00a", comment: "")
+                    } else if messages.contains(where: { $0.id == target }) {
+                        // The message is loaded but outside the rendered window.
+                        expandWindow(to: target)
+                        scrollTarget = nil
+                        DispatchQueue.main.async { scrollTarget = target }
+                        return
+                    } else {
+                        client.errorMessage = NSLocalizedString("Generated.cd6b548fb61a", comment: "")
+                    }
+                    scrollTarget = nil
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
+                .simultaneousGesture(TapGesture().onEnded { isInputFocused = false })
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 12)
+                        .onChanged { value in
+                            if value.translation.height > 16, isAtBottom {
+                                isAtBottom = false
+                            }
+                        }
+                )
+        }
+    }
+
+    /// Floating "jump to latest" button, like the one in the official clients.
     private func scrollDownButton(_ proxy: ScrollViewProxy) -> some View {
         Button {
             unseenWhileScrolledUp = 0
@@ -1534,8 +1743,8 @@ struct ChatView: View {
         guard let index = unblockedMessages.firstIndex(where: { $0.id == messageId }) else { return }
         let needed = unblockedMessages.count - index
         let base = max(1, limits.effectiveMessagesPerChat)
-        if needed > base + currentVisibleMessages {
-            currentVisibleMessages = needed - base
+        if needed > base + extraMessages {
+            extraMessages = needed - base
         }
     }
 
