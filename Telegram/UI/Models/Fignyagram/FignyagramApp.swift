@@ -8,6 +8,8 @@ struct FignyagramApp: App {
     @AppStorage("app_ui_refresh_trigger") private var uiRefreshTrigger = 0
 
     init() {
+        CrashTrace.installExceptionHandler()
+        CrashTrace.step("app init start")
         ConsoleCapture.install()
         ImageCache.configureForDevice()
         _ = HardwareTuning.shared

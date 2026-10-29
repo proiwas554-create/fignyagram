@@ -19,6 +19,7 @@ struct ContentView: View {
     @ObservedObject private var calls = CallManager.shared
 
     var body: some View {
+        let _ = CrashTrace.step("content body authorized=\(client.isAuthorized)")
         Group {
             if client.isAuthorized {
                 Group {

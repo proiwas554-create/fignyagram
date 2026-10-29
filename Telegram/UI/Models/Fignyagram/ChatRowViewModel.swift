@@ -32,6 +32,7 @@ final class ChatRowViewModel: ObservableObject {
 
     func start() {
         refresh()
+        guard AutoTranslationSettings.shared.isSupported else { return }
         guard AutoTranslationManager.shared.translation(forChatId: chatId, title: originalTitle) == nil,
               AutoTranslationManager.shared.titlePrefetchEnabled else { return }
         // Debounce: while the list is scrolling fast, cells appear and vanish

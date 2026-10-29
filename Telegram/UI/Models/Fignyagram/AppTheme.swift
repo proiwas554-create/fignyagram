@@ -45,7 +45,13 @@ extension L10n {
     /// System localization only: the .lproj table for the iPhone language is
     /// chosen by iOS. No manual language override can create a mixed UI.
     static func t(_ key: String) -> String {
-        MainActor.assumeIsolated { FnyLocalization.shared.string(key) }
+        // No actor assumption: this is called from cells, background pipelines
+        // and UIKit appearance code. Overrides are read straight from defaults.
+        if let overrides = UserDefaults.standard.dictionary(forKey: "fnyLocalizationOverrides") as? [String: String],
+           let override = overrides[key], !override.isEmpty {
+            return override
+        }
+        return NSLocalizedString(key, comment: "")
     }
 
     static func keyed(_ key: String, ru: String, en: String) -> String {

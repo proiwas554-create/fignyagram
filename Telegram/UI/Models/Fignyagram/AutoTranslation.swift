@@ -553,6 +553,7 @@ struct AutoTranslatedMessageText: View {
     }
 
     private func request() {
+        guard settings.isSupported else { return }
         guard settings.mode == .auto else {
             translated = manager.translation(for: message, text: formatted.text, role: role)
             return
