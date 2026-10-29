@@ -215,16 +215,10 @@ struct ChatListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if classic.isEnabled { classicHeader }
-                Group {
-                    if #available(iOS 16.0, *) {
-                        List { chatListRows }
-                            .listStyle(.plain)
-                    } else {
-                        // iOS 15: SwiftUI List aborts with a type-metadata crash,
-                        // so the same rows live in a plain scroll container.
-                        ScrollView { LazyVStack(spacing: 0) { chatListRows } }
-                    }
-                }
+                // SwiftUI List aborts on iOS 15 with swift_getAssociatedTypeWitness
+                // (see crash log), even inside an availability branch. A plain
+                // scroll container is used everywhere to keep one crash-free path.
+                ScrollView { LazyVStack(spacing: 0) { chatListRows } }
                 .onChange(of: limits.effectiveRenderedChats) { _ in currentVisibleCount = 0 }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
