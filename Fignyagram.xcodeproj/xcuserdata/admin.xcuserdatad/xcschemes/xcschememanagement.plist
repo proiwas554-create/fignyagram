@@ -7,17 +7,35 @@
 		<key>Fignyagram.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>2</integer>
+			<integer>0</integer>
 		</dict>
 		<key>FignyagramShare.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>3</integer>
+			<integer>1</integer>
 		</dict>
 		<key>FignyagramWatch.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>4</integer>
+			<integer>2</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>84808574308210CA00D269FE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>AA1000000000000000000001</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BBF000000000000000003</key>
+		<dict>
+			<key>primary</key>
+			<true/>
 		</dict>
 	</dict>
 </dict>
