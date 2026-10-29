@@ -114,6 +114,11 @@ struct MessageRow: View {
                         .ignoresSafeArea()
                 }
             }
+            .onDisappear {
+                // Legacy devices: count the row so ImageCache can evict textures
+                // in the background, and drop the media bitmap held by the row.
+                ImageCache.noteCellDisappeared()
+            }
     }
 
     @ViewBuilder
@@ -199,6 +204,12 @@ struct MessageRow: View {
             }
     }
 
+    /// Plain text messages render the body once; captions belong to media only.
+    private var isPlainText: Bool {
+        if case .messageText = message.content { return true }
+        return false
+    }
+
     /// Stickers and round videos are shown without a bubble.
     private var isBare: Bool {
         switch message.content {
@@ -209,6 +220,11 @@ struct MessageRow: View {
 
     @ViewBuilder
     private var content: some View {
+        messageBodyContent
+    }
+
+    @ViewBuilder
+    private var messageBodyContent: some View {
         if isBare {
             VStack(alignment: message.isOutgoing ? .trailing : .leading, spacing: 4) {
                 replyHeader
@@ -268,12 +284,8 @@ struct MessageRow: View {
                 // was rendered, so plain text messages appeared empty).
                 AutoTranslatedMessageText(message: message, formatted: textContent.text)
             }
-            if let caption = message.cachedCaption, !caption.text.isEmpty {
+            if !isPlainText, let caption = message.cachedCaption, !caption.text.isEmpty {
                 AutoTranslatedMessageText(message: message, formatted: caption, role: "caption")
-                TranslatedTextView(
-                    text: caption.text,
-                    font: .appCaption2.italic()
-                )
             }
             if !ultra.isEnabled { reactions }
             repliesButton
