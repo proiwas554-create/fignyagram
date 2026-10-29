@@ -23,6 +23,7 @@ struct ChatListView: View {
     @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
     @State private var search = ""
+    @State private var showDeveloper = false
     @FocusState private var searchFocused: Bool
     @State private var confirmLogout = false
     @State private var showSettings = false
@@ -55,8 +56,7 @@ struct ChatListView: View {
         ("Settings.Row.Cache", [NSLocalizedString("Generated.611cdeb92886", comment: ""), NSLocalizedString("Generated.0144f5315981", comment: ""), NSLocalizedString("Generated.1a5f59a1962b", comment: ""), "cache", "memory"]),
         ("Settings.Row.Optimization", [NSLocalizedString("Generated.cffb764b1932", comment: ""), NSLocalizedString("Generated.fc436cf76731", comment: ""), NSLocalizedString("Generated.4d36393d0a36", comment: ""), "optimization", "battery"]),
         ("Settings.Row.Privacy", [NSLocalizedString("Generated.f0112ad9e617", comment: ""), NSLocalizedString("Generated.02bff617062d", comment: ""), "privacy"]),
-        ("Settings.Row.Limits", [NSLocalizedString("Generated.600f0621e037", comment: ""), "limits"]),
-        ("Settings.Row.Developer", [NSLocalizedString("Generated.92e862e86481", comment: ""), "debug", NSLocalizedString("Generated.5c2224ecd3c2", comment: ""), "developer", "terminal"])
+        ("Settings.Row.Limits", [NSLocalizedString("Generated.600f0621e037", comment: ""), "limits"])
     ]
 
     private var matchedSettings: [String] {
@@ -217,6 +217,13 @@ struct ChatListView: View {
             }
             .searchable(text: $search, prompt: NSLocalizedString("Generated.286bb65540f1", comment: ""))
             .navigationBarHidden(classic.isEnabled)
+            .simultaneousGesture(
+                TapGesture(count: 10).onEnded {
+                    DeveloperMode.shared.unlock()
+                    showDeveloper = true
+                }
+            )
+            .sheet(isPresented: $showDeveloper) { DeveloperSettingsView() }
             .navigationTitle("Fignyagram")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
