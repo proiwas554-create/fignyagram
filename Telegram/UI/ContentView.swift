@@ -161,71 +161,7 @@ struct ContentView: View {
     /// Legacy devices: only one screen exists at a time (no ZStack with two
     /// NavigationViews / searchable controllers), which crashed iOS 15.
     private var legacyRoot: some View {
-        Group {
-            if selectedTab == 0 {
-                ChatListView()
-            } else if selectedTab == 1 {
-                MusicView()
-            } else {
-                NewsFeedView()
-            }
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !chatPresentation.isChatOpen {
-                HStack(spacing: 0) {
-                    Button {
-                        if selectedTab == 0 {
-                            secretChatTaps += 1
-                            if secretChatTaps >= 10 {
-                                secretChatTaps = 0
-                                DeveloperMode.shared.unlock()
-                                showDeveloper = true
-                            }
-                        } else {
-                            selectedTab = 0
-                            secretChatTaps = 0
-                        }
-                    } label: {
-                        VStack(spacing: 3) {
-                            Image(systemName: "bubble.left.and.bubble.right.fill").font(.system(size: 20))
-                            Text(L10n.t("Auto.19adecc3d1")).font(.appCaption2)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(selectedTab == 0 ? .accentColor : .secondary)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button { selectedTab = 1 } label: {
-                        VStack(spacing: 3) {
-                            Image(systemName: "music.note").font(.system(size: 20))
-                            Text(L10n.t("Auto.0660a7580a")).font(.appCaption2)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .foregroundColor(selectedTab == 1 ? .accentColor : .secondary)
-                    }
-                    .buttonStyle(.plain)
-
-                    if showNewsTab {
-                        Button { selectedTab = 2 } label: {
-                            VStack(spacing: 3) {
-                                Image(systemName: "newspaper").font(.system(size: 20))
-                                Text(L10n.t("Feed.Tab.Title")).font(.appCaption2)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .foregroundColor(selectedTab == 2 ? .accentColor : .secondary)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.top, 6)
-                .padding(.bottom, 4)
-                .background(
-                    Color(.systemBackground)
-                        .ignoresSafeArea(edges: .bottom)
-                        .overlay(alignment: .top) { Divider() }
-                )
-            }
-        }
+        LegacyRootView()
     }
 
     private var classicRoot: some View {
@@ -291,4 +227,67 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+}
+
+
+/// Crash-safe root for 2 GB devices: no native TabView (it crashed on iOS 15),
+/// but the same screens and features as the modern root.
+struct LegacyRootView: View {
+    @State private var selectedTab = 0
+    @State private var secretChatTaps = 0
+    @State private var showDeveloper = false
+    @AppStorage("showNewsTab") private var showNewsTab = false
+    @ObservedObject private var chatPresentation = ChatPresentationState.shared
+
+    var body: some View {
+        Group {
+            if selectedTab == 0 {
+                ChatListView()
+            } else if selectedTab == 1 {
+                MusicView()
+            } else {
+                NewsFeedView()
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !chatPresentation.isChatOpen {
+                HStack(spacing: 0) {
+                    tabButton(index: 0, icon: "bubble.left.and.bubble.right.fill", title: L10n.t("Auto.19adecc3d1"))
+                    tabButton(index: 1, icon: "music.note", title: L10n.t("Auto.0660a7580a"))
+                    if showNewsTab {
+                        tabButton(index: 2, icon: "newspaper", title: L10n.t("Feed.Tab.Title"))
+                    }
+                }
+                .padding(.top, 6)
+                .padding(.bottom, 4)
+                .background(
+                    Color(.systemBackground)
+                        .ignoresSafeArea(edges: .bottom)
+                        .overlay(alignment: .top) { Divider() }
+                )
+            }
+        }
+    }
+
+    private func tabButton(index: Int, icon: String, title: String) -> some View {
+        Button {
+            if index == 0 {
+                secretChatTaps += 1
+                if secretChatTaps >= 10 {
+                    secretChatTaps = 0
+                    DeveloperMode.shared.unlock()
+                    showDeveloper = true
+                }
+            }
+            selectedTab = index
+        } label: {
+            VStack(spacing: 3) {
+                Image(systemName: icon).font(.system(size: 20))
+                Text(title).font(.appCaption2)
+            }
+            .frame(maxWidth: .infinity)
+            .foregroundColor(selectedTab == index ? .accentColor : .secondary)
+        }
+        .buttonStyle(.plain)
+    }
 }
