@@ -243,7 +243,14 @@ struct LegacyRootView: View {
     var body: some View {
         Group {
             if selectedTab == 0 {
-                ChatListView()
+                // SwiftUI List in ChatListView aborts with a type-metadata crash
+                // on iOS 15 (swift_getAssociatedTypeWitness). The legacy list is
+                // crash-free and keeps context menus, swipe actions and history.
+                if DevicePerformance.isLowMemory {
+                    LegacyChatListView()
+                } else {
+                    ChatListView()
+                }
             } else if selectedTab == 1 {
                 MusicView()
             } else {
