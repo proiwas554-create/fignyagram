@@ -791,9 +791,8 @@ final class DisplayLimits: ObservableObject {
         if UltraMode.shared.isEnabled { return 35 }
         let mode = PerformanceMode.shared
         if mode.isEnabled { return min(maxMessagesPerChat, mode.level.maxMessages) }
-        if DevicePerformance.isLowMemory {
-            return min(maxMessagesPerChat, DeviceProfiles.current.tier.recommendedMessages)
-        }
+        // Legacy devices use exactly the same window as new ones: the user
+        // controls it with "Показать ещё", not the hardware.
         return maxMessagesPerChat
     }
 
@@ -801,9 +800,6 @@ final class DisplayLimits: ObservableObject {
         if UltraMode.shared.isEnabled { return 20 }
         let mode = PerformanceMode.shared
         if mode.isEnabled { return min(maxRenderedChats, mode.level.maxChats) }
-        if DevicePerformance.isLowMemory {
-            return min(maxRenderedChats, DeviceProfiles.current.tier.recommendedChats)
-        }
         return maxRenderedChats
     }
 

@@ -125,7 +125,6 @@ struct ChatListView: View {
 
     private var displayedChatIds: [Int64] {
         var limit = max(1, limits.effectiveRenderedChats + extraChats)
-        if DevicePerformance.isLowMemory { limit = min(limit, 40) }
         return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
