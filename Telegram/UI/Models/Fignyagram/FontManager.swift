@@ -37,8 +37,14 @@ final class FontManager: ObservableObject {
         try? fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         selection = UserDefaults.standard.string(forKey: Self.selectionKey) ?? Builtin.system.rawValue
         customNames = UserDefaults.standard.stringArray(forKey: Self.customNamesKey) ?? []
-        registerAll()
-        applyGlobalAppearance()
+        // Heavy font registration must not block the first frame.
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.registerAll()
+            DispatchQueue.main.async {
+                self?.applyGlobalAppearance()
+                self?.revision += 1
+            }
+        }
         NotificationCenter.default.addObserver(
             forName: UIApplication.didReceiveMemoryWarningNotification,
             object: nil,
