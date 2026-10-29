@@ -190,10 +190,6 @@ struct ChatListView: View {
                     }
     }
 
-    private var modernChatList: some View {
-        List { chatListRows }.listStyle(.plain)
-    }
-
     private var legacyChatList: some View {
         ScrollView { LazyVStack(spacing: 0) { chatListRows } }
     }
@@ -217,15 +213,10 @@ struct ChatListView: View {
         NavigationView {
             VStack(spacing: 0) {
                 if classic.isEnabled { classicHeader }
-                Group {
-                    // AnyView erases the generic type: on iOS 15 the List
-                    // metadata is never instantiated (that was the crash).
-                    if #available(iOS 16.0, *) {
-                        AnyView(modernChatList)
-                    } else {
-                        AnyView(legacyChatList)
-                    }
-                }
+                // SwiftUI List aborts on iOS 15 during startup (swift runtime
+                // type metadata). The scroll container is used everywhere so the
+                // List type never enters the view graph on any OS version.
+                legacyChatList
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {

@@ -10,8 +10,11 @@ private final class FPSProxy: NSObject {
     func start() {
         stop()
         let link = CADisplayLink(target: self, selector: #selector(tick))
-        if #available(iOS 15.0, *) {
+        if #available(iOS 16.0, *) {
             FrameRateController.register(link)
+        } else {
+            // iOS 15: default system rate, no custom ranges.
+            link.preferredFramesPerSecond = 60
         }
         link.add(to: .main, forMode: .common)
         self.link = link
