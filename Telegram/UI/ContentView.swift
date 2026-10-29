@@ -22,7 +22,9 @@ struct ContentView: View {
         Group {
             if client.isAuthorized {
                 Group {
-                    if classic.isEnabled {
+                    if DevicePerformance.isLowMemory && !classic.isEnabled {
+                        legacyRoot
+                    } else if classic.isEnabled {
                         // On 2 GB devices the custom root avoids the native
                         // TabView, which was crashing right after authorization
                         // on iOS 15 (app restarted immediately).
@@ -162,8 +164,10 @@ struct ContentView: View {
         Group {
             if selectedTab == 0 {
                 LegacyChatListView()
-            } else {
+            } else if selectedTab == 1 {
                 MusicView()
+            } else {
+                NewsFeedView()
             }
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -200,6 +204,18 @@ struct ContentView: View {
                         .foregroundColor(selectedTab == 1 ? .accentColor : .secondary)
                     }
                     .buttonStyle(.plain)
+
+                    if showNewsTab {
+                        Button { selectedTab = 2 } label: {
+                            VStack(spacing: 3) {
+                                Image(systemName: "newspaper").font(.system(size: 20))
+                                Text(L10n.t("Feed.Tab.Title")).font(.appCaption2)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .foregroundColor(selectedTab == 2 ? .accentColor : .secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding(.top, 6)
                 .padding(.bottom, 4)

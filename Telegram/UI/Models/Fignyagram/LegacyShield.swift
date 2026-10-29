@@ -6,17 +6,22 @@ import Foundation
 final class LegacyShield {
     static let shared = LegacyShield()
 
+    /// Nonisolated so background caches (ImageCache) can read it safely.
+    static let isLegacyDevice: Bool = computeLegacy()
     let isLegacy: Bool
     let modelIdentifier: String
 
     private init() {
-        let model = Self.hardwareModel()
-        modelIdentifier = model
+        modelIdentifier = Self.hardwareModel()
+        isLegacy = Self.isLegacyDevice
+        CallDiag.log("legacy shield: model=\(modelIdentifier) legacy=\(isLegacy)")
+    }
+
+    nonisolated static func computeLegacy() -> Bool {
+        let model = hardwareModel()
         let ram = ProcessInfo.processInfo.physicalMemory
         let legacyModels = ["iPhone8,", "iPhone9,", "iPhone10,"]   // 6s … 8 (A9–A11)
-        let oldModel = legacyModels.contains { model.hasPrefix($0) }
-        isLegacy = ram <= 3 * 1024 * 1024 * 1024 || oldModel
-        CallDiag.log("legacy shield: model=\(modelIdentifier) legacy=\(isLegacy) ramMB=\(ram / 1_048_576)")
+        return ram <= 3 * 1024 * 1024 * 1024 || legacyModels.contains { model.hasPrefix($0) }
     }
 
     var usesFlatSurfaces: Bool {
@@ -26,7 +31,7 @@ final class LegacyShield {
     var translationDebounce: UInt64 { isLegacy ? 300_000_000 : 150_000_000 }
     var messageTranslationDebounce: UInt64 { isLegacy ? 300_000_000 : 200_000_000 }
 
-    private static func hardwareModel() -> String {
+    nonisolated private static func hardwareModel() -> String {
         var systemInfo = utsname()
         uname(&systemInfo)
         let mirror = Mirror(reflecting: systemInfo.machine)

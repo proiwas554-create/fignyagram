@@ -1969,3 +1969,4 @@
 "SettingsGen.4cb240abc8" = "). Удалённые: \\(privacy.keepDeletedMessages ? ";
 "SettingsGen.8a2442ab77" = "). Кэш: \\(MessageFormatter.fileSize(cache.totalBytes)).";
 "Dev.TDLib" = "TDLib";
+"Feed.Tab.Title" = "Новости";

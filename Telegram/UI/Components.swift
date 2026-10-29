@@ -51,7 +51,7 @@ nonisolated enum ImageCache {
     /// Called when a cell leaves the screen. On legacy devices keeps a small
     /// rolling budget and evicts decoded textures in the background.
     static func noteCellDisappeared() {
-        guard LegacyShield.shared.isLegacy else { return }
+        guard LegacyShield.isLegacyDevice else { return }
         evictionLock.lock()
         cellsSinceEviction += 1
         let shouldEvict = cellsSinceEviction >= legacyCellLimit
@@ -61,7 +61,7 @@ nonisolated enum ImageCache {
     }
 
     static func noteDecoded(bytes: Int) {
-        guard LegacyShield.shared.isLegacy else { return }
+        guard LegacyShield.isLegacyDevice else { return }
         evictionLock.lock()
         bytesSinceEviction += bytes
         let shouldEvict = bytesSinceEviction >= legacyByteLimit
@@ -189,7 +189,7 @@ nonisolated enum ImageCache {
 
     /// Drops decoded images on memory pressure; they are re-decoded on demand.
     static func configureForDevice() {
-        let legacy = MainActor.assumeIsolated { LegacyShield.shared.isLegacy }
+        let legacy = LegacyShield.isLegacyDevice
         guard DevicePerformance.isLowMemory || legacy else { return }
         cache.totalCostLimit = 32 * 1024 * 1024
         cache.countLimit = 220
