@@ -20,6 +20,7 @@
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
+		BBF00000000000000000A /* FignyagramWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BBF000000000000000002 /* FignyagramWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F16A000230824E740030F13D /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000130824E740030F13D /* AuthView.swift */; };
 		F16A000430824E740030F13D /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000330824E740030F13D /* ChatListView.swift */; };
 		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
@@ -38,6 +39,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = AA1000000000000000000001;
 			remoteInfo = FignyagramShare;
+		};
+		BBF000000000000000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8480856D308210CA00D269FE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BBF000000000000000003;
+			remoteInfo = FignyagramWatch;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -61,6 +69,15 @@
 			);
 			name = "Embed App Extensions";
 		};
+		BBF000000000000000009 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolder = Product;
+			files = (
+				BBF00000000000000000A /* FignyagramWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -80,6 +97,7 @@
 		AABBCCDD00000000000000E4 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AABBCCDD00000000000000E5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AABBCCDD00000000000000E6 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BBF000000000000000002 /* FignyagramWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FignyagramWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
 		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -114,6 +132,11 @@
 			);
 		};
 		AA1000000000000000000009 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		BBF00000000000000000C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -174,6 +197,7 @@
 			children = (
 				84808575308210CA00D269FE /* Fignyagram.app */,
 				AA1000000000000000000002 /* FignyagramShare.appex */,
+				BBF000000000000000002 /* FignyagramWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -209,12 +233,14 @@
 				84808572308210CA00D269FE /* Frameworks */,
 				84808573308210CA00D269FE /* Resources */,
 				AA100000000000000000000E /* Embed App Extensions */,
+				BBF000000000000000009 /* Embed Watch Content */,
 				5DB7617BC8E885CBFE48DFB7 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				AA100000000000000000000F /* PBXTargetDependency */,
+				BBF000000000000000007 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				84808577308210CA00D269FE /* Fignyagram */,
@@ -241,6 +267,21 @@
 			productName = FignyagramShare;
 			productReference = AA1000000000000000000002 /* FignyagramShare.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		BBF000000000000000003 /* FignyagramWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBF000000000000000006 /* Build configuration list for PBXNativeTarget "FignyagramWatch" */;
+			buildPhases = (
+				BBF00000000000000000B /* Sources */,
+				BBF00000000000000000C /* Frameworks */,
+				BBF00000000000000000D /* Resources */,
+			);
+			buildRules = (
+			);
+			name = FignyagramWatch;
+			productName = FignyagramWatch;
+			productReference = BBF000000000000000002 /* FignyagramWatch.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -279,6 +320,7 @@
 			targets = (
 				84808574308210CA00D269FE /* Fignyagram */,
 				AA1000000000000000000001 /* FignyagramShare */,
+				BBF000000000000000003 /* FignyagramWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -291,6 +333,11 @@
 			);
 		};
 		AA100000000000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+		};
+		BBF00000000000000000D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -323,6 +370,11 @@
 				AA1000000000000000000006 /* ShareViewController.swift in Sources */,
 			);
 		};
+		BBF00000000000000000B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -330,6 +382,11 @@
 			isa = PBXTargetDependency;
 			target = AA1000000000000000000001 /* FignyagramShare */;
 			targetProxy = AA1000000000000000000010 /* PBXContainerItemProxy */;
+		};
+		BBF000000000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BBF000000000000000003 /* FignyagramWatch */;
+			targetProxy = BBF000000000000000008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -669,6 +726,50 @@
 			};
 			name = Release;
 		};
+		BBF000000000000000004 /* Debug configuration for PBXNativeTarget "FignyagramWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 100;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Fignyagram;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.Fignyagram.Fignyagram;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
+				ARCHS = "arm64_32 arm64";
+			};
+			name = Debug;
+		};
+		BBF000000000000000005 /* Release configuration for PBXNativeTarget "FignyagramWatch" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 100;
+				DEVELOPMENT_TEAM = K63F32HXQ4;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Fignyagram;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.Fignyagram.Fignyagram;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
+				ARCHS = "arm64_32 arm64";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -693,6 +794,14 @@
 			buildConfigurations = (
 				AA100000000000000000000C /* Debug configuration for PBXNativeTarget "FignyagramShare" */,
 				AA100000000000000000000D /* Release configuration for PBXNativeTarget "FignyagramShare" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		BBF000000000000000006 /* Build configuration list for PBXNativeTarget "FignyagramWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBF000000000000000004 /* Debug configuration for PBXNativeTarget "FignyagramWatch" */,
+				BBF000000000000000005 /* Release configuration for PBXNativeTarget "FignyagramWatch" */,
 			);
 			defaultConfigurationName = Release;
 		};

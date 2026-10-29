@@ -11,6 +11,7 @@ struct FignyagramApp: App {
         CrashTrace.installExceptionHandler()
         CrashTrace.step("app init start")
         FrameRateController.startGovernor()
+        WatchBridgeManager.shared.activate()
         ConsoleCapture.install()
         ImageCache.configureForDevice()
         _ = HardwareTuning.shared
