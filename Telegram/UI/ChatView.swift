@@ -664,14 +664,21 @@ struct ChatView: View {
                     .listRowSeparator(.hidden)
                     .listRowBackground(Color.clear)
                 } else if !messages.isEmpty && !store.fullyLoadedChats.contains(chatId) {
-                    ProgressView()
-                        .padding()
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                        .onAppear {
-                            olderAnchorId = messages.first?.id
-                            client.loadOlderMessages(chatId: chatId)
+                    Button {
+                        olderAnchorId = messages.first?.id
+                        client.loadOlderMessages(chatId: chatId)
+                    } label: {
+                        HStack(spacing: 6) {
+                            Image(systemName: "chevron.up")
+                            Text(String(format: L10n.t("ChatList.ShowMore"), limits.effectiveMessagesPerChat))
                         }
+                        .font(.appFootnote)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(.accentColor)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
                 }
                 ForEach(visibleMessages, id: \.id) { message in
                     messageRowCell(message)

@@ -833,7 +833,7 @@ final class TelegramClient: ObservableObject {
                 var fromId = fromMessageId
                 var reachedStart = false
                 // TDLib may return fewer messages than requested (e.g. only cached ones), so ask a few times.
-                for _ in 0..<5 where collected.count < 30 && !reachedStart {
+                for _ in 0..<8 where collected.count < 60 && !reachedStart {
                     let batch = try await client.getChatHistory(
                         chatId: chatId, fromMessageId: fromId, limit: 50, offset: 0, onlyLocal: false
                     ).messages ?? []

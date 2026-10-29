@@ -22,9 +22,7 @@ struct ContentView: View {
         Group {
             if client.isAuthorized {
                 Group {
-                    if DevicePerformance.isLowMemory && !classic.isEnabled {
-                        legacyRoot
-                    } else if classic.isEnabled {
+                    if classic.isEnabled {
                         // On 2 GB devices the custom root avoids the native
                         // TabView, which was crashing right after authorization
                         // on iOS 15 (app restarted immediately).

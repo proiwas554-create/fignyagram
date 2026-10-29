@@ -233,7 +233,7 @@ final class AutoTranslationManager: ObservableObject {
     /// Title prefetch in the main list is disabled on old devices: it would
     /// fire hundreds of times while scrolling and fight for the CPU.
     var titlePrefetchEnabled: Bool {
-        AutoTranslationSettings.shared.mode == .auto && !DevicePerformance.isLowMemory
+        AutoTranslationSettings.shared.mode == .auto
     }
 
     /// Chat/channel titles use the same cache with role "title".
