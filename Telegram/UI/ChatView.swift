@@ -645,7 +645,74 @@ struct ChatView: View {
         }
     }
 
+    @ViewBuilder
     private var messageList: some View {
+        // iOS 15 + SwiftUI List hits a type-metadata abort (see crash log), so
+        // legacy devices use a LazyVStack scroll view instead.
+        if DevicePerformance.isLowMemory {
+            legacyMessageList
+        } else {
+            modernMessageList
+        }
+    }
+
+    private var legacyMessageList: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 4) {
+                    if visibleMessages.count < unblockedMessages.count {
+                        Button {
+                            extraMessages += limits.effectiveMessagesPerChat
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "chevron.up")
+                                Text(earlierButtonTitle)
+                            }
+                            .font(.appFootnote)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.accentColor)
+                        .padding(.vertical, 6)
+                    } else if !messages.isEmpty && !store.fullyLoadedChats.contains(chatId) {
+                        Button {
+                            olderAnchorId = messages.first?.id
+                            client.loadOlderMessages(chatId: chatId)
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "chevron.up")
+                                Text(String(format: L10n.t("ChatList.ShowMore"), limits.effectiveMessagesPerChat))
+                            }
+                            .font(.appFootnote)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.accentColor)
+                        .padding(.vertical, 6)
+                    }
+                    ForEach(visibleMessages, id: \.id) { message in
+                        messageRowCell(message)
+                            .id(message.id)
+                    }
+                    Color.clear
+                        .frame(height: 1)
+                        .id(Self.bottomAnchor)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+            }
+            .onAppear {
+                if let last = visibleMessages.last?.id {
+                    proxy.scrollTo(last, anchor: .bottom)
+                }
+            }
+            .onChange(of: scrollTarget) { target in
+                guard let target else { return }
+                proxy.scrollTo(target, anchor: .center)
+                scrollTarget = nil
+            }
+        }
+    }
+
+    private var modernMessageList: some View {
         ScrollViewReader { proxy in
             List {
                 if visibleMessages.count < unblockedMessages.count {
