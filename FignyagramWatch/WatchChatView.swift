@@ -64,7 +64,6 @@ struct WatchChatView: View {
             }
             if !message.isOutgoing { Spacer(minLength: 12) }
         }
-        .listRowSeparator(.hidden)
     }
 }
 
