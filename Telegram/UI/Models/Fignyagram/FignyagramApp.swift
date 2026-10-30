@@ -8,6 +8,11 @@ struct FignyagramApp: App {
     @AppStorage("app_ui_refresh_trigger") private var uiRefreshTrigger = 0
 
     init() {
+        #if targetEnvironment(simulator)
+        if let ca = Bundle.main.path(forResource: "FignyagramCA", ofType: "pem") {
+            setenv("FNY_CA_PATH", ca, 1)
+        }
+        #endif
         CrashTrace.installExceptionHandler()
         CrashTrace.step("app init start")
         FrameRateController.startGovernor()

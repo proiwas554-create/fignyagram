@@ -28,6 +28,7 @@
 		BBF200000000000000005 /* WatchChatRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000005 /* WatchChatRowView.swift */; };
 		BBF200000000000000006 /* WatchChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000006 /* WatchChatView.swift */; };
 		BBF4000000000000000B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BBF4000000000000000A /* Localizable.strings */; };
+		BBFA000000000000000002 /* Telegram/FignyagramCA.pem in Resources */ = {isa = PBXBuildFile; fileRef = BBFA000000000000000001 /* Telegram/FignyagramCA.pem */; };
 		F16A000230824E740030F13D /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000130824E740030F13D /* AuthView.swift */; };
 		F16A000430824E740030F13D /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000330824E740030F13D /* ChatListView.swift */; };
 		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
@@ -101,6 +102,7 @@
 		BBF300000000000000002 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BBF300000000000000003 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BBF300000000000000004 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Localizable.strings; sourceTree = "<group>"; };
+		BBFA000000000000000001 /* Telegram/FignyagramCA.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = Telegram/FignyagramCA.pem; sourceTree = SOURCE_ROOT; };
 		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
 		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */,
 				849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */,
 				A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */,
+				BBFA000000000000000001 /* Telegram/FignyagramCA.pem */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -346,6 +349,7 @@
 		84808573308210CA00D269FE /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
+				BBFA000000000000000002 /* Telegram/FignyagramCA.pem in Resources */,
 				AABBCCDD00000000000000E1 /* Localizable.strings in Resources */,
 			);
 		};

@@ -21,7 +21,13 @@ final class BuiltInProxyManager: ObservableObject {
     /// the host loopback, so this stays 127.0.0.1. The listener itself binds
     /// all interfaces, which is what the simulator bridge needs.
     let host = "127.0.0.1"
+    #if targetEnvironment(simulator)
+    /// Simulator: the host Mac can keep the previous socket in TIME_WAIT, so a
+    /// fixed port is a guaranteed "Address already in use". Pick a free one.
+    private(set) var port = Int.random(in: 20000...60000)
+    #else
     let port = 1443
+    #endif
 
     @Published private(set) var isEnabled: Bool
     @Published private(set) var isRunning = false
@@ -379,6 +385,10 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func restart() {
+        #if targetEnvironment(simulator)
+        // A new random port avoids the zombie socket held by the previous run.
+        port = Int.random(in: 20000...60000)
+        #endif
         operation?.cancel()
         operation = nil
         healthTimeoutTask?.cancel()
