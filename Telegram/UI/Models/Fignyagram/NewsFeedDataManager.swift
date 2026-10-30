@@ -416,12 +416,12 @@ struct NewsFeedFiltersView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Feed.StopWords")) {
+                Section(L10n.header("Feed.StopWords")) {
                     TextEditor(text: $stopWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
                 }
-                Section(L10n.t("Feed.ImportantWords")) {
+                Section(L10n.header("Feed.ImportantWords")) {
                     TextEditor(text: $importantWords)
                         .frame(minHeight: 90)
                         .font(.appBody)
@@ -458,7 +458,7 @@ struct NewsFeedSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Feed.Settings.Content")) {
+                Section(L10n.header("Feed.Settings.Content")) {
                     Picker(L10n.t("Feed.Settings.PerChannel"), selection: $postsPerChannel) {
                         Text(L10n.t("Feed.Settings.Auto")).tag(0)
                         Text("5").tag(5); Text("8").tag(8); Text("12").tag(12); Text("20").tag(20)
@@ -468,11 +468,11 @@ struct NewsFeedSettingsView: View {
                         Text("200").tag(200); Text("400").tag(400); Text("800").tag(800)
                     }
                 }
-                Section(L10n.t("Feed.Settings.Tabs")) {
+                Section(L10n.header("Feed.Settings.Tabs")) {
                     Toggle(L10n.t("Feed.Tab.ForYou"), isOn: $showForYou)
                     Toggle(L10n.t("Feed.Tab.Important"), isOn: $showImportant)
                 }
-                Section(L10n.t("Feed.Settings.Refresh")) {
+                Section(L10n.header("Feed.Settings.Refresh")) {
                     Picker(L10n.t("Feed.Settings.RefreshInterval"), selection: $autoRefresh) {
                         Text(L10n.t("Settings.Never")).tag(0)
                         Text("1 min").tag(60)

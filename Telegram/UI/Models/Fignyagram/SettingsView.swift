@@ -34,7 +34,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section(L10n.t("Auto.547743e82f")) {
+                Section(L10n.header("Auto.547743e82f")) {
                     row(L10n.t("AutoT.ed903f8795"), icon: "network", value: .proxy)
                 }
 
@@ -84,7 +84,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(L10n.t("Auto.a1ceab59e9")) {
+                Section(L10n.header("Auto.a1ceab59e9")) {
                     row(L10n.t("AutoT.a46c372347"), icon: "person.crop.circle", value: .profile)
                     row(L10n.t("AutoT.067770493a"), icon: "laptopcomputer.and.iphone", value: .sessions)
                     row(L10n.t("AutoT.5a77c57a29"), icon: "lock.shield", value: .cloudPassword)
@@ -115,7 +115,7 @@ struct SettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Auto.5da932c117")) {
+                Section(L10n.header("Auto.5da932c117")) {
                     Button {
                         destination = .directStats
                     } label: {
@@ -135,7 +135,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(L10n.t("Auto.d884c5b006")) {
+                Section(L10n.header("Auto.d884c5b006")) {
                     row(L10n.t("AutoT.c2f7359a1b"), icon: "internaldrive", value: .downloads)
                     row(L10n.t("AutoT.dbc234480c"), icon: "externaldrive", value: .cache)
                     row(L10n.t("AutoT.7b900f6633"), icon: "slider.horizontal.3", value: .limits)

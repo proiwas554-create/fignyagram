@@ -254,7 +254,7 @@ private struct MemberRightsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.ef6810058a")) {
+                Section(L10n.header("Auto.ef6810058a")) {
                     Toggle(L10n.t("Auto.dfae6632a3"), isOn: $canChangeInfo)
                     Toggle(L10n.t("Auto.feed53a8d8"), isOn: $canDeleteMessages)
                     Toggle(L10n.t("Auto.b8621e1357"), isOn: $canInviteUsers)

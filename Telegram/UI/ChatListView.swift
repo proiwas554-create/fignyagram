@@ -150,7 +150,7 @@ struct ChatListView: View {
                 List {
                     if player.current != nil { GlobalPlayerBar() }
                     if query.isEmpty && classic.isEnabled && searchFocused && !searchHistory.items.isEmpty {
-                        Section(L10n.t("Auto.059ea2ac4c")) {
+                        Section(L10n.header("Auto.059ea2ac4c")) {
                             ForEach(searchHistory.items, id: \.self) { item in
                                 Button {
                                     search = item
@@ -162,7 +162,7 @@ struct ChatListView: View {
                         }
                     }
                     if !query.isEmpty && !matchedSettings.isEmpty {
-                        Section(L10n.t("Common.Settings")) {
+                        Section(L10n.header("Common.Settings")) {
                             ForEach(matchedSettings, id: \.self) { name in
                                 Button {
                                     switch name {
@@ -411,7 +411,7 @@ struct ChatListView: View {
     @ViewBuilder
     private var searchSection: some View {
         if !contactResults.isEmpty {
-            Section(L10n.t("Auto.75768c49c2")) {
+            Section(L10n.header("Auto.75768c49c2")) {
                 ForEach(contactResults) { user in
                     Button {
                         Task { await openContact(user) }
@@ -434,7 +434,7 @@ struct ChatListView: View {
             }
         }
         if !channelResults.isEmpty {
-            Section(L10n.t("Auto.0c1119c13e")) {
+            Section(L10n.header("Auto.0c1119c13e")) {
                 ForEach(channelResults, id: \.self) { chatId in
                     if let chat = store.chats[chatId] {
                         Button { openTarget = ChatTarget(chatId: chatId, messageId: nil) } label: {
@@ -448,7 +448,7 @@ struct ChatListView: View {
             }
         }
         if !searchResults.isEmpty {
-            Section(L10n.t("Auto.7e264844e4")) {
+            Section(L10n.header("Auto.7e264844e4")) {
                 ForEach(searchResults, id: \.id) { message in
                     Button {
                         openTarget = ChatTarget(chatId: message.chatId, messageId: message.id)

@@ -11,10 +11,10 @@ struct TranslationSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.34c4df5a64")) {
+                Section(L10n.header("Auto.34c4df5a64")) {
                     Text(text).textSelection(.enabled)
                 }
-                Section(L10n.t("Auto.b93e8b66b6")) {
+                Section(L10n.header("Auto.b93e8b66b6")) {
                     if let result {
                         Text(result).textSelection(.enabled)
                     } else if let errorText {

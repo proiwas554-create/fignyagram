@@ -25,7 +25,7 @@ struct HardwareSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Auto.72275dacae")) {
+                Section(L10n.header("Auto.72275dacae")) {
                     row(NSLocalizedString("Generated.ee4b7b031c58", comment: ""), tuning.device.marketingName)
                     row(L10n.t("Hw.Identifier"), tuning.device.identifier)
                     row(L10n.t("Hw.Class"), tuning.device.tier.title)
@@ -33,7 +33,7 @@ struct HardwareSettingsView: View {
                     row(L10n.t("Hw.MaxFreq"), "\(tuning.device.recommendedRefreshRate) Гц")
                 }
 
-                Section(L10n.t("Auto.8f8c377196")) {
+                Section(L10n.header("Auto.8f8c377196")) {
                     row(NSLocalizedString("Generated.5d5ebcceba4d", comment: ""), thermalTitle)
                     row(NSLocalizedString("Generated.fb74c99c2019", comment: ""), tuning.isLowPower ? NSLocalizedString("Generated.e59094ed9041", comment: "") : NSLocalizedString("Generated.5943ad965d17", comment: ""))
                     row(NSLocalizedString("Generated.729b9f5426ee", comment: ""), String(format: NSLocalizedString("Generated.eb3153f1094e", comment: ""), Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824))

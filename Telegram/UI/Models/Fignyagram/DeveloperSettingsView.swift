@@ -21,14 +21,14 @@ struct DeveloperSettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section(L10n.t("Auto.0d7f2e6b48")) {
+                Section(L10n.header("Auto.0d7f2e6b48")) {
                     row(L10n.t("Dev.Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     row("iOS", UIDevice.current.systemVersion)
                     row("TDLib API", "1.8.68")
                     row(L10n.t("Dev.Account"), client.me.map { "\($0.id)" } ?? "—")
                 }
 
-                Section(L10n.t("Dev.AppLoad")) {
+                Section(L10n.header("Dev.AppLoad")) {
                     row(NSLocalizedString("Generated.292706b12327", comment: ""), String(format: NSLocalizedString("Generated.2d0ddc2e72e9", comment: ""), monitor.memoryMB))
                     row("CPU", String(format: "%.1f%%", monitor.cpuPercent))
                     row("Потоки", "\(monitor.threadCount)")
@@ -71,7 +71,7 @@ struct DeveloperSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Auto.23bdac65fb")) {
+                Section(L10n.header("Auto.23bdac65fb")) {
                     row("Чатов", "\(store.chats.count)")
                     row("Пользователей", "\(store.users.count)")
                     row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(cache.totalBytes))
@@ -102,7 +102,7 @@ struct DeveloperSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Dev.Console")) {
+                Section(L10n.header("Dev.Console")) {
                     Button {
                         showTerminal = true
                     } label: {
@@ -110,14 +110,14 @@ struct DeveloperSettingsView: View {
                     }
                 }
 
-                Section(L10n.t("Dev.TDLib")) {
+                Section(L10n.header("Dev.TDLib")) {
                     Stepper("Log verbosity: \(Int(verbosity))", value: $verbosity, in: 0...5)
                     Button(L10n.t("Dev.ApplyLogLevel")) {
                         client.setLogVerbosity(Int(verbosity))
                     }
                 }
 
-                Section(L10n.t("Settings.Developer.Terminal")) {
+                Section(L10n.header("Settings.Developer.Terminal")) {
                     NavigationLink(L10n.t("Settings.Automation.Macros")) {
                         MacroSettingsView()
                     }

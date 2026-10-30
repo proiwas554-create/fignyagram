@@ -59,11 +59,11 @@ struct ChannelEditorView: View {
                     }
                 }
 
-                Section(L10n.t("Auto.602680ed89")) {
+                Section(L10n.header("Auto.602680ed89")) {
                     TextField(L10n.t("Auto.a020d97275"), text: $title)
                 }
 
-                Section(L10n.t("Auto.38ca0af80c")) {
+                Section(L10n.header("Auto.38ca0af80c")) {
                     ZStack(alignment: .topLeading) {
                         if description.isEmpty {
                             Text(L10n.t("Auto.38ca0af80c"))

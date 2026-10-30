@@ -22,11 +22,11 @@ struct ShareComposerView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.8c45d9cf57")) {
+                Section(L10n.header("Auto.8c45d9cf57")) {
                     TextEditor(text: $text).frame(minHeight: 100)
                 }
                 if !files.isEmpty {
-                    Section(L10n.t("Auto.200cd7baf7")) {
+                    Section(L10n.header("Auto.200cd7baf7")) {
                         ForEach(files.indices, id: \.self) { index in
                             VStack(alignment: .leading, spacing: 5) {
                                 HStack {

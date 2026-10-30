@@ -23,12 +23,12 @@ struct PollComposerView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.091100c8e6")) {
+                Section(L10n.header("Auto.091100c8e6")) {
                     TextField(L10n.t("Auto.9c0c211a0f"), text: $question)
                         .lineLimit(3)
                 }
 
-                Section(L10n.t("Auto.c28cdf2fb3")) {
+                Section(L10n.header("Auto.c28cdf2fb3")) {
                     ForEach(options.indices, id: \.self) { index in
                         HStack {
                             TextField("Вариант \(index + 1)", text: $options[index])

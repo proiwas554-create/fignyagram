@@ -10,7 +10,7 @@ struct ScheduleMessageView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.bbb9de7a3d")) {
+                Section(L10n.header("Auto.bbb9de7a3d")) {
                     DatePicker(L10n.t("Auto.b64c7c6e62"),
                         selection: $date,
                         in: Date().addingTimeInterval(60)...Date().addingTimeInterval(366 * 86400),
@@ -27,7 +27,7 @@ struct ScheduleMessageView: View {
                     .font(.appFootnote)
                 }
 
-                Section(L10n.t("Common.Message")) {
+                Section(L10n.header("Common.Message")) {
                     Text(text)
                         .lineLimit(4)
                         .foregroundColor(.secondary)

@@ -56,11 +56,11 @@ struct TrackMetadataView: View {
                     }
                 }
 
-                Section(L10n.t("Auto.602680ed89")) {
+                Section(L10n.header("Auto.602680ed89")) {
                     TextField(L10n.t("Auto.7a08bd376b"), text: $title)
                 }
 
-                Section(L10n.t("Auto.1d3ab78a9a")) {
+                Section(L10n.header("Auto.1d3ab78a9a")) {
                     TextField(L10n.t("Auto.cd7a9cf4fa"), text: $artist)
                 }
             }

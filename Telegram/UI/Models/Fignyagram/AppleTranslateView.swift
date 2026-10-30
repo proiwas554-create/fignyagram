@@ -17,10 +17,10 @@ struct AppleTranslateSheet: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(L10n.t("Auto.34c4df5a64")) {
+                Section(L10n.header("Auto.34c4df5a64")) {
                     Text(text).textSelection(.enabled)
                 }
-                Section(L10n.t("Auto.9e7529414c")) {
+                Section(L10n.header("Auto.9e7529414c")) {
                     if output.isEmpty && !failed {
                         HStack { ProgressView(); Text(L10n.t("Auto.4801573e67")).foregroundColor(.secondary) }
                     } else if failed {

@@ -33,7 +33,7 @@ struct SearchHistoryView: View {
         NavigationView {
             List {
                 if recentContactsEnabled, !recent.userIds.isEmpty {
-                    Section(L10n.t("Auto.908a0e3b6d")) {
+                    Section(L10n.header("Auto.908a0e3b6d")) {
                         ForEach(recent.userIds, id: \.self) { userId in
                             if let user = store.users[userId] {
                                 Button {
@@ -71,7 +71,7 @@ struct SearchHistoryView: View {
                     }
                 }
                 if recentContactsEnabled, contactsEnabledFromServer, !serverContacts.isEmpty {
-                    Section(L10n.t("Auto.417fd2d8ab")) {
+                    Section(L10n.header("Auto.417fd2d8ab")) {
                         ForEach(serverContacts, id: \.self) { userId in
                             if let user = store.users[userId] {
                                 Button {

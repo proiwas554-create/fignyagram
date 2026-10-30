@@ -44,6 +44,13 @@ extension L10n {
 
     /// System localization only: the .lproj table for the iPhone language is
     /// chosen by iOS. No manual language override can create a mixed UI.
+    /// Section headers must never be empty: UIKit's inset-grouped header
+    /// configuration crashes on an empty/undefined title.
+    static func header(_ key: String) -> String {
+        let value = t(key).trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? " " : value
+    }
+
     static func t(_ key: String) -> String {
         // No actor assumption: this is called from cells, background pipelines
         // and UIKit appearance code. Overrides are read straight from defaults.

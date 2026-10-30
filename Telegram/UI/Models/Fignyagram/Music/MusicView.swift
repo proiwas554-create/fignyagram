@@ -536,7 +536,7 @@ struct MusicView: View {
                         .font(.appFootnote)
                 }
 
-                Section(header: Text(L10n.t("Auto.cb2fdd59ac"))) {
+                Section(header: Text(L10n.header("Auto.cb2fdd59ac"))) {
                     ForEach(filteredProfileAudios, id: \.audio.id) { audio in
                         HStack(spacing: 10) {
                             ProfileAudioArtwork(audio: audio, size: 42)
@@ -620,7 +620,7 @@ struct MusicView: View {
         List {
             if filter == .chats {
                 ForEach(chatGroups, id: \.0) { group in
-                    Section(header: Text(group.0)) {
+                    Section(header: Text(group.0.isEmpty ? " " : group.0)) {
                         ForEach(group.1) { track in
                             trackRow(track, queue: group.1)
                         }

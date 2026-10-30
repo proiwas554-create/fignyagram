@@ -9,7 +9,7 @@ struct FontSettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                Section(L10n.t("Auto.719a59ad42")) {
+                Section(L10n.header("Auto.719a59ad42")) {
                     ForEach(FontManager.Builtin.allCases) { font in
                         Button {
                             fonts.select(font.rawValue)
@@ -26,7 +26,7 @@ struct FontSettingsView: View {
                 }
 
                 if !fonts.customNames.isEmpty {
-                    Section(L10n.t("Auto.ba5bf371c4")) {
+                    Section(L10n.header("Auto.ba5bf371c4")) {
                         ForEach(fonts.customNames, id: \.self) { name in
                             Button {
                                 fonts.select(name)

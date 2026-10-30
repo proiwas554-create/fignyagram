@@ -124,7 +124,7 @@ struct MacroSettingsView: View {
 
     var body: some View {
         Form {
-            Section(L10n.t("Macros.New")) {
+            Section(L10n.header("Macros.New")) {
                 TextField(L10n.t("Macros.Keyword"), text: $keyword)
                     .textInputAutocapitalization(.never)
                 TextField(L10n.t("Macros.ChatId"), text: $chatIdText)
@@ -147,7 +147,7 @@ struct MacroSettingsView: View {
                 .disabled(keyword.trimmingCharacters(in: .whitespaces).isEmpty)
             }
 
-            Section(L10n.t("Macros.Rules")) {
+            Section(L10n.header("Macros.Rules")) {
                 if engine.rules.isEmpty {
                     Text(L10n.t("Macros.Empty")).foregroundColor(.secondary)
                 }

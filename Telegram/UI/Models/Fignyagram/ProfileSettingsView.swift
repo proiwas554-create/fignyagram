@@ -74,14 +74,14 @@ struct ProfileSettingsView: View {
                     Text(L10n.t("Auto.a1ceab59e9"))
                 }
 
-                Section(L10n.t("Auto.d38d6d925c")) {
+                Section(L10n.header("Auto.d38d6d925c")) {
                     TextField(L10n.t("Auto.d38d6d925c"), text: $firstName)
                         .textContentType(.givenName)
                     TextField(L10n.t("Auto.a7b7df8362"), text: $lastName)
                         .textContentType(.familyName)
                 }
 
-                Section(L10n.t("Auto.0b3b2f3a4d")) {
+                Section(L10n.header("Auto.0b3b2f3a4d")) {
                     ZStack(alignment: .topLeading) {
                         if bio.isEmpty {
                             Text("Bio")

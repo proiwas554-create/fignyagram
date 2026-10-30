@@ -66,7 +66,7 @@ struct PassphrasePrompt: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(title) {
+                Section(title.isEmpty ? " " : title) {
                     SecureField(L10n.t("Snippets.Key"), text: $value)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
@@ -105,7 +105,7 @@ struct SnippetsSettingsView: View {
 
     var body: some View {
         Form {
-            Section(L10n.t("Snippets.New")) {
+            Section(L10n.header("Snippets.New")) {
                 TextField(L10n.t("Snippets.Text"), text: $draft)
                 Button(L10n.t("Common.Add")) {
                     store.add(draft)
@@ -113,7 +113,7 @@ struct SnippetsSettingsView: View {
                 }
                 .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
-            Section(L10n.t("Snippets.List")) {
+            Section(L10n.header("Snippets.List")) {
                 if store.snippets.isEmpty {
                     Text(L10n.t("Snippets.Empty")).foregroundColor(.secondary)
                 }

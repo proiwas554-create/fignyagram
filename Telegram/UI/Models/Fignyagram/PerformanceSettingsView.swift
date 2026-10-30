@@ -32,7 +32,7 @@ struct PerformanceSettingsView: View {
                 }
 
                 if performance.isEnabled {
-                    Section(L10n.t("Auto.c09fb627f9")) {
+                    Section(L10n.header("Auto.c09fb627f9")) {
                         Picker(L10n.t("Auto.6e1572de13"), selection: $performance.level) {
                             ForEach(PerformanceLevel.allCases) { level in
                                 Text(level.title).tag(level)
@@ -70,7 +70,7 @@ struct PerformanceSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Auto.2cbb35de48")) {
+                Section(L10n.header("Auto.2cbb35de48")) {
                     Label(L10n.t("Auto.d51dc53ea8"), systemImage: "photo")
                     Label("Кэш изображений до \(performance.level.cacheLimit / (1024 * 1024)) МБ", systemImage: "internaldrive")
                     Label("Фото декодируются с разрешением до \(Int(performance.level.maxPixel)) px", systemImage: "arrow.down.right.and.arrow.up.left")

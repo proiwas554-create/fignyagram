@@ -38,7 +38,7 @@ struct CacheSettingsView: View {
                         .font(.appFootnote)
                 }
 
-                Section(L10n.t("Cache.Categories")) {
+                Section(L10n.header("Cache.Categories")) {
                     ForEach(cache.categories) { category in
                         HStack(spacing: 12) {
                             Image(systemName: category.icon)
