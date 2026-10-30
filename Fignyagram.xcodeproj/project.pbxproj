@@ -20,7 +20,14 @@
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
-		BBF00000000000000000A /* FignyagramWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = BBF000000000000000002 /* FignyagramWatch.app */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		BBF200000000000000000 /* FignyagramWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000000 /* FignyagramWatchApp.swift */; };
+		BBF200000000000000001 /* WatchChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000001 /* WatchChat.swift */; };
+		BBF200000000000000002 /* WatchMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000002 /* WatchMessage.swift */; };
+		BBF200000000000000003 /* WatchBridgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000003 /* WatchBridgeManager.swift */; };
+		BBF200000000000000004 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000004 /* WatchContentView.swift */; };
+		BBF200000000000000005 /* WatchChatRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000005 /* WatchChatRowView.swift */; };
+		BBF200000000000000006 /* WatchChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000006 /* WatchChatView.swift */; };
+		BBF4000000000000000B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BBF4000000000000000A /* Localizable.strings */; };
 		F16A000230824E740030F13D /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000130824E740030F13D /* AuthView.swift */; };
 		F16A000430824E740030F13D /* ChatListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000330824E740030F13D /* ChatListView.swift */; };
 		F16A000630824E740030F13D /* ChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16A000530824E740030F13D /* ChatView.swift */; };
@@ -30,14 +37,6 @@
 		F16B000430824E740030F13D /* MediaSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000330824E740030F13D /* MediaSupport.swift */; };
 		F16B000630824E740030F13D /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000530824E740030F13D /* MediaViews.swift */; };
 		F16B000830824E740030F13D /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000730824E740030F13D /* MessageRow.swift */; };
-		BBF200000000000000000 /* FignyagramWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000000 /* FignyagramWatchApp.swift */; };
-		BBF200000000000000001 /* WatchChat.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000001 /* WatchChat.swift */; };
-		BBF200000000000000002 /* WatchMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000002 /* WatchMessage.swift */; };
-		BBF200000000000000003 /* WatchBridgeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000003 /* WatchBridgeManager.swift */; };
-		BBF200000000000000004 /* WatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000004 /* WatchContentView.swift */; };
-		BBF200000000000000005 /* WatchChatRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000005 /* WatchChatRowView.swift */; };
-		BBF200000000000000006 /* WatchChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF100000000000000006 /* WatchChatView.swift */; };
-		BBF4000000000000000B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = BBF4000000000000000A /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,13 +46,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = AA1000000000000000000001;
 			remoteInfo = FignyagramShare;
-		};
-		BBF000000000000000008 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8480856D308210CA00D269FE /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = BBF000000000000000003;
-			remoteInfo = FignyagramWatch;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -77,15 +69,6 @@
 			);
 			name = "Embed App Extensions";
 		};
-		BBF000000000000000009 /* Embed Watch Content */ = {
-			isa = PBXCopyFilesBuildPhase;
-			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
-			dstSubfolder = Product;
-			files = (
-				BBF00000000000000000A /* FignyagramWatch.app in Embed Watch Content */,
-			);
-			name = "Embed Watch Content";
-		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -106,15 +89,6 @@
 		AABBCCDD00000000000000E5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		AABBCCDD00000000000000E6 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BBF000000000000000002 /* FignyagramWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FignyagramWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
-		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
-		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
-		F16A000730824E740030F13D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
-		F16A000930824E740030F13D /* MessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatter.swift; sourceTree = "<group>"; };
-		F16B000130824E740030F13D /* OggOpus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OggOpus.swift; sourceTree = "<group>"; };
-		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
-		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
-		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
 		BBF100000000000000000 /* FignyagramWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FignyagramWatchApp.swift; sourceTree = "<group>"; };
 		BBF100000000000000001 /* WatchChat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchChat.swift; sourceTree = "<group>"; };
 		BBF100000000000000002 /* WatchMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchMessage.swift; sourceTree = "<group>"; };
@@ -127,6 +101,15 @@
 		BBF300000000000000002 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BBF300000000000000003 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BBF300000000000000004 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F16A000130824E740030F13D /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
+		F16A000330824E740030F13D /* ChatListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatListView.swift; sourceTree = "<group>"; };
+		F16A000530824E740030F13D /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
+		F16A000730824E740030F13D /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		F16A000930824E740030F13D /* MessageFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFormatter.swift; sourceTree = "<group>"; };
+		F16B000130824E740030F13D /* OggOpus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OggOpus.swift; sourceTree = "<group>"; };
+		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
+		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
+		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -373,11 +356,9 @@
 		};
 		BBF00000000000000000D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				BBF4000000000000000B /* Localizable.strings in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -409,7 +390,6 @@
 		};
 		BBF00000000000000000B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				BBF200000000000000000 /* FignyagramWatchApp.swift in Sources */,
 				BBF200000000000000001 /* WatchChat.swift in Sources */,
@@ -419,7 +399,6 @@
 				BBF200000000000000005 /* WatchChatRowView.swift in Sources */,
 				BBF200000000000000006 /* WatchChatView.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -428,11 +407,6 @@
 			isa = PBXTargetDependency;
 			target = AA1000000000000000000001 /* FignyagramShare */;
 			targetProxy = AA1000000000000000000010 /* PBXContainerItemProxy */;
-		};
-		BBF000000000000000007 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = BBF000000000000000003 /* FignyagramWatch */;
-			targetProxy = BBF000000000000000008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

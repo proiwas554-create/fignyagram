@@ -78,7 +78,13 @@ final class TelegramClient: ObservableObject {
             return
         }
         if manager == nil {
+            TDLibDatabaseRecovery.prepare(databaseDirectory: AccountStore.shared.current.databaseDirectory)
             manager = TDLibClientManager()
+            let dir = AccountStore.shared.current.databaseDirectory
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 20_000_000_000)
+                TDLibDatabaseRecovery.markClean(databaseDirectory: dir)
+            }
         }
         guard let manager else { return }
         // Client creation + the initial sync execute() must not run on the main
