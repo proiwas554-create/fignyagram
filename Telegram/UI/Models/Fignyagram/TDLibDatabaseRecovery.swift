@@ -22,12 +22,16 @@ enum TDLibDatabaseRecovery {
         let hasDatabase = fm.fileExists(atPath: binlog)
         let clean = !fm.fileExists(atPath: running)
 
-        if hasDatabase && !clean {
-            for path in databaseFiles(in: databaseDirectory) {
-                try? fm.removeItem(atPath: path)
-            }
-            CallDiag.log("tdlib recovery: corrupt binlog evicted at \(databaseDirectory)")
-            CrashTrace.step("tdlib recovery: cache evicted")
+        // A zero-sized binlog is also a hard fault (interrupted reindex).
+        var truncated = false
+        if hasDatabase,
+           let attrs = try? fm.attributesOfItem(atPath: binlog),
+           (attrs[.size] as? NSNumber)?.intValue ?? 0 < 16 {
+            truncated = true
+        }
+
+        if (hasDatabase && !clean) || truncated {
+            purgeCorruptedDatabase(databaseDirectory)
             return true
         }
         try? fm.removeItem(atPath: marker)
@@ -35,6 +39,16 @@ enum TDLibDatabaseRecovery {
         // the next launch rebuilds the cache instead of aborting in binlog.
         fm.createFile(atPath: running, contents: Data(), attributes: nil)
         return false
+    }
+
+    /// Removes the whole cache directory and recreates it empty. TDLib then
+    /// builds a fresh database and re-syncs chats from the server.
+    static func purgeCorruptedDatabase(_ databaseDirectory: String) {
+        let fm = FileManager.default
+        try? fm.removeItem(atPath: databaseDirectory)
+        try? fm.createDirectory(atPath: databaseDirectory, withIntermediateDirectories: true)
+        CallDiag.log("tdlib recovery: database purged at \(databaseDirectory)")
+        CrashTrace.step("tdlib recovery: database purged")
     }
 
     /// Call once the client is authorized and the database is known-good.

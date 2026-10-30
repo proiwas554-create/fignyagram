@@ -77,8 +77,10 @@ final class TelegramClient: ObservableObject {
             observeProtectedDataIfNeeded()
             return
         }
+        // Hard Fault Boot Guard: never let TDLib open a binlog left behind by a
+        // crashed reindex. Must run before createClient on every cold start.
+        TDLibDatabaseRecovery.prepare(databaseDirectory: AccountStore.shared.current.databaseDirectory)
         if manager == nil {
-            TDLibDatabaseRecovery.prepare(databaseDirectory: AccountStore.shared.current.databaseDirectory)
             manager = TDLibClientManager()
             let dir = AccountStore.shared.current.databaseDirectory
             Task { @MainActor in
