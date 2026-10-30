@@ -89,6 +89,16 @@ actor ProxyWebSocket {
                     DispatchQueue.global(qos: .utility)
                 )
             }
+            #if targetEnvironment(simulator)
+            // Simulator builds only: the macOS runtime rejects the sandboxed
+            // loopback TLS chain, so verification is relaxed for the emulator.
+            // Device builds keep full certificate validation.
+            sec_protocol_options_set_verify_block(
+                options.securityProtocolOptions,
+                { _, _, complete in complete(true) },
+                DispatchQueue.global(qos: .utility)
+            )
+            #endif
             tlsOptions = options
         }
         let tcpOptions = NWProtocolTCP.Options()

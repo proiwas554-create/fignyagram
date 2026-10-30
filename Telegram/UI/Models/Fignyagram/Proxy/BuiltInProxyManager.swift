@@ -17,6 +17,9 @@ final class BuiltInProxyManager: ObservableObject {
         static let secret = "builtInProxySecret"
     }
 
+    /// TDLib (also inside the simulator) connects to the local proxy through
+    /// the host loopback, so this stays 127.0.0.1. The listener itself binds
+    /// all interfaces, which is what the simulator bridge needs.
     let host = "127.0.0.1"
     let port = 1443
 
