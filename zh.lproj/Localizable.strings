@@ -1975,3 +1975,4 @@
 "Settings.FixedFPSHint" = "限制应用的显示链接动画。iOS 不允许第三方应用更改面板刷新率。";
 "Settings.FrameSaver" = "帧率节能";
 "Settings.FrameSaverHint" = "关闭模糊、阴影和动画，真正降低 GPU 负载。";
+"Proxy.SimulatorDirect" = "模拟器：直连（代理已禁用）";

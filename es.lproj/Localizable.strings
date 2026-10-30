@@ -1975,3 +1975,4 @@
 "Settings.FixedFPSHint" = "Limita las animaciones de la app. iOS no permite cambiar la frecuencia del panel.";
 "Settings.FrameSaver" = "Ahorro de fotogramas";
 "Settings.FrameSaverHint" = "Desactiva desenfoque, sombras y animaciones.";
+"Proxy.SimulatorDirect" = "Simulador: conexión directa";

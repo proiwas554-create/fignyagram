@@ -200,6 +200,15 @@ final class BuiltInProxyManager: ObservableObject {
 
     func start() {
         DiagnosticsLog.log("proxy.start enabled=\(isEnabled) running=\(isRunning)")
+        #if targetEnvironment(simulator)
+        // Xcode 27 simulator: TDLib's OpenSSL cert store aborts in xzone malloc.
+        // Instead of faking a green tunnel pointing at a dead port, keep the
+        // simulator on a direct connection so chats still work.
+        isRunning = false
+        lastError = nil
+        status = NSLocalizedString("Proxy.SimulatorDirect", comment: "")
+        return
+        #endif
         guard isEnabled, !isRunning, operation == nil else { return }
         reconnectAttempts = 0
         status = NSLocalizedString("Generated.81392999a5d2", comment: "")

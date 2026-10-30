@@ -1975,3 +1975,4 @@
 "Settings.FixedFPSHint" = "Begrenzt die Display-Link-Animationen. iOS erlaubt keine Änderung der Panel-Bildrate.";
 "Settings.FrameSaver" = "Bildraten-Sparmodus";
 "Settings.FrameSaverHint" = "Deaktiviert Unschärfe, Schatten und Animationen.";
+"Proxy.SimulatorDirect" = "Simulator: Direktverbindung";
