@@ -15,8 +15,8 @@
 		849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */ = {isa = PBXBuildFile; productRef = 849E0116308A83FA008B5F4E /* TDLibKit */; };
 		849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; };
 		A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; };
-		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; };
+		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };
@@ -208,7 +208,7 @@
 				AABBCCDD00000000000000E0 /* Localizable.strings */,
 				8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */,
 				849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */,
-				A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.framework */,
+				A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -444,6 +444,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -468,8 +469,11 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -514,6 +518,7 @@
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -526,8 +531,11 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
-				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
@@ -588,7 +596,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = "1.0 beta";
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -657,7 +669,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = "1.0 beta";
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -691,7 +707,11 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -718,7 +738,11 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				OTHER_LDFLAGS = ("$(inherited)", "-lbz2", "-liconv");
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lbz2",
+					"-liconv",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.Fignyagram.Fignyagram.ShareExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
