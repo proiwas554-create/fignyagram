@@ -19,10 +19,16 @@ final class WatchBridgeManager: NSObject, ObservableObject {
 
     func activate() {
         guard WCSession.isSupported() else { return }
-        let session = WCSession.default
-        session.delegate = self
-        session.activate()
-        self.session = session
+        // Off the first-frame path: let launch settle before WatchConnectivity
+        // starts touching its queues.
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            guard let self, WCSession.isSupported() else { return }
+            let session = WCSession.default
+            session.delegate = self
+            session.activate()
+            self.session = session
+        }
     }
 
     func requestChats(limit: Int) {

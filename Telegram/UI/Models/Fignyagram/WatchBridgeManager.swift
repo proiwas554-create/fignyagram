@@ -13,9 +13,14 @@ final class WatchBridgeManager: NSObject, ObservableObject, WCSessionDelegate {
 
     func activate() {
         guard WCSession.isSupported() else { return }
-        let session = WCSession.default
-        session.delegate = self
-        session.activate()
+        // Delayed background activation: keeps WCSession off the cold-start
+        // path and away from UIKit/allocator work on the main thread.
+        let manager = self
+        DispatchQueue.global(qos: .background).asyncAfter(deadline: .now() + 1.0) {
+            let session = WCSession.default
+            session.delegate = manager
+            session.activate()
+        }
     }
 
     @MainActor private func messagesPayload(chatId: Int64, limit: Int) -> [String: Any] {
