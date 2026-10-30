@@ -21,17 +21,29 @@ private func handleUncaughtException(_ exception: NSException) {
                exception.callStackSymbols.joined(separator: "\n") + "\n")
 }
 
+/// Async-signal-safe writer: the file descriptor and path are opened once at
+/// install time, so a crash inside malloc/AttributeGraph cannot deadlock while
+/// we format Swift strings.
+private var crashFD: Int32 = -1
+
+private func crashFDPath() {
+    guard crashFD < 0 else { return }
+    let path = crashLogPath()
+    crashFD = open(path, O_WRONLY | O_CREAT | O_APPEND, 0o644)
+}
+
 private func handleSignal(_ signalNumber: Int32) {
-    // Raw backtrace into the log: SIGABRT often comes from an Objective-C
-    // exception or a library abort, and the symbolic stack is the only way to
-    // see the actual frame.
-    crashWrite("SIGNAL \(signalNumber)\n")
-    var frames = [UnsafeMutableRawPointer?](repeating: nil, count: 64)
-    let count = backtrace(&frames, 64)
-    let fd = open(crashLogPath(), O_WRONLY | O_CREAT | O_APPEND, 0o644)
-    if fd >= 0 {
-        backtrace_symbols_fd(&frames, count, fd)
-        close(fd)
+    // No Swift strings, no allocation: only write(2) on the pre-opened fd.
+    if crashFD < 0 { crashFDPath() }
+    if crashFD >= 0 {
+        var line = [UInt8]("SIGNAL \n".utf8)
+        line.insert(contentsOf: Array(String(signalNumber).utf8), at: 7)
+        line.withUnsafeBufferPointer { buffer in
+            _ = write(crashFD, buffer.baseAddress, buffer.count)
+        }
+        var frames = [UnsafeMutableRawPointer?](repeating: nil, count: 64)
+        let count = backtrace(&frames, 64)
+        backtrace_symbols_fd(&frames, count, crashFD)
     }
     signal(signalNumber, SIG_DFL)
     raise(signalNumber)
@@ -44,6 +56,7 @@ enum CrashLogger {
     static func install() {
         guard !installed else { return }
         installed = true
+        crashFDPath()
         NSSetUncaughtExceptionHandler(handleUncaughtException)
         for sig in [SIGABRT, SIGILL, SIGSEGV, SIGFPE, SIGBUS, SIGTRAP] {
             signal(sig, handleSignal)

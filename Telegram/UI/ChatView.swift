@@ -641,7 +641,6 @@ struct ChatView: View {
                 onOpenReplies: { repliesMessage = message },
                 onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
             )
-            .equatable()
         }
     }
 

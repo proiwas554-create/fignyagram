@@ -344,7 +344,6 @@ struct ChatListView: View {
                 presence: presence(for: chat),
                 fallbackPreview: historyPreview(chatId: chat.id)
             )
-            .equatable()
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
