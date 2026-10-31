@@ -12,9 +12,38 @@ enum TLSDiagnostics {
                         "cdn.telesco.pe"]
 
     static func probeAll() {
+        CallDiag.log("tlsdiag probe start hosts=\(hosts.count)")
         for host in hosts {
             probe(host: host)
+            probeWithURLSession(host: host)
         }
+    }
+
+    private final class SessionDelegate: NSObject, URLSessionDelegate {
+        let host: String
+        init(host: String) { self.host = host }
+        func urlSession(_ session: URLSession,
+                        didReceive challenge: URLAuthenticationChallenge,
+                        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+            if let trust = challenge.protectionSpace.serverTrust {
+                dump(host: host + "(urlsession)", trust: trust)
+            }
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+
+    private static var delegates: [SessionDelegate] = []
+
+    private static func probeWithURLSession(host: String) {
+        let delegate = SessionDelegate(host: host)
+        delegates.append(delegate)
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
+        var request = URLRequest(url: URL(string: "https://\(host)/")!)
+        request.httpMethod = "HEAD"
+        request.timeoutInterval = 5
+        session.dataTask(with: request) { _, _, error in
+            if let error { CallDiag.log("tlsdiag \(host) urlsession error \(error.localizedDescription)") }
+        }.resume()
     }
 
     private static func probe(host: String) {
@@ -33,10 +62,14 @@ enum TLSDiagnostics {
             queue
         )
         connection.stateUpdateHandler = { state in
-            if case .failed(let error) = state {
-                CallDiag.log("tlsdiag \(host) failed \(error)")
+            switch state {
+            case .failed(let error):
+                CallDiag.log("tlsdiag \(host) nw failed \(error)")
+            case .ready:
+                connection.cancel()
+            default:
+                break
             }
-            if case .ready = state { connection.cancel() }
         }
         connection.start(queue: queue)
         queue.asyncAfter(deadline: .now() + 6) { connection.cancel() }

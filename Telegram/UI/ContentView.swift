@@ -109,10 +109,15 @@ struct ContentView: View {
             TranslationService.shared.applySystemLanguageDefaultsIfNeeded()
             AccountStore.cleanupOrphanDatabases()
             ShareInbox.shared.loadPending()
-            client.start()
+            // Two-stage boot: let the UI and the TLS probe finish first. TDLib's
+            // own HTTP stack crashes inside BoringSSL on this build, so starting
+            // it later gives us a clean certificate dump before the handshake.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                client.start()
+            }
             // Lazy proxy start: wait until the first frame is on screen so the
             // NWListener on 1443 cannot race with iOS window/XPC bootstrap.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.45) {
                 BuiltInProxyManager.shared.applyIfEnabled()
             }
         }
