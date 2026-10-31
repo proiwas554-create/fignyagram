@@ -39,6 +39,8 @@
 		F16B000630824E740030F13D /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000530824E740030F13D /* MediaViews.swift */; };
 		F16B000830824E740030F13D /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000730824E740030F13D /* MessageRow.swift */; };
 		BBFB000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BBFB000000000000000001 /* Assets.xcassets */; };
+		BBFC000000000000000002 /* WebRTCDiagnostics.m in Sources */ = {isa = PBXBuildFile; fileRef = BBFC000000000000000001 /* WebRTCDiagnostics.m */; };
+		BBFC000000000000000004 /* RTCAudioSessionCompat.m in Sources */ = {isa = PBXBuildFile; fileRef = BBFC000000000000000003 /* RTCAudioSessionCompat.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -114,6 +116,8 @@
 		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
 		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
 		BBFB000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = FignyagramWatch/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		BBFC000000000000000001 /* WebRTCDiagnostics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Telegram/Support/WebRTCDiagnostics.m; sourceTree = SOURCE_ROOT; };
+		BBFC000000000000000003 /* RTCAudioSessionCompat.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Telegram/Support/RTCAudioSessionCompat.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -375,6 +379,8 @@
 		84808571308210CA00D269FE /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				BBFC000000000000000002 /* WebRTCDiagnostics.m in Sources */,
+				BBFC000000000000000004 /* RTCAudioSessionCompat.m in Sources */,
 				844C690030824E740030F13D /* StdOutLogger.swift in Sources */,
 				844C68EF3082430C0030F13D /* ContentView.swift in Sources */,
 				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,
