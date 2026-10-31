@@ -60,6 +60,17 @@ struct SimulatorMockRoot: View {
     // MARK: Sidebar
 
     private var sidebar: some View {
+        NavigationView {
+            sidebarList
+        }
+        .navigationViewStyle(.stack)
+        .onTapGesture {
+            taps += 1
+            if taps >= 10 { taps = 0; pane = .developer }
+        }
+    }
+
+    private var sidebarList: some View {
         List(selection: Binding(get: { Optional(pane) },
                                 set: { if let value = $0 { pane = value } })) {
             ForEach(chats.prefix(visible)) { chat in
@@ -82,10 +93,6 @@ struct SimulatorMockRoot: View {
             ToolbarItem(placement: .primaryAction) {
                 Button { pane = .settings } label: { Image(systemName: "gearshape") }
             }
-        }
-        .onTapGesture {
-            taps += 1
-            if taps >= 10 { taps = 0; pane = .developer }
         }
     }
 
