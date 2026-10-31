@@ -15,6 +15,7 @@ struct FignyagramApp: App {
         #endif
         CrashTrace.installExceptionHandler()
         CrashTrace.step("app init start")
+        Task.detached(priority: .utility) { TLSDiagnostics.probeAll() }
         FrameRateController.startGovernor()
         WatchBridgeManager.shared.activate()
         ConsoleCapture.install()
