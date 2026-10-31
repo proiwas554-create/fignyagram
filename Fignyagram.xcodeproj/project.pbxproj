@@ -212,7 +212,6 @@
 			isa = PBXGroup;
 			children = (
 				AABBCCDD00000000000000E0 /* Localizable.strings */,
-				8480CC00308F0000008B5F4E /* ThirdParty/tgcalls */,
 				849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */,
 				A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */,
 				BBFA000000000000000001 /* Telegram/FignyagramCA.pem */,
