@@ -23,7 +23,6 @@ struct SimulatorMockRoot: View {
     @State private var pane: Pane = .none
     @State private var visible = 10
     @State private var taps = 0
-    @State private var translated = false
 
     private let chats: [SimulatorMockChat] = (1...12).map { index in
         SimulatorMockChat(id: Int64(index),
@@ -34,55 +33,56 @@ struct SimulatorMockRoot: View {
     }
 
     var body: some View {
-        HStack(spacing: 0) {
-            leftPanel.frame(width: 360).background(Color(.systemBackground))
-            Divider()
-            rightPanel.frame(maxWidth: .infinity, maxHeight: .infinity)
+        GeometryReader { geo in
+            let unfolded = geo.size.width > 700 && geo.size.width > geo.size.height
+            if unfolded {
+                HStack(spacing: 0) {
+                    chatPanel(frameWidth: min(360, geo.size.width * 0.42),
+                              unfolded: true)
+                        .padding(.trailing, 18)
+                    Divider()
+                    rightPanel
+                        .padding(.leading, 18)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color(.secondarySystemBackground))
+                }
+            } else {
+                NavigationView {
+                    chatPanel(frameWidth: nil, unfolded: false)
+                }
+                .navigationViewStyle(.stack)
+            }
         }
     }
 
-    private var leftPanel: some View {
+    private func chatPanel(frameWidth: CGFloat?, unfolded: Bool) -> some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Fignyagram")
                     .font(.title2.weight(.bold))
                     .onTapGesture {
+                        guard unfolded else { return }
                         taps += 1
                         if taps >= 10 { taps = 0; pane = .developer }
                     }
                 Spacer()
-                Button { pane = .settings } label: { Image(systemName: "gearshape") }
-                    .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16).padding(.vertical, 10)
-            Divider()
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 8)
+
             List {
                 ForEach(chats.prefix(visible)) { chat in
-                    Button {
-                        pane = .chat(chat.id)
-                    } label: {
-                        HStack(spacing: 10) {
-                            Circle().fill(Color.accentColor.opacity(0.25))
-                                .frame(width: 34, height: 34)
-                                .overlay(Text(String(chat.title.prefix(1))).font(.headline))
-                            VStack(alignment: .leading, spacing: 2) {
-                                HStack {
-                                    if chat.pinned { Image(systemName: "pin.fill").font(.caption2) }
-                                    Text(chat.title).font(.body.weight(.semibold)).lineLimit(1)
-                                    Spacer()
-                                    if chat.unread > 0 {
-                                        Text("\(chat.unread)").font(.caption2.bold())
-                                            .padding(.horizontal, 5).padding(.vertical, 2)
-                                            .background(Capsule().fill(Color.accentColor))
-                                            .foregroundColor(.white)
-                                    }
-                                }
-                                Text(chat.preview).font(.footnote)
-                                    .foregroundColor(.secondary).lineLimit(1)
-                            }
+                    if unfolded {
+                        Button { pane = .chat(chat.id) } label: { row(chat) }
+                            .buttonStyle(.plain)
+                    } else {
+                        NavigationLink(destination: SimulatorMockChatView(chatId: chat.id,
+                                                                          title: chat.title,
+                                                                          embedded: false)) {
+                            row(chat)
                         }
                     }
-                    .buttonStyle(.plain)
                 }
                 if chats.count > visible {
                     Button { visible += 10 } label: {
@@ -91,6 +91,41 @@ struct SimulatorMockRoot: View {
                 }
             }
             .listStyle(.plain)
+
+            HStack {
+                Button { pane = .settings } label: {
+                    Image(systemName: "gearshape").font(.system(size: 18))
+                }
+                .buttonStyle(.plain)
+                .padding(.leading, 16)
+                Spacer()
+            }
+            .padding(.vertical, 8)
+            .background(Color(.systemBackground))
+            .overlay(alignment: .top) { Divider() }
+        }
+        .frame(width: frameWidth)
+    }
+
+    private func row(_ chat: SimulatorMockChat) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(Color.accentColor.opacity(0.25))
+                .frame(width: 34, height: 34)
+                .overlay(Text(String(chat.title.prefix(1))).font(.headline))
+            VStack(alignment: .leading, spacing: 2) {
+                HStack {
+                    if chat.pinned { Image(systemName: "pin.fill").font(.caption2) }
+                    Text(chat.title).font(.body.weight(.semibold)).lineLimit(1)
+                    Spacer()
+                    if chat.unread > 0 {
+                        Text("\(chat.unread)").font(.caption2.bold())
+                            .padding(.horizontal, 5).padding(.vertical, 2)
+                            .background(Capsule().fill(Color.accentColor))
+                            .foregroundColor(.white)
+                    }
+                }
+                Text(chat.preview).font(.footnote).foregroundColor(.secondary).lineLimit(1)
+            }
         }
     }
 
@@ -102,13 +137,14 @@ struct SimulatorMockRoot: View {
                 Image(systemName: "bubble.left.and.bubble.right").font(.system(size: 52))
                     .foregroundColor(.accentColor)
                 Text("Fignyagram for Duo").font(.title3.weight(.semibold))
-                Text("Выберите чат слева").foregroundColor(.secondary)
+                Text("Выберите чат или настройки слева").foregroundColor(.secondary)
                 Text(L10n.t("Proxy.SimulatorDirect")).font(.footnote).foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.secondarySystemBackground))
         case .chat(let id):
-            SimulatorMockChatView(chatId: id, title: chats.first { $0.id == id }?.title ?? "")
+            SimulatorMockChatView(chatId: id,
+                                  title: chats.first { $0.id == id }?.title ?? "",
+                                  embedded: true)
         case .settings:
             SettingsView()
         case .developer:
@@ -120,6 +156,7 @@ struct SimulatorMockRoot: View {
 struct SimulatorMockChatView: View {
     let chatId: Int64
     let title: String
+    var embedded: Bool = false
     @State private var translated = false
 
     private struct MockMessage: Identifiable {
@@ -144,31 +181,42 @@ struct SimulatorMockChatView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text(title).font(.headline)
-                Spacer()
-                Button(translated ? "Оригинал" : "Перевести") { withAnimation { translated.toggle() } }
+                if embedded {
+                    Text(title).font(.headline)
+                    Spacer()
+                }
+                Button(translated ? "Оригинал" : "Перевести") {
+                    withAnimation(.easeInOut(duration: 0.2)) { translated.toggle() }
+                }
+                .buttonStyle(.bordered)
             }
-            .padding()
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
             Divider()
             ScrollView {
-                LazyVStack(spacing: 8) {
+                LazyVStack(spacing: 10) {
                     ForEach(messages) { message in
                         HStack {
-                            if message.outgoing { Spacer(minLength: 60) }
+                            if message.outgoing { Spacer(minLength: 80) }
                             Text(translated ? message.russian : message.text)
-                                .padding(.horizontal, 12).padding(.vertical, 8)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 9)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                                         .fill(message.outgoing ? Color.accentColor : Color(.tertiarySystemBackground))
                                 )
                                 .foregroundColor(message.outgoing ? .white : .primary)
-                            if !message.outgoing { Spacer(minLength: 60) }
+                                .frame(maxWidth: 520, alignment: message.outgoing ? .trailing : .leading)
+                            if !message.outgoing { Spacer(minLength: 80) }
                         }
                     }
                 }
-                .padding()
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
             }
         }
+        .navigationTitle(embedded ? "" : title)
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 #endif
