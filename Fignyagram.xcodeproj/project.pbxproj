@@ -57,7 +57,6 @@
 			dstPath = "";
 			dstSubfolder = Frameworks;
 			files = (
-				A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */,
 				A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -135,7 +134,6 @@
 			files = (
 				849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */,
 				A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */,
-				849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */,
 			);
 		};
 		AA1000000000000000000009 /* Frameworks */ = {
