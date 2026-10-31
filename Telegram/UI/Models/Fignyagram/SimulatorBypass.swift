@@ -34,7 +34,10 @@ struct SimulatorMockRoot: View {
 
     var body: some View {
         GeometryReader { geo in
-            let wide = geo.size.width > 600
+            // Duo: split view only when the device is genuinely landscape
+            // (unfolded album / iPad style). A tall unfolded book stays compact.
+            let landscape = geo.size.width > geo.size.height
+            let wide = geo.size.width > 600 && landscape
             if wide {
                 HStack(spacing: 0) {
                     sidebar
