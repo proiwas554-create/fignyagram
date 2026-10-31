@@ -43,21 +43,39 @@ export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
 export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
 export OPENSSL_NO_ASM=1
 
-step "Locating upstream build script"
-BUILD_SCRIPT_PATH="$(find "$WORK/TDLibFramework" -type f \
-  \( -name 'build.sh' -o -name 'build-assets.sh' -o -name 'build-tdlib.sh' \) \
-  -print -quit 2>/dev/null || true)"
+step "Locating native upstream build script"
+BUILD_SCRIPT_PATH=""
+# Prefer the known native entry points (root or Scripts/), never examples/web.
+for candidate in \
+  "$WORK/TDLibFramework/build.sh" \
+  "$WORK/TDLibFramework/Scripts/build.sh" \
+  "$WORK/TDLibFramework/scripts/build.sh" \
+  "$WORK/TDLibFramework/Scripts/build-assets.sh"; do
+  if [ -f "$candidate" ] && ! grep -qE 'emcmake|emscripten' "$candidate"; then
+    BUILD_SCRIPT_PATH="$candidate"
+    break
+  fi
+done
+
 if [ -z "${BUILD_SCRIPT_PATH}" ]; then
-  fail "Upstream build script not found anywhere in the repository layout"
+  BUILD_SCRIPT_PATH="$(find "$WORK/TDLibFramework" -type f \
+    \( -name 'build.sh' -o -name 'build-assets.sh' -o -name 'build-tdlib.sh' \) \
+    -not -path '*/example/*' -not -path '*/examples/*' -not -path '*/web/*' \
+    -print 2>/dev/null | while read -r candidate; do
+      grep -qE 'emcmake|emscripten' "$candidate" || { echo "$candidate"; break; }
+    done)"
 fi
-echo "==> Found upstream build script at: ${BUILD_SCRIPT_PATH}"
+
+if [ -z "${BUILD_SCRIPT_PATH}" ]; then
+  fail "Native build script not found (example/web scripts ignored)"
+fi
+echo "==> Found native build script at: ${BUILD_SCRIPT_PATH}"
 
 # Crypto flags: the crash lives in the assembly EC path; force portable C.
 export OPENSSL_NO_ASM=1
 export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
 export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
 
-BUILD_DIR="$(dirname "$BUILD_SCRIPT_PATH")"
 step "Running $(basename "$BUILD_SCRIPT_PATH") from $BUILD_DIR (log: $WORK/build.log)"
 (
   cd "$BUILD_DIR"
