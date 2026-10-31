@@ -43,16 +43,30 @@ export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
 export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
 export OPENSSL_NO_ASM=1
 
-if [ -f build.sh ]; then
-  step "Running upstream build.sh (log: $WORK/build.log)"
-  # shellcheck disable=SC2086
-  ./build.sh ${BUILD_ARGS:-} 2>&1 | tee "$WORK/build.log"
-else
-  fail "build.sh not found in $TAG — inspect the tag layout and adjust this script"
+step "Locating upstream build script"
+BUILD_SCRIPT_PATH="$(find "$WORK/TDLibFramework" -type f \
+  \( -name 'build.sh' -o -name 'build-assets.sh' -o -name 'build-tdlib.sh' \) \
+  -print -quit 2>/dev/null || true)"
+if [ -z "${BUILD_SCRIPT_PATH}" ]; then
+  fail "Upstream build script not found anywhere in the repository layout"
 fi
+echo "==> Found upstream build script at: ${BUILD_SCRIPT_PATH}"
+
+# Crypto flags: the crash lives in the assembly EC path; force portable C.
+export OPENSSL_NO_ASM=1
+export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
+export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
+
+BUILD_DIR="$(dirname "$BUILD_SCRIPT_PATH")"
+step "Running $(basename "$BUILD_SCRIPT_PATH") from $BUILD_DIR (log: $WORK/build.log)"
+(
+  cd "$BUILD_DIR"
+  # shellcheck disable=SC2086
+  bash "$(basename "$BUILD_SCRIPT_PATH")" ${BUILD_ARGS:-}
+) 2>&1 | tee "$WORK/build.log"
 
 step "Locating built xcframework"
-FOUND="$(find "$WORK" -maxdepth 5 -name 'TDLibFramework.xcframework' -print -quit || true)"
+FOUND="$(find "$WORK" -type d -name 'TDLibFramework.xcframework' -print -quit 2>/dev/null || true)"
 [ -n "$FOUND" ] || fail "TDLibFramework.xcframework not found; check $WORK/build.log"
 step "Found: $FOUND"
 
