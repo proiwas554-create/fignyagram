@@ -18,6 +18,14 @@ final class WatchBridgeManager: NSObject, ObservableObject {
     private override init() { super.init() }
 
     func activate() {
+        #if targetEnvironment(simulator)
+        // Watch simulator has no paired iPhone/TDLib: feed the UI locally.
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            self?.seedSimulatorData()
+        }
+        return
+        #else
         guard WCSession.isSupported() else { return }
         // Off the first-frame path: let launch settle before WatchConnectivity
         // starts touching its queues.
@@ -29,7 +37,28 @@ final class WatchBridgeManager: NSObject, ObservableObject {
             session.activate()
             self.session = session
         }
+        #endif
     }
+
+    #if targetEnvironment(simulator)
+    private func seedSimulatorData() {
+        chats = (1...12).map { index in
+            WatchChat(id: Int64(index),
+                      title: index == 1 ? "@fignyagram" : "Test \(index)",
+                      preview: index == 1 ? "Добро пожаловать!" : "Сообщение \(index)",
+                      unread: index == 1 ? 10 : index % 3,
+                      isPinned: index == 1,
+                      isMuted: false)
+        }
+        totalChats = chats.count
+        templates = ["Привет!", "Скоро отвечу", "👍"]
+        messages[1] = [
+            WatchMessage(id: 1, text: "Welcome to Fignyagram!", senderName: "Fignyagram", isOutgoing: false, timestamp: 1),
+            WatchMessage(id: 2, text: "Перевод работает на часах.", senderName: "Fignyagram", isOutgoing: false, timestamp: 2),
+            WatchMessage(id: 3, text: "Ответ с руки готов.", senderName: "Вы", isOutgoing: true, timestamp: 3)
+        ]
+    }
+    #endif
 
     func requestChats(limit: Int) {
         guard let session, session.activationState == .activated else { return }
@@ -46,6 +75,9 @@ final class WatchBridgeManager: NSObject, ObservableObject {
     }
 
     func requestMessages(chatId: Int64, limit: Int) {
+        #if targetEnvironment(simulator)
+        return
+        #endif
         guard let session, session.activationState == .activated else { return }
         let message: [String: Any] = ["type": "requestMessages", "chatId": chatId, "limit": limit]
         if session.isReachable {
@@ -60,6 +92,9 @@ final class WatchBridgeManager: NSObject, ObservableObject {
     }
 
     func requestTemplates() {
+        #if targetEnvironment(simulator)
+        return
+        #endif
         guard let session, session.isReachable else { return }
         session.sendMessage(["type": "requestTemplates"], replyHandler: { [weak self] reply in
             Task { @MainActor in
@@ -69,6 +104,13 @@ final class WatchBridgeManager: NSObject, ObservableObject {
     }
 
     func sendWatchMessage(chatId: Int64, text: String) {
+        #if targetEnvironment(simulator)
+        messages[chatId, default: []].append(
+            WatchMessage(id: Int64(Date().timeIntervalSince1970), text: text,
+                         senderName: "Вы", isOutgoing: true, timestamp: Int(Date().timeIntervalSince1970))
+        )
+        return
+        #endif
         guard let session, session.isReachable else { return }
         session.sendMessage(["type": "sendWatchMessage", "chatId": chatId, "text": text],
                             replyHandler: nil,
