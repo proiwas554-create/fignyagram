@@ -17,107 +17,162 @@ struct SimulatorMockChat: Identifiable, Hashable {
     let pinned: Bool
 }
 
-struct SimulatorMockRoot: View {
-    enum Pane: Hashable { case chat(Int64), settings, developer }
+protocol DuoContentProvider {
+    var chats: [SimulatorMockChat] { get }
+    var tracks: [String] { get }
+    var news: [(title: String, body: String)] { get }
+}
 
-    @State private var pane: Pane = .chat(1)
-    @State private var visible = 10
-    @State private var taps = 0
-
-    private let chats: [SimulatorMockChat] = (1...12).map { index in
+struct SimulatorMockProvider: DuoContentProvider {
+    let chats: [SimulatorMockChat] = (1...12).map { index in
         SimulatorMockChat(id: Int64(index),
                           title: index == 1 ? "@fignyagram" : "Fignyagram Test \(index)",
                           preview: index == 1 ? "Welcome to Fignyagram" : "Message \(index)",
                           unread: index % 3,
                           pinned: index == 1)
     }
+    let tracks = ["Fignyagram Theme", "Night Drive", "Deep Focus", "Signal"]
+    let news: [(title: String, body: String)] = [
+        ("Fignyagram 1.0 beta", "Многовкладочный интерфейс Duo готов: чаты, музыка и новости в одном окне."),
+        ("Duo Split-View", "Сайдбар 320 pt, безопасные отступы от сгиба, настройки в нативном toolbar."),
+        ("Перевод на лету", "Строки кэшируются локально, пузыри обновляются без перезагрузки списка.")
+    ]
+}
+
+struct SimulatorMockRoot: View {
+    enum Pane: Hashable { case chat(Int64), settings, developer }
+    enum Tab { case chats, music, news }
+
+    private let provider: DuoContentProvider = SimulatorMockProvider()
+
+    @State private var tab: Tab = .chats
+    @State private var pane: Pane = .chat(1)
+    @State private var visible = 10
+    @State private var selectedTrack = 0
+    @State private var selectedNews = 0
+    @State private var taps = 0
 
     var body: some View {
         GeometryReader { geo in
-            // Duo: split view only when the device is genuinely landscape
-            // (unfolded album / iPad style). A tall unfolded book stays compact.
             let landscape = geo.size.width > geo.size.height
             let wide = geo.size.width > 600 && landscape
             if wide {
                 HStack(spacing: 0) {
-                    sidebar
-                        .frame(width: 320)
-                        .background(Color(.systemBackground))
+                    sidebar.frame(width: 320).background(Color(.systemBackground))
                     Divider()
-                    detail
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    detail.frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color(.secondarySystemBackground))
                 }
             } else {
-                NavigationView {
-                    compactList
+                TabView(selection: $tab) {
+                    NavigationView { compactChats }.tabItem {
+                        Label(L10n.t("Auto.19adecc3d1"), systemImage: "bubble.left.and.bubble.right")
+                    }.tag(Tab.chats)
+                    NavigationView { compactMusic }.tabItem {
+                        Label(L10n.t("Auto.0660a7580a"), systemImage: "music.note")
+                    }.tag(Tab.music)
+                    NavigationView { compactNews }.tabItem {
+                        Label(L10n.t("Feed.Tab.Title"), systemImage: "newspaper")
+                    }.tag(Tab.news)
                 }
-                .navigationViewStyle(.stack)
             }
         }
     }
 
-    // MARK: Sidebar
+    // MARK: sidebar (iPad style)
 
     private var sidebar: some View {
         NavigationView {
-            sidebarList
+            VStack(spacing: 0) {
+                Picker("", selection: $tab) {
+                    Text(L10n.t("Auto.19adecc3d1")).tag(Tab.chats)
+                    Text(L10n.t("Auto.0660a7580a")).tag(Tab.music)
+                    Text(L10n.t("Feed.Tab.Title")).tag(Tab.news)
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 12).padding(.top, 6)
+                sidebarContent
+            }
+            .navigationTitle("Fignyagram")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { pane = .settings } label: { Image(systemName: "gearshape") }
+                }
+            }
+            .onTapGesture {
+                taps += 1
+                if taps >= 10 { taps = 0; pane = .developer }
+            }
         }
         .navigationViewStyle(.stack)
-        .onTapGesture {
-            taps += 1
-            if taps >= 10 { taps = 0; pane = .developer }
-        }
     }
 
-    private var sidebarList: some View {
-        List(selection: Binding(get: { Optional(pane) },
-                                set: { if let value = $0 { pane = value } })) {
-            ForEach(chats.prefix(visible)) { chat in
-                row(chat)
-                    .tag(Pane.chat(chat.id))
-            }
-            if chats.count > visible {
-                Button {
-                    visible += 10
-                } label: {
-                    Text(String(format: L10n.t("ChatList.ShowMore"), 10))
-                        .frame(maxWidth: .infinity)
+    @ViewBuilder
+    private var sidebarContent: some View {
+        switch tab {
+        case .chats:
+            List {
+                ForEach(provider.chats.prefix(visible)) { chat in
+                    Button { pane = .chat(chat.id) } label: { row(chat) }
+                        .buttonStyle(.plain)
                 }
-                .buttonStyle(.borderless)
+                if provider.chats.count > visible {
+                    Button { visible += 10 } label: {
+                        Text(String(format: L10n.t("ChatList.ShowMore"), 10)).frame(maxWidth: .infinity)
+                    }
+                }
             }
-        }
-        .listStyle(.sidebar)
-        .navigationTitle("Fignyagram")
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button { pane = .settings } label: { Image(systemName: "gearshape") }
+            .listStyle(.plain)
+        case .music:
+            List(provider.tracks.indices, id: \.self) { index in
+                Button {
+                    selectedTrack = index
+                } label: {
+                    HStack {
+                        Image(systemName: selectedTrack == index ? "speaker.wave.2.fill" : "music.note")
+                        Text(provider.tracks[index])
+                        Spacer()
+                    }
+                }
+                .buttonStyle(.plain)
             }
+            .listStyle(.plain)
+        case .news:
+            List(provider.news.indices, id: \.self) { index in
+                Button { selectedNews = index } label: {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(provider.news[index].title).font(.headline)
+                        Text(provider.news[index].body).font(.footnote)
+                            .foregroundColor(.secondary).lineLimit(2)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+            .listStyle(.plain)
         }
     }
 
-    // MARK: Compact
+    // MARK: compact (iPhone style)
 
-    private var compactList: some View {
+    private var compactChats: some View {
         List {
-            ForEach(chats.prefix(visible)) { chat in
+            ForEach(provider.chats.prefix(visible)) { chat in
                 NavigationLink(destination: SimulatorMockChatView(chatId: chat.id,
                                                                   title: chat.title,
                                                                   embedded: false)) {
                     row(chat)
                 }
             }
-            if chats.count > visible {
+            if provider.chats.count > visible {
                 Button { visible += 10 } label: {
-                    Text(String(format: L10n.t("ChatList.ShowMore"), 10))
-                        .frame(maxWidth: .infinity)
+                    Text(String(format: L10n.t("ChatList.ShowMore"), 10)).frame(maxWidth: .infinity)
                 }
             }
         }
         .listStyle(.plain)
         .navigationTitle("Fignyagram")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button { pane = .settings } label: { Image(systemName: "gearshape") }
             }
         }
@@ -125,6 +180,30 @@ struct SimulatorMockRoot: View {
                                     set: { if !$0 { pane = .chat(1) } })) {
             SettingsView()
         }
+    }
+
+    private var compactMusic: some View {
+        List {
+            ForEach(provider.tracks.indices, id: \.self) { index in
+                HStack {
+                    Image(systemName: "music.note")
+                    Text(provider.tracks[index])
+                }
+            }
+        }
+        .navigationTitle(L10n.t("Auto.0660a7580a"))
+    }
+
+    private var compactNews: some View {
+        List {
+            ForEach(provider.news.indices, id: \.self) { index in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(provider.news[index].title).font(.headline)
+                    Text(provider.news[index].body).font(.footnote).foregroundColor(.secondary)
+                }
+            }
+        }
+        .navigationTitle(L10n.t("Feed.Tab.Title"))
     }
 
     private func row(_ chat: SimulatorMockChat) -> some View {
@@ -149,14 +228,49 @@ struct SimulatorMockRoot: View {
         }
     }
 
-    // MARK: Detail
+    // MARK: detail
 
     @ViewBuilder
     private var detail: some View {
+        switch tab {
+        case .music:
+            VStack(spacing: 18) {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(LinearGradient(colors: [.accentColor, .purple],
+                                         startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 240, height: 240)
+                    .overlay(Image(systemName: "music.note").font(.system(size: 64)).foregroundColor(.white))
+                Text(provider.tracks[selectedTrack]).font(.title2.weight(.semibold))
+                HStack(spacing: 36) {
+                    Image(systemName: "backward.fill")
+                    Image(systemName: "play.fill").font(.system(size: 34))
+                    Image(systemName: "forward.fill")
+                }
+                .foregroundColor(.accentColor)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .news:
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(provider.news[selectedNews].title).font(.largeTitle.weight(.bold))
+                    Text(provider.news[selectedNews].body).font(.body)
+                }
+                .frame(maxWidth: 620, alignment: .leading)
+                .padding(28)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(.secondarySystemBackground))
+        case .chats:
+            chatsDetail
+        }
+    }
+
+    @ViewBuilder
+    private var chatsDetail: some View {
         switch pane {
         case .chat(let id):
             SimulatorMockChatView(chatId: id,
-                                  title: chats.first { $0.id == id }?.title ?? "",
+                                  title: provider.chats.first { $0.id == id }?.title ?? "",
                                   embedded: true)
         case .settings:
             SettingsView()
