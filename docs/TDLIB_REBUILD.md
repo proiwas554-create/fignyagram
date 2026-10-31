@@ -59,3 +59,34 @@ Restore it and re-resolve packages to roll back.
 - `-DOPENSSL_NO_ASM` is a conservative workaround; if the crash persists in the
   C path, pin OpenSSL in the build to a release that contains the EC fix.
 - The script does not modify the Fignyagram sources; UI/Duo/watchOS stay intact.
+
+## Standalone CMake build (current script)
+
+`Tools/rebuild_tdlib.sh` now builds TDLib from the `tdlib/td` sources directly:
+
+```bash
+OPENSSL_ROOT_DIR=/path/to/ios-openssl ./Tools/rebuild_tdlib.sh
+```
+
+It builds `tdjson` twice (OS64, SIMULATORARM64) with `OPENSSL_NO_ASM` and packs
+`ThirdParty/tdjson-rebuilt.xcframework` (static libs + headers).
+
+### Reality check
+Swiftgram/TDLibFramework is a CI-produced wrapper; there is no `build.sh` inside
+it. The CMake build yields **libtdjson**, not `TDLibFramework.framework`.
+To replace the app dependency you must either:
+1. rebuild the Swift wrapper against these libs, or
+2. add an SPM C target that links `tdjson` and expose the calls the app uses.
+
+Without that wrapper the app cannot link the new core — this script prepares the
+native core, not the packaging layer.
+
+### OpenSSL for iOS
+TDLib needs an iOS OpenSSL with device + simulator slices. Build it once:
+```bash
+git clone https://github.com/openssl/openssl
+cd openssl
+./Configure ios64-cross no-asm no-shared --prefix=/tmp/openssl-ios
+make -j8 && make install_sw
+```
+(`no-asm` matches the `OPENSSL_NO_ASM` fix.) Then pass `OPENSSL_ROOT_DIR=/tmp/openssl-ios`.
