@@ -18,7 +18,7 @@ struct SimulatorMockChat: Identifiable, Hashable {
 }
 
 struct SimulatorMockRoot: View {
-    enum Pane: Equatable { case chat(Int64), settings, developer }
+    enum Pane: Hashable { case chat(Int64), settings, developer }
 
     @State private var pane: Pane = .chat(1)
     @State private var visible = 10
@@ -34,11 +34,11 @@ struct SimulatorMockRoot: View {
 
     var body: some View {
         GeometryReader { geo in
-            let wide = geo.size.width > 700 && geo.size.width > geo.size.height
+            let wide = geo.size.width > 600
             if wide {
                 HStack(spacing: 0) {
                     sidebar
-                        .frame(width: 330)
+                        .frame(width: 320)
                         .background(Color(.systemBackground))
                     Divider()
                     detail
@@ -54,44 +54,39 @@ struct SimulatorMockRoot: View {
         }
     }
 
-    // MARK: iPad-style sidebar
+    // MARK: Sidebar
 
     private var sidebar: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text("Fignyagram").font(.title2.weight(.bold))
-                    .onTapGesture {
-                        taps += 1
-                        if taps >= 10 { taps = 0; pane = .developer }
-                    }
-                Spacer()
+        List(selection: Binding(get: { Optional(pane) },
+                                set: { if let value = $0 { pane = value } })) {
+            ForEach(chats.prefix(visible)) { chat in
+                row(chat)
+                    .tag(Pane.chat(chat.id))
+            }
+            if chats.count > visible {
+                Button {
+                    visible += 10
+                } label: {
+                    Text(String(format: L10n.t("ChatList.ShowMore"), 10))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderless)
+            }
+        }
+        .listStyle(.sidebar)
+        .navigationTitle("Fignyagram")
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
                 Button { pane = .settings } label: { Image(systemName: "gearshape") }
-                    .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16).padding(.vertical, 10)
-            Divider()
-            List {
-                ForEach(chats.prefix(visible)) { chat in
-                    Button { pane = .chat(chat.id) } label: { row(chat) }
-                        .buttonStyle(.plain)
-                        .listRowBackground(isSelected(chat) ? Color.accentColor.opacity(0.12) : Color.clear)
-                }
-                if chats.count > visible {
-                    Button { visible += 10 } label: {
-                        Text(L10n.t("ChatList.ShowMore")).frame(maxWidth: .infinity)
-                    }
-                }
-            }
-            .listStyle(.plain)
+        }
+        .onTapGesture {
+            taps += 1
+            if taps >= 10 { taps = 0; pane = .developer }
         }
     }
 
-    private func isSelected(_ chat: SimulatorMockChat) -> Bool {
-        if case .chat(let id) = pane { return id == chat.id }
-        return false
-    }
-
-    // MARK: iPhone-style compact
+    // MARK: Compact
 
     private var compactList: some View {
         List {
@@ -104,14 +99,15 @@ struct SimulatorMockRoot: View {
             }
             if chats.count > visible {
                 Button { visible += 10 } label: {
-                    Text(L10n.t("ChatList.ShowMore")).frame(maxWidth: .infinity)
+                    Text(String(format: L10n.t("ChatList.ShowMore"), 10))
+                        .frame(maxWidth: .infinity)
                 }
             }
         }
         .listStyle(.plain)
         .navigationTitle("Fignyagram")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .primaryAction) {
                 Button { pane = .settings } label: { Image(systemName: "gearshape") }
             }
         }
@@ -143,7 +139,7 @@ struct SimulatorMockRoot: View {
         }
     }
 
-    // MARK: Detail (always filled)
+    // MARK: Detail
 
     @ViewBuilder
     private var detail: some View {
