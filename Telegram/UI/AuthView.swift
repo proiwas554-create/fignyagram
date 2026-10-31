@@ -16,12 +16,23 @@ struct AuthView: View {
     /// Lets the user go back to the phone number screen from later steps.
     @State private var editingPhone = false
     @State private var showProxy = false
+    @State private var simDebug = false
     @State private var showQRScanner = false
     @State private var stalled = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                #if targetEnvironment(simulator)
+                Button {
+                    SimulatorBypass.enable()
+                    simDebug = true
+                } label: {
+                    Label("Дебаг-Вход (Bypass Xzone)", systemImage: "ladybug")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                #endif
                 header.padding(.top, 60)
                 if stalled {
                     stallCard

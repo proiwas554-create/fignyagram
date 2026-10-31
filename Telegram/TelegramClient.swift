@@ -70,6 +70,12 @@ final class TelegramClient: ObservableObject {
     }
 
     func start() {
+        #if targetEnvironment(simulator)
+        // TDLib's OpenSSL aborts on TLS in the Xcode 27 simulator. Skip the
+        // network core there entirely; the debug bypass opens the mock UI.
+        DiagnosticsLog.log("simulator: TDLib start skipped (use debug bypass)")
+        return
+        #endif
         guard client == nil else { return }
         // On a cold launch from a locked device (background audio/notification)
         // the app container may be inaccessible until protected data is available.
