@@ -44,6 +44,8 @@ struct ChatListView: View {
     @State private var searching = false
     @State private var searchTask: Task<Void, Never>?
     @State private var extraChats = 0
+    /// Pagination label is formatted once, never inside the scrolling body.
+    @State private var showMoreText = ""
 
     private var query: String { search.trimmingCharacters(in: .whitespacesAndNewlines) }
 
@@ -128,6 +130,12 @@ struct ChatListView: View {
         return Array(chatIds.filter { hiddenChats.isVisible($0) }.prefix(limit))
     }
 
+    private func refreshShowMoreText() {
+        let remaining = max(0, chatIds.count - displayedChatIds.count)
+        let step = min(max(10, limits.effectiveRenderedChats), max(1, remaining))
+        showMoreText = String(format: L10n.t("ChatList.ShowMore"), step)
+    }
+
     private func displayTitle(_ chat: ChatItem) -> String {
         // The row itself resolves the translated title (debounced, cached), so
         // the whole list never re-renders when a translation arrives.
@@ -193,9 +201,7 @@ struct ChatListView: View {
                         HStack { Spacer(); ProgressView(); Spacer() }
                     }
                     if chatIds.count > displayedChatIds.count {
-                        Text(String(format: L10n.t("ChatList.ShowMore"),
-                                    min(max(10, limits.effectiveRenderedChats),
-                                        chatIds.count - displayedChatIds.count)))
+                        Text(showMoreText)
                             .font(.appFootnote)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -208,6 +214,9 @@ struct ChatListView: View {
                     }
                 }
                 .listStyle(.plain)
+                .onAppear { refreshShowMoreText() }
+                .onChange(of: displayedChatIds.count) { _ in refreshShowMoreText() }
+                .onChange(of: limits.effectiveRenderedChats) { _ in refreshShowMoreText() }
                 .transaction { transaction in
                     // Keep scrolling jank-free, but animate the initial load.
                     if transaction.animation == nil && store.chats.isEmpty {
