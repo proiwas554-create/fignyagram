@@ -48,25 +48,23 @@ __attribute__((constructor))
 static void FNYInstallAudioSessionCompat(void) {
     SEL selector = NSSelectorFromString(@"setConfiguration:active:error:disableRecording:");
     const char *types = "B@:@B^@B";
-    unsigned int imageCount = 0;
-    const char **images = objc_copyImageNames(&imageCount);
-    for (unsigned int i = 0; i < imageCount; i++) {
-        unsigned int classCount = 0;
-        const char **names = objc_copyClassNamesForImage(images[i], &classCount);
-        for (unsigned int j = 0; j < classCount; j++) {
-            if (strcmp(names[j], "RTCAudioSession") != 0) { continue; }
-            Class cls = objc_getClass(names[j]);
-            if (!cls) { continue; }
-            if (!class_getInstanceMethod(cls, selector)) {
-                class_addMethod(cls, selector, (IMP)FNYSetConfiguration, types);
-            }
-            SEL configure = NSSelectorFromString(@"configureWebRTCSession:disableRecording:");
-            Method existing = class_getInstanceMethod(cls, configure);
-            if (existing) {
-                method_setImplementation(existing, (IMP)FNYConfigureWebRTCSession);
-            }
+    int classCount = objc_getClassList(NULL, 0);
+    if (classCount <= 0) { return; }
+    Class *classes = (Class *)malloc(sizeof(Class) * classCount);
+    classCount = objc_getClassList(classes, classCount);
+    for (int i = 0; i < classCount; i++) {
+        Class cls = classes[i];
+        const char *name = class_getName(cls);
+        if (!name || strcmp(name, "RTCAudioSession") != 0) { continue; }
+        if (!class_getInstanceMethod(cls, selector)) {
+            class_addMethod(cls, selector, (IMP)FNYSetConfiguration, types);
         }
-        if (names) { free(names); }
+        SEL configure = NSSelectorFromString(@"configureWebRTCSession:disableRecording:");
+        Method existing = class_getInstanceMethod(cls, configure);
+        if (existing) {
+            method_setImplementation(existing, (IMP)FNYConfigureWebRTCSession);
+        }
     }
-    if (images) { free(images); }
+    free(classes);
+
 }

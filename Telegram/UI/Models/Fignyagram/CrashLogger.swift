@@ -56,6 +56,14 @@ enum CrashLogger {
     static func install() {
         guard !installed else { return }
         installed = true
+        // Start every launch with a fresh crash log: the old file was appended
+        // forever, so stale exceptions from previous builds looked like new
+        // crashes. Only the current run is recorded now.
+        let version = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?"
+        let build = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "?"
+        let stamp = ISO8601DateFormatter().string(from: Date())
+        try? Data("---- launch \(version) (\(build)) \(stamp) ----\n".utf8)
+            .write(to: URL(fileURLWithPath: crashLogPath()))
         crashFDPath()
         NSSetUncaughtExceptionHandler(handleUncaughtException)
         for sig in [SIGABRT, SIGILL, SIGSEGV, SIGFPE, SIGBUS, SIGTRAP] {
