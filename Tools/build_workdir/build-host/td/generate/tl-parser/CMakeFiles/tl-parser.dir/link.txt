@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG -arch x86_64 -Wl,-search_paths_first -Wl,-headerpad_max_install_names  -Wl,-dead_strip,-x,-S "CMakeFiles/tl-parser.dir/crc32.c.o" "CMakeFiles/tl-parser.dir/tlc.c.o" "CMakeFiles/tl-parser.dir/tl-parser.c.o" -o tl-parser  -lm

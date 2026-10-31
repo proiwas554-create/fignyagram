@@ -56,6 +56,17 @@ if [ -d "$TD/.git" ]; then
   git -C "$TD" submodule update --init --recursive || true
 fi
 
+step "Generating MIME tables (host build)"
+HOST_BUILD="$WORK/build-host"
+mkdir -p "$HOST_BUILD"
+(
+  cd "$HOST_BUILD"
+  cmake "$TD" -DCMAKE_BUILD_TYPE=Release \
+    -DTD_ENABLE_TESTS=OFF -DTD_ENABLE_EXAMPLES=OFF >/dev/null
+  cmake --build . --target tdmime_auto -j "$(sysctl -n hw.ncpu)" >/dev/null
+)
+echo "==> Generated: $(ls "$TD/tdutils/generate/auto" | wc -l | tr -d ' ') files"
+
 step "Preparing iOS CMake toolchain"
 if [ ! -f "$TOOLCHAIN" ]; then
   git clone --depth 1 https://github.com/leetal/ios-cmake.git "$WORK/ios-cmake"

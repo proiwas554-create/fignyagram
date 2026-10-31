@@ -1,0 +1,10 @@
+prefix=/usr/local
+
+Name: tdnet
+Description: Telegram Library - Net
+Version: 1.8.69
+
+CFlags: -I"${prefix}/include"
+Libs: -L"${prefix}/lib" -ltdnet
+Requires.private: tdutils tdactor
+Libs.private: -L"/tmp/openssl-ios/lib" -lssl -L"/tmp/openssl-ios" -llib -L"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.2.sdk/usr/lib" -lz

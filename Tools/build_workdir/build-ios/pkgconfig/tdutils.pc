@@ -1,0 +1,9 @@
+prefix=/usr/local
+
+Name: tdutils
+Description: Telegram Library - Utils
+Version: 1.8.69
+
+CFlags: -I"${prefix}/include"
+Libs: -L"${prefix}/lib" -ltdutils
+Libs.private: -L"/tmp/openssl-ios" -llib -L"/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS27.2.sdk/usr/lib" -lz

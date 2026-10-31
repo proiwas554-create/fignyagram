@@ -1,0 +1,19 @@
+{
+	"InstallScripts" : 
+	[
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tdtl/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tdutils/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tdutils/generate/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/td/generate/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/td/generate/tl-parser/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tde2e/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tdactor/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tdnet/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/sqlite/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/tddb/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/test/cmake_install.cmake",
+		"/Users/admin/Fignyagram/Tools/build_workdir/build-host/benchmark/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
