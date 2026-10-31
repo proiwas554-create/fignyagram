@@ -23,6 +23,7 @@ struct AuthView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
+                header.padding(.top, 60)
                 #if targetEnvironment(simulator)
                 Button {
                     SimulatorBypass.enable()
@@ -30,10 +31,12 @@ struct AuthView: View {
                 } label: {
                     Label("Дебаг-Вход (Bypass Xzone)", systemImage: "ladybug")
                         .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
                 }
                 .buttonStyle(.borderedProminent)
+                .contentShape(Rectangle())
+                .sheet(isPresented: $simDebug) { SimulatorMockRoot() }
                 #endif
-                header.padding(.top, 60)
                 if stalled {
                     stallCard
                 }
