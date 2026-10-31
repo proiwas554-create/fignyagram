@@ -1,106 +1,118 @@
 #!/usr/bin/env bash
-# Rebuilds Swiftgram/TDLibFramework from source so the BoringSSL/OpenSSL used by
-# TDLib no longer crashes in BN_nnmod while parsing EC server certificates.
+# Standalone TDLib build (tdjson static library) for iOS device + simulator.
 #
-# Requirements: Xcode 26+, cmake, ninja (or make), git, ~20 GB free disk.
-# Usage:
-#   TAG=1.8.69-18d36ada ./Tools/rebuild_tdlib.sh [work-dir]
-#   BUILD_ARGS="--disable_asm" ./Tools/rebuild_tdlib.sh
+# IMPORTANT: Swiftgram/TDLibFramework is a release wrapper (prebuilt zip built in
+# CI). Its `td` submodule builds with plain CMake into libtdjson, NOT into the
+# ready-made TDLibFramework.framework. This script therefore produces
+# libtdjson-iOS.xcframework (static libs + tdjson.h). Using it as a drop-in
+# replacement requires the Swift wrapper target; see docs/TDLIB_REBUILD.md.
 set -euo pipefail
 
-REPO_URL="https://github.com/Swiftgram/TDLibFramework"
-TAG="${TAG:-1.8.69-18d36ada}"
-WORK="${1:-$(pwd)/../tdlib-rebuild}"
-OUT="$(pwd)/ThirdParty/TDLibFramework-rebuilt.xcframework"
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+WORK="${WORK:-$ROOT/Tools/build_workdir}"
+TDLIB_TAG="${TDLIB_TAG:-v1.8.69}"
+TOOLCHAIN="$WORK/ios.toolchain.cmake"
+OUT="$ROOT/ThirdParty/tdjson-rebuilt.xcframework"
+DEPS="$WORK/tdlib-deps"
 
 step() { printf '\n==> %s\n' "$*"; }
 fail() { printf 'ERROR: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || fail "missing tool: $1"; }
 
 need git
-need xcodebuild
 need cmake
+need xcodebuild
 need python3
+mkdir -p "$WORK" "$DEPS"
 
-step "Workspace: $WORK"
-mkdir -p "$WORK"
-cd "$WORK"
-
-if [ ! -d TDLibFramework/.git ]; then
-  step "Cloning $REPO_URL"
-  git clone --recursive "$REPO_URL" TDLibFramework
-fi
-cd TDLibFramework
-git fetch --tags --force
-git checkout "$TAG"
-git submodule update --init --recursive
-
-step "Applying OpenSSL stability flags"
-# The crash is inside OpenSSL's EC group setup. Disabling assembly keeps the
-# portable C implementation, which avoids the faulty asm path on arm64 while we
-# stay on the same TDLib version.
+step "Crypto flags (portable C path, no asm EC)"
+export OPENSSL_NO_ASM=1
 export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
 export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
-export OPENSSL_NO_ASM=1
 
-step "Locating native upstream build script"
-BUILD_SCRIPT_PATH=""
-# Prefer the known native entry points (root or Scripts/), never examples/web.
+step "Locating td sources"
+TD=""
 for candidate in \
-  "$WORK/TDLibFramework/build.sh" \
-  "$WORK/TDLibFramework/Scripts/build.sh" \
-  "$WORK/TDLibFramework/scripts/build.sh" \
-  "$WORK/TDLibFramework/Scripts/build-assets.sh"; do
-  if [ -f "$candidate" ] && ! grep -qE 'emcmake|emscripten' "$candidate"; then
-    BUILD_SCRIPT_PATH="$candidate"
-    break
-  fi
+  "$WORK/TDLibFramework/td" \
+  "$ROOT/Tools/build_workdir/TDLibFramework/td" \
+  "$WORK/td"; do
+  [ -d "$candidate/td/telegram" ] && TD="$candidate" && break
 done
+if [ -z "$TD" ]; then
+  step "Cloning tdlib $TDLIB_TAG"
+  git clone --recursive --branch "$TDLIB_TAG" \
+    https://github.com/tdlib/td.git "$WORK/td"
+  TD="$WORK/td"
+fi
+echo "==> td sources: $TD"
+git -C "$TD" submodule update --init --recursive
 
-if [ -z "${BUILD_SCRIPT_PATH}" ]; then
-  BUILD_SCRIPT_PATH="$(find "$WORK/TDLibFramework" -type f \
-    \( -name 'build.sh' -o -name 'build-assets.sh' -o -name 'build-tdlib.sh' \) \
-    -not -path '*/example/*' -not -path '*/examples/*' -not -path '*/web/*' \
-    -print 2>/dev/null | while read -r candidate; do
-      grep -qE 'emcmake|emscripten' "$candidate" || { echo "$candidate"; break; }
-    done)"
+step "Preparing iOS CMake toolchain"
+if [ ! -f "$TOOLCHAIN" ]; then
+  git clone --depth 1 https://github.com/leetal/ios-cmake.git "$WORK/ios-cmake"
+  cp "$WORK/ios-cmake/ios.toolchain.cmake" "$TOOLCHAIN"
 fi
 
-if [ -z "${BUILD_SCRIPT_PATH}" ]; then
-  fail "Native build script not found (example/web scripts ignored)"
+step "Preparing OpenSSL (from Homebrew, must be an iOS build; see docs)"
+OPENSSL_ROOT="${OPENSSL_ROOT_DIR:-}"
+if [ -z "$OPENSSL_ROOT" ]; then
+  if command -v brew >/dev/null 2>&1 && brew --prefix openssl@3 >/dev/null 2>&1; then
+    OPENSSL_ROOT="$(brew --prefix openssl@3)"
+  fi
 fi
-echo "==> Found native build script at: ${BUILD_SCRIPT_PATH}"
+if [ -z "$OPENSSL_ROOT" ] || [ ! -d "$OPENSSL_ROOT" ]; then
+  fail "OpenSSL for iOS not found. Set OPENSSL_ROOT_DIR to an iOS OpenSSL build (see docs/TDLIB_REBUILD.md)."
+fi
+echo "==> OpenSSL: $OPENSSL_ROOT"
 
-# Crypto flags: the crash lives in the assembly EC path; force portable C.
-export OPENSSL_NO_ASM=1
-export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
-export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
+build_platform() {
+  local platform="$1" builddir="$2"
+  step "Configuring $platform"
+  mkdir -p "$builddir"
+  (
+    cd "$builddir"
+    cmake "$TD" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+      -DPLATFORM="$platform" \
+      -DDEPLOYMENT_TARGET=15.0 \
+      -DENABLE_BITCODE=OFF \
+      -DTD_ENABLE_DOTNET=OFF \
+      -DTD_ENABLE_JNI=OFF \
+      -DTD_ENABLE_TESTS=OFF \
+      -DTD_ENABLE_EXAMPLES=OFF \
+      -DTD_ENABLE_OPENSSL=ON \
+      -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+      -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib" \
+      -DTD_ENABLE_LTO=OFF
+    step "Building $platform"
+    cmake --build . --target tdjson --config Release -j "$(sysctl -n hw.ncpu)"
+  ) 2>&1 | tee "$WORK/build-$platform.log"
+}
 
-step "Running $(basename "$BUILD_SCRIPT_PATH") from $BUILD_DIR (log: $WORK/build.log)"
-(
-  cd "$BUILD_DIR"
-  # shellcheck disable=SC2086
-  bash "$(basename "$BUILD_SCRIPT_PATH")" ${BUILD_ARGS:-}
-) 2>&1 | tee "$WORK/build.log"
+mkdir -p "$WORK/build-ios" "$WORK/build-sim"
+build_platform OS64 "$WORK/build-ios"
+build_platform SIMULATORARM64 "$WORK/build-sim"
 
-step "Locating built xcframework"
-FOUND="$(find "$WORK" -type d -name 'TDLibFramework.xcframework' -print -quit 2>/dev/null || true)"
-[ -n "$FOUND" ] || fail "TDLibFramework.xcframework not found; check $WORK/build.log"
-step "Found: $FOUND"
+step "Packaging xcframework"
+DEVICE_LIB="$(find "$WORK/build-ios" -name 'libtdjson.a' -print -quit)"
+SIM_LIB="$(find "$WORK/build-sim" -name 'libtdjson.a' -print -quit)"
+[ -n "$DEVICE_LIB" ] || fail "device libtdjson.a not found"
+[ -n "$SIM_LIB" ] || fail "simulator libtdjson.a not found"
 
-step "Copying to project: $OUT"
 rm -rf "$OUT"
-cp -R "$FOUND" "$OUT"
+xcodebuild -create-xcframework \
+  -library "$DEVICE_LIB" -headers "$TD/td/telegram" \
+  -library "$SIM_LIB" -headers "$TD/td/telegram" \
+  -output "$OUT"
 
-step "Verifying slices"
-/usr/bin/lipo -info "$OUT/ios-arm64/TDLibFramework.framework/TDLibFramework" 2>/dev/null || true
-plutil -p "$OUT/Info.plist" | head -30 || true
-
+step "Done: $OUT"
 cat <<EOF
+Built static tdjson for device + simulator with OPENSSL_NO_ASM.
 
-DONE. Next steps (see docs/TDLIB_REBUILD.md):
-  1. Replace the framework used by the local TDLibKit package:
-       cp -R "$OUT" "$HOME/Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb/TDLibFramework.xcframework"
-  2. Update its Package.swift binaryTarget path if needed.
-  3. In the app: xcodebuild -resolvePackageDependencies && build.
+NOTE: this is NOT a drop-in TDLibFramework.framework. Swiftgram's wrapper is
+produced by their CI. To use this build you must either:
+  * build/link the Swift wrapper yourself against these static libs, or
+  * consume tdjson via a C shim + SPM target.
+See docs/TDLIB_REBUILD.md for both paths and rollback steps.
 EOF
