@@ -3,3 +3,6 @@ xcuserdata/
 DerivedData/
 build/
 *.xcuserstate
+
+# local TDLib build workspace (large, generated)
+Tools/build_workdir/
