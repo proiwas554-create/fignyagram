@@ -105,10 +105,10 @@ build_platform() {
       -DTD_ENABLE_EXAMPLES=OFF \
       -DTD_ENABLE_OPENSSL=ON \
       -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
-      -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib" \
+      -DOPENSSL_USE_STATIC_LIBS=TRUE \
       -DTD_ENABLE_LTO=OFF
     step "Building $platform"
-    cmake --build . --target tdjson --config Release -j "$(sysctl -n hw.ncpu)"
+    cmake --build . --target tdjson_static --config Release -j "$(sysctl -n hw.ncpu)"
   ) 2>&1 | tee "$WORK/build-$platform.log"
 }
 
@@ -117,8 +117,8 @@ build_platform OS64 "$WORK/build-ios"
 build_platform SIMULATORARM64 "$WORK/build-sim"
 
 step "Packaging xcframework"
-DEVICE_LIB="$(find "$WORK/build-ios" -name 'libtdjson.a' -print -quit)"
-SIM_LIB="$(find "$WORK/build-sim" -name 'libtdjson.a' -print -quit)"
+DEVICE_LIB="$(find "$WORK/build-ios" -name 'libtdjson_static.a' -print -quit)"
+SIM_LIB="$(find "$WORK/build-sim" -name 'libtdjson_static.a' -print -quit)"
 [ -n "$DEVICE_LIB" ] || fail "device libtdjson.a not found"
 [ -n "$SIM_LIB" ] || fail "simulator libtdjson.a not found"
 
