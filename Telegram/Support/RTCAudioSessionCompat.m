@@ -30,6 +30,20 @@ static BOOL FNYSetConfiguration(id self, SEL _cmd, id configuration,
     return localError == nil;
 }
 
+// Replaces the engine's configure implementation so it never calls the missing
+// 4-argument selector on an instance from another image.
+static BOOL FNYConfigureWebRTCSession(id self, SEL _cmd, NSError **error, BOOL disableRecording) {
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    NSError *localError = nil;
+    [session setCategory:AVAudioSessionCategoryPlayAndRecord
+                    mode:AVAudioSessionModeVoiceChat
+                 options:AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionDefaultToSpeaker
+                   error:&localError];
+    [session setActive:YES error:&localError];
+    if (localError && error) { *error = localError; }
+    return localError == nil;
+}
+
 __attribute__((constructor))
 static void FNYInstallAudioSessionCompat(void) {
     SEL selector = NSSelectorFromString(@"setConfiguration:active:error:disableRecording:");
@@ -42,8 +56,14 @@ static void FNYInstallAudioSessionCompat(void) {
         for (unsigned int j = 0; j < classCount; j++) {
             if (strcmp(names[j], "RTCAudioSession") != 0) { continue; }
             Class cls = objc_getClass(names[j]);
-            if (cls && !class_getInstanceMethod(cls, selector)) {
+            if (!cls) { continue; }
+            if (!class_getInstanceMethod(cls, selector)) {
                 class_addMethod(cls, selector, (IMP)FNYSetConfiguration, types);
+            }
+            SEL configure = NSSelectorFromString(@"configureWebRTCSession:disableRecording:");
+            Method existing = class_getInstanceMethod(cls, configure);
+            if (existing) {
+                method_setImplementation(existing, (IMP)FNYConfigureWebRTCSession);
             }
         }
         if (names) { free(names); }
