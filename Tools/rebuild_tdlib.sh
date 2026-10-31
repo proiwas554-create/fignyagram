@@ -30,22 +30,31 @@ export OPENSSL_NO_ASM=1
 export CFLAGS="${CFLAGS:-} -DOPENSSL_NO_ASM"
 export CXXFLAGS="${CXXFLAGS:-} -DOPENSSL_NO_ASM"
 
-step "Locating td sources"
+step "Locating local td sources (no network clone)"
 TD=""
 for candidate in \
-  "$WORK/TDLibFramework/td" \
-  "$ROOT/Tools/build_workdir/TDLibFramework/td" \
-  "$WORK/td"; do
-  [ -d "$candidate/td/telegram" ] && TD="$candidate" && break
+  "$WORK/td" \
+  "/Users/admin/tdlib-rebuild/TDLibFramework/td" \
+  "$ROOT/../tdlib-rebuild/TDLibFramework/td" \
+  "$HOME/tdlib-rebuild/TDLibFramework/td" \
+  "$WORK/TDLibFramework/td"; do
+  if [ -d "$candidate/td/telegram" ]; then TD="$candidate"; break; fi
 done
 if [ -z "$TD" ]; then
-  step "Cloning tdlib $TDLIB_TAG"
-  git clone --recursive --branch "$TDLIB_TAG" \
-    https://github.com/tdlib/td.git "$WORK/td"
+  fail "Local td sources not found (expected ../tdlib-rebuild/TDLibFramework/td)"
+fi
+echo "==> Using local td sources: $TD"
+
+if [ "$TD" != "$WORK/td" ]; then
+  step "Copying td sources to $WORK/td"
+  rm -rf "$WORK/td"
+  cp -R "$TD" "$WORK/td"
   TD="$WORK/td"
 fi
-echo "==> td sources: $TD"
-git -C "$TD" submodule update --init --recursive
+
+if [ -d "$TD/.git" ]; then
+  git -C "$TD" submodule update --init --recursive || true
+fi
 
 step "Preparing iOS CMake toolchain"
 if [ ! -f "$TOOLCHAIN" ]; then
