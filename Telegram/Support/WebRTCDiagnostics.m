@@ -24,6 +24,8 @@ __attribute__((constructor))
 static void FNYCheckWebRTCSelectors(void) {
     NSArray<NSString *> *classes = @[@"RTCAudioSession", @"RTCVideoCodecInfo", @"RTCEncodedImage"];
     NSArray<NSString *> *selectors = @[@"configureWebRTCSession:error:",
+                                       @"configureWebRTCSession:disableRecording:",
+                                       @"setConfiguration:active:error:disableRecording:",
                                        @"nativeSdpVideoFormat",
                                        @"initWithNativeEncodedImage:"];
     for (NSString *className in classes) {
@@ -35,6 +37,8 @@ static void FNYCheckWebRTCSelectors(void) {
             BOOL meta = [cls respondsToSelector:sel];
             if (!instance && !meta) {
                 FNYLog([NSString stringWithFormat:@"%@ missing %@", className, name]);
+            } else {
+                FNYLog([NSString stringWithFormat:@"%@ ok %@ instance=%d", className, name, instance]);
             }
         }
     }

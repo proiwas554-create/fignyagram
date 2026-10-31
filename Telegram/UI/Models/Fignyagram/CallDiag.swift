@@ -18,6 +18,11 @@ enum CallDiag {
         writeQueue.async {
             lock.lock()
             defer { lock.unlock() }
+            // Keep the log copyable: device file extraction fails on huge files.
+            if let size = (try? FileManager.default.attributesOfItem(atPath: url.path))?[.size] as? NSNumber,
+               size.intValue > 512 * 1024 {
+                try? Data().write(to: url)
+            }
             if let handle = try? FileHandle(forWritingTo: url) {
                 handle.seekToEndOfFile()
                 if let data = line.data(using: .utf8) { handle.write(data) }
