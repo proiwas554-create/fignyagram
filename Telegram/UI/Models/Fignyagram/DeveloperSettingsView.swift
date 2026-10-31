@@ -21,6 +21,17 @@ struct DeveloperSettingsView: View {
     var body: some View {
         NavigationView {
             List {
+                Section("Network ignition") {
+                    Button("Активировать живую сеть (Тест OpenSSL)") {
+                        NetworkIgnition.requestLiveStart()
+                        TelegramClient.shared.start()
+                    }
+                    Text(NetworkIgnition.isLiveRequested
+                         ? "Живая сеть разрешена. Перезапустите приложение при необходимости."
+                         : "Автозапуск TDLib отключён: приложение работает офлайн, пока сеть не активирована здесь.")
+                        .font(.appFootnote)
+                        .foregroundColor(.secondary)
+                }
                 Section(L10n.header("Auto.0d7f2e6b48")) {
                     row(L10n.t("Dev.Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
                     row("iOS", UIDevice.current.systemVersion)
