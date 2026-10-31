@@ -38,6 +38,7 @@
 		F16B000430824E740030F13D /* MediaSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000330824E740030F13D /* MediaSupport.swift */; };
 		F16B000630824E740030F13D /* MediaViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000530824E740030F13D /* MediaViews.swift */; };
 		F16B000830824E740030F13D /* MessageRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16B000730824E740030F13D /* MessageRow.swift */; };
+		BBFB000000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BBFB000000000000000001 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -112,6 +113,7 @@
 		F16B000330824E740030F13D /* MediaSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSupport.swift; sourceTree = "<group>"; };
 		F16B000530824E740030F13D /* MediaViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaViews.swift; sourceTree = "<group>"; };
 		F16B000730824E740030F13D /* MessageRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageRow.swift; sourceTree = "<group>"; };
+		BBFB000000000000000001 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = FignyagramWatch/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -360,9 +362,12 @@
 		};
 		BBF00000000000000000D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
+				BBFB000000000000000002 /* Assets.xcassets in Resources */,
 				BBF4000000000000000B /* Localizable.strings in Resources */,
 			);
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -732,7 +737,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = K63F32HXQ4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -763,7 +768,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 100;
+				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = K63F32HXQ4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ShareExtension/Info.plist;
@@ -795,6 +800,7 @@
 					arm64_32,
 					arm64,
 				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = K63F32HXQ4;
@@ -820,6 +826,7 @@
 					arm64_32,
 					arm64,
 				);
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
 				DEVELOPMENT_TEAM = K63F32HXQ4;

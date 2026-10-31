@@ -17,6 +17,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "BBF000000000000000003"
                BuildableName = "FignyagramWatch.app"
+               BlueprintName = "FignyagramWatch"
                ReferencedContainer = "container:Fignyagram.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
