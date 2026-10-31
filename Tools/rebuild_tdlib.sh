@@ -64,6 +64,8 @@ mkdir -p "$HOST_BUILD"
   cmake "$TD" -DCMAKE_BUILD_TYPE=Release \
     -DTD_ENABLE_TESTS=OFF -DTD_ENABLE_EXAMPLES=OFF >/dev/null
   cmake --build . --target tdmime_auto -j "$(sysctl -n hw.ncpu)" >/dev/null
+  # Generates td_api_*.cpp, e2e_api.* and other files required for cross builds.
+  cmake --build . --target prepare_cross_compiling -j "$(sysctl -n hw.ncpu)" >/dev/null
 )
 echo "==> Generated: $(ls "$TD/tdutils/generate/auto" | wc -l | tr -d ' ') files"
 
