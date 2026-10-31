@@ -234,6 +234,13 @@ nonisolated final class ProxyMessageSplitter {
     }
 }
 
+nonisolated enum ProxyDebug {
+    static var disableAll: Bool {
+        ProcessInfo.processInfo.environment["FNY_DISABLE_PROXY"] == "1" ||
+        UserDefaults.standard.bool(forKey: "debugDisableProxy")
+    }
+}
+
 nonisolated struct ProxyEndpointConfig {
     var port: Int
     var secretHex: String

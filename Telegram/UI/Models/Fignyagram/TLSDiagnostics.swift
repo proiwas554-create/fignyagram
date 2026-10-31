@@ -7,9 +7,18 @@ import CryptoKit
 /// dumps the server certificate parameters into call_diag.log. This lets us see
 /// exactly which certificate makes BoringSSL abort inside TDLib.
 enum TLSDiagnostics {
-    static let hosts = ["kws1.web.telegram.org", "kws2.web.telegram.org",
-                        "kws3.web.telegram.org", "web.telegram.org",
-                        "cdn.telesco.pe"]
+    static var hosts: [String] {
+        var list = ["kws1.web.telegram.org", "kws2.web.telegram.org",
+                    "kws3.web.telegram.org", "web.telegram.org", "cdn.telesco.pe"]
+        // The proxy talks to Cloudflare fronts: those are reachable from the
+        // local network, so their certificates are the ones we must inspect.
+        let config = ProxyEndpointConfig(port: 1443, secretHex: "")
+        for domain in config.effectiveCFDomains.prefix(3) {
+            list.append("kws1.\(domain)")
+            list.append(domain)
+        }
+        return list
+    }
 
     static func probeAll() {
         CallDiag.log("tlsdiag probe start hosts=\(hosts.count)")
