@@ -36,6 +36,7 @@ struct AuthView: View {
                 .buttonStyle(.borderedProminent)
                 .contentShape(Rectangle())
                 .sheet(isPresented: $simDebug) { SimulatorMockRoot() }
+                .onAppear { if SimulatorBypass.isEnabled { simDebug = true } }
                 #endif
                 if stalled {
                     stallCard

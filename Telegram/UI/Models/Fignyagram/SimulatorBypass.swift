@@ -18,9 +18,9 @@ struct SimulatorMockChat: Identifiable, Hashable {
 }
 
 struct SimulatorMockRoot: View {
-    enum Pane: Equatable { case none, chat(Int64), settings, developer }
+    enum Pane: Equatable { case chat(Int64), settings, developer }
 
-    @State private var pane: Pane = .none
+    @State private var pane: Pane = .chat(1)
     @State private var visible = 10
     @State private var taps = 0
 
@@ -34,55 +34,47 @@ struct SimulatorMockRoot: View {
 
     var body: some View {
         GeometryReader { geo in
-            let unfolded = geo.size.width > 700 && geo.size.width > geo.size.height
-            if unfolded {
+            let wide = geo.size.width > 700 && geo.size.width > geo.size.height
+            if wide {
                 HStack(spacing: 0) {
-                    chatPanel(frameWidth: min(360, geo.size.width * 0.42),
-                              unfolded: true)
-                        .padding(.trailing, 18)
+                    sidebar
+                        .frame(width: 330)
+                        .background(Color(.systemBackground))
                     Divider()
-                    rightPanel
-                        .padding(.leading, 18)
+                    detail
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color(.secondarySystemBackground))
                 }
             } else {
                 NavigationView {
-                    chatPanel(frameWidth: nil, unfolded: false)
+                    compactList
                 }
                 .navigationViewStyle(.stack)
             }
         }
     }
 
-    private func chatPanel(frameWidth: CGFloat?, unfolded: Bool) -> some View {
+    // MARK: iPad-style sidebar
+
+    private var sidebar: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Fignyagram")
-                    .font(.title2.weight(.bold))
+                Text("Fignyagram").font(.title2.weight(.bold))
                     .onTapGesture {
-                        guard unfolded else { return }
                         taps += 1
                         if taps >= 10 { taps = 0; pane = .developer }
                     }
                 Spacer()
+                Button { pane = .settings } label: { Image(systemName: "gearshape") }
+                    .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 8)
-
+            .padding(.horizontal, 16).padding(.vertical, 10)
+            Divider()
             List {
                 ForEach(chats.prefix(visible)) { chat in
-                    if unfolded {
-                        Button { pane = .chat(chat.id) } label: { row(chat) }
-                            .buttonStyle(.plain)
-                    } else {
-                        NavigationLink(destination: SimulatorMockChatView(chatId: chat.id,
-                                                                          title: chat.title,
-                                                                          embedded: false)) {
-                            row(chat)
-                        }
-                    }
+                    Button { pane = .chat(chat.id) } label: { row(chat) }
+                        .buttonStyle(.plain)
+                        .listRowBackground(isSelected(chat) ? Color.accentColor.opacity(0.12) : Color.clear)
                 }
                 if chats.count > visible {
                     Button { visible += 10 } label: {
@@ -91,20 +83,42 @@ struct SimulatorMockRoot: View {
                 }
             }
             .listStyle(.plain)
-
-            HStack {
-                Button { pane = .settings } label: {
-                    Image(systemName: "gearshape").font(.system(size: 18))
-                }
-                .buttonStyle(.plain)
-                .padding(.leading, 16)
-                Spacer()
-            }
-            .padding(.vertical, 8)
-            .background(Color(.systemBackground))
-            .overlay(alignment: .top) { Divider() }
         }
-        .frame(width: frameWidth)
+    }
+
+    private func isSelected(_ chat: SimulatorMockChat) -> Bool {
+        if case .chat(let id) = pane { return id == chat.id }
+        return false
+    }
+
+    // MARK: iPhone-style compact
+
+    private var compactList: some View {
+        List {
+            ForEach(chats.prefix(visible)) { chat in
+                NavigationLink(destination: SimulatorMockChatView(chatId: chat.id,
+                                                                  title: chat.title,
+                                                                  embedded: false)) {
+                    row(chat)
+                }
+            }
+            if chats.count > visible {
+                Button { visible += 10 } label: {
+                    Text(L10n.t("ChatList.ShowMore")).frame(maxWidth: .infinity)
+                }
+            }
+        }
+        .listStyle(.plain)
+        .navigationTitle("Fignyagram")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button { pane = .settings } label: { Image(systemName: "gearshape") }
+            }
+        }
+        .sheet(isPresented: Binding(get: { pane == .settings },
+                                    set: { if !$0 { pane = .chat(1) } })) {
+            SettingsView()
+        }
     }
 
     private func row(_ chat: SimulatorMockChat) -> some View {
@@ -129,18 +143,11 @@ struct SimulatorMockRoot: View {
         }
     }
 
+    // MARK: Detail (always filled)
+
     @ViewBuilder
-    private var rightPanel: some View {
+    private var detail: some View {
         switch pane {
-        case .none:
-            VStack(spacing: 12) {
-                Image(systemName: "bubble.left.and.bubble.right").font(.system(size: 52))
-                    .foregroundColor(.accentColor)
-                Text("Fignyagram for Duo").font(.title3.weight(.semibold))
-                Text("Выберите чат или настройки слева").foregroundColor(.secondary)
-                Text(L10n.t("Proxy.SimulatorDirect")).font(.footnote).foregroundColor(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         case .chat(let id):
             SimulatorMockChatView(chatId: id,
                                   title: chats.first { $0.id == id }?.title ?? "",
