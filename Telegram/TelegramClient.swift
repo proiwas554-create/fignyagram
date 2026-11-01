@@ -2412,6 +2412,7 @@ final class TelegramClient: ObservableObject {
             if case .proxyTypeMtproto(let mtproto) = proxy.proxy.type,
                mtproto.secret.lowercased() == encoded {
                 try await client.enableProxy(proxyId: proxy.id)
+                await Self.forceProxyReconnect(client: client)
                 return
             }
             try? await client.removeProxy(proxyId: proxy.id)
@@ -2427,6 +2428,16 @@ final class TelegramClient: ObservableObject {
                 type: .proxyTypeMtproto(ProxyTypeMtproto(secret: encoded))
             )
         )
+        await Self.forceProxyReconnect(client: client)
+    }
+
+    /// TDLib keeps the existing direct connection after proxy activation; a
+    /// network-type toggle forces an immediate reconnect through the proxy.
+    nonisolated private static func forceProxyReconnect(client: TDLibClient) async {
+        _ = try? await client.setNetworkType(type: .networkTypeNone)
+        try? await Task.sleep(nanoseconds: 300_000_000)
+        _ = try? await client.setNetworkType(type: .networkTypeWiFi)
+        CallDiag.log("proxy.reconnect forced")
     }
 
     nonisolated func activateExternalProxy(server: String, port: Int, secret: String) async throws {
