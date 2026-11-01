@@ -654,23 +654,18 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             }
         }
 
-        if websocket == nil {
-            // Try every known kws front and remember why each one failed: the
-            // proxy status then reflects a concrete network reason instead of a
-            // silent "WebSocket unavailable".
-            for domain in domains {
-                if Date() >= connectDeadline { break }
+        if websocket == nil, let domain = domains.first {
+            // Один DNS-диал и сразу TCP fallback: перебор IP и порта 80
+            // через URLSession бессмыслен, когда сеть блокирует WS целиком.
+            if Date() < connectDeadline {
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(domain)/apiws")
                 do {
                     websocket = try await ProxyWebSocket.connect(domain: domain, timeout: 2.0)
                     proxyServerLogger.info("WS connected via DNS: \(domain)")
-                    CallDiag.log("ws ok dc=\(result.dcId) domain=\(domain)")
                     report(.webSocket)
                     stateLock.lock(); preferredTransport[result.dcId] = .direct; stateLock.unlock()
-                    break
                 } catch {
                     proxyServerLogger.warning("DC\(result.dcId) DNS \(domain) failed: \(String(describing: error))")
-                    CallDiag.log("ws fail dc=\(result.dcId) domain=\(domain) error=\(String(describing: error))")
                 }
             }
         }

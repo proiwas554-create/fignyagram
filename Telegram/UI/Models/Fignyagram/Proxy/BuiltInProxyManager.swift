@@ -17,17 +17,8 @@ final class BuiltInProxyManager: ObservableObject {
         static let secret = "builtInProxySecret"
     }
 
-    /// TDLib (also inside the simulator) connects to the local proxy through
-    /// the host loopback, so this stays 127.0.0.1. The listener itself binds
-    /// all interfaces, which is what the simulator bridge needs.
     let host = "127.0.0.1"
-    #if targetEnvironment(simulator)
-    /// Simulator: the host Mac can keep the previous socket in TIME_WAIT, so a
-    /// fixed port is a guaranteed "Address already in use". Pick a free one.
-    private(set) var port = Int.random(in: 20000...60000)
-    #else
     let port = 1443
-    #endif
 
     @Published private(set) var isEnabled: Bool
     @Published private(set) var isRunning = false
@@ -46,12 +37,7 @@ final class BuiltInProxyManager: ObservableObject {
 
     private init() {
         let defaults = UserDefaults.standard
-        // Fresh installs use the built-in proxy automatically; the toggle in
-        // settings still lets the user turn it off explicitly.
-        // Direct MTProto route: the built-in proxy is disabled entirely.
-        isEnabled = false
-        defaults.set(false, forKey: Keys.enabled)
-        defaults.set(true, forKey: "proxyExplicitlyDisabled")
+        isEnabled = defaults.bool(forKey: Keys.enabled)
 
         if let stored = Keychain.string(for: Keys.secret), stored.count == 32 {
             secret = stored
@@ -86,7 +72,6 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func setEnabled(_ enabled: Bool) {
-        UserDefaults.standard.set(!enabled, forKey: "proxyExplicitlyDisabled")
         isEnabled = enabled
         UserDefaults.standard.set(enabled, forKey: Keys.enabled)
         if enabled {
@@ -178,7 +163,6 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func applyIfEnabled() {
-        CallDiag.log("proxy.applyIfEnabled enabled=\(isEnabled) running=\(isRunning)")
         if isEnabled {
             start()
         } else {
@@ -207,16 +191,6 @@ final class BuiltInProxyManager: ObservableObject {
 
     func start() {
         DiagnosticsLog.log("proxy.start enabled=\(isEnabled) running=\(isRunning)")
-        CallDiag.log("proxy.start enabled=\(isEnabled) running=\(isRunning) server=\(server != nil)")
-        #if targetEnvironment(simulator)
-        // Xcode 27 simulator: TDLib's OpenSSL cert store aborts in xzone malloc.
-        // Instead of faking a green tunnel pointing at a dead port, keep the
-        // simulator on a direct connection so chats still work.
-        isRunning = false
-        lastError = nil
-        status = NSLocalizedString("Proxy.SimulatorDirect", comment: "")
-        return
-        #endif
         guard isEnabled, !isRunning, operation == nil else { return }
         reconnectAttempts = 0
         status = NSLocalizedString("Generated.81392999a5d2", comment: "")
@@ -225,14 +199,11 @@ final class BuiltInProxyManager: ObservableObject {
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
         operation = Task {
-            CallDiag.log("proxy.task started")
             // Reuse an already listening server instead of binding a second one.
             if let existing = server, existing.isListening {
                 do {
                     try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
                     isRunning = true
-            CallDiag.log("proxy.listening port=\(port)")
-                    CallDiag.log("proxy.activated port=\(port)")
                     status = "Работает — \(host):\(port)"
                     lastError = nil
                 } catch {
@@ -260,7 +231,6 @@ final class BuiltInProxyManager: ObservableObject {
             var lastStartError: Error?
             for attempt in 0..<3 {
                 if Task.isCancelled || !isEnabled { break }
-                CallDiag.log("proxy.attempt \(attempt)")
                 let candidate = LocalMTProtoProxy(config: config)
                 candidate.onHealth = { [weak self] health in
                     Task { @MainActor [weak self] in
@@ -269,7 +239,6 @@ final class BuiltInProxyManager: ObservableObject {
                 }
                 do {
                     try await candidate.start()
-                    CallDiag.log("proxy.listener ready on port \(port)")
                     startedProxy = candidate
                     break
                 } catch {
@@ -288,36 +257,29 @@ final class BuiltInProxyManager: ObservableObject {
                     status = NSLocalizedString("Generated.560c8e8a9a80", comment: "")
                     lastError = TelegramClient.describe(lastStartError ?? ProxyTimeoutError())
                 }
-                CallDiag.log("proxy.start failed \(String(describing: lastStartError))")
                 operation = nil
                 return
             }
 
             guard !Task.isCancelled, isEnabled else {
-                CallDiag.log("proxy.start cancelled/disabled after listen")
                 proxy.stop()
                 operation = nil
                 return
             }
 
-            // Fire-and-forget: the listener is already up; awaiting TDLib's
-            // execute() blocks activation forever while TDLib is connecting.
-            let activationPort = port
-            let activationSecret = secret
-            Task { @MainActor in
-                do {
-                    try await Self.withTimeout(seconds: 6) {
-                        try await TelegramClient.shared.activateBuiltInProxy(
-                            port: activationPort, secret: activationSecret)
-                    }
-                    CallDiag.log("proxy.activate ok port=\(activationPort)")
-                } catch {
-                    CallDiag.log("proxy.activate deferred \(String(describing: error))")
-                }
+            do {
+                try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
+            } catch {
+                proxy.stop()
+                await TelegramClient.shared.deactivateBuiltInProxy(port: port)
+                isRunning = false
+                status = NSLocalizedString("Generated.2ffa90882c2a", comment: "")
+                lastError = TelegramClient.describe(error)
+                operation = nil
+                return
             }
 
             guard !Task.isCancelled, isEnabled else {
-                CallDiag.log("proxy.start cancelled/disabled after listen")
                 await TelegramClient.shared.deactivateBuiltInProxy(port: port)
                 proxy.stop()
                 operation = nil
@@ -334,28 +296,12 @@ final class BuiltInProxyManager: ObservableObject {
         }
     }
 
-    struct TimeoutError: Error {}
-
-    private static func withTimeout<T>(seconds: Double,
-                                       _ operation: @escaping () async throws -> T) async throws -> T {
-        try await withThrowingTaskGroup(of: T.self) { group in
-            group.addTask { try await operation() }
-            group.addTask {
-                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-                throw TimeoutError()
-            }
-            guard let result = try await group.next() else { throw TimeoutError() }
-            group.cancelAll()
-            return result
-        }
-    }
-
     private var healthTimeoutTask: Task<Void, Never>?
 
     private func startHealthTimeout() {
         healthTimeoutTask?.cancel()
         healthTimeoutTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 12_000_000_000)
+            try? await Task.sleep(nanoseconds: 60_000_000_000)
             guard !Task.isCancelled, let self else { return }
             if self.isRunning, self.status.hasPrefix("Ожидание") {
                 self.health = .failed
@@ -385,16 +331,6 @@ final class BuiltInProxyManager: ObservableObject {
             status = NSLocalizedString("Generated.7aef029a9610", comment: "")
             lastError = NSLocalizedString("Generated.a56145585e65", comment: "")
             registerUpstreamFailure()
-            // Guaranteed fallback: a dead tunnel must not keep TDLib offline.
-            // Disable the proxy so the client reconnects directly (works under VPN).
-            let fallbackPort = port
-            Task { @MainActor [weak self] in
-                CallDiag.log("proxy.health failed: disabling proxy, direct fallback")
-                await TelegramClient.shared.deactivateBuiltInProxy(port: fallbackPort)
-                // Switch the toggle off too: a dead tunnel must not stay enabled,
-                // otherwise TDLib keeps routing into the blocked local proxy.
-                self?.setEnabled(false)
-            }
         }
     }
 
@@ -440,14 +376,8 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func restart() {
-        #if targetEnvironment(simulator)
-        // A new random port avoids the zombie socket held by the previous run.
-        port = Int.random(in: 20000...60000)
-        #endif
         operation?.cancel()
         operation = nil
-        healthTimeoutTask?.cancel()
-        healthTimeoutTask = nil
 
         let proxy = server
         server = nil
