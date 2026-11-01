@@ -25,6 +25,13 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Fignyagram использует локальный прокси для подключения к Telegram.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

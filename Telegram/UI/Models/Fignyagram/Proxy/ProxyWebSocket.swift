@@ -96,6 +96,10 @@ actor ProxyWebSocket {
 
         let config = URLSessionConfiguration.ephemeral
         config.waitsForConnectivity = false
+        // iOS network sandbox: allow expensive/constrained paths and local use.
+        config.allowsExpensiveNetworkAccess = true
+        config.allowsConstrainedNetworkAccess = true
+        config.allowsCellularAccess = true
         config.timeoutIntervalForRequest = timeout
         let delegate = WSOpenDelegate()
         let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
