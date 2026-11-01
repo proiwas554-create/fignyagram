@@ -54,13 +54,28 @@ actor ProxyWebSocket {
     static func connect(domain: String, path: String = "/apiws",
                         port: Int, timeout: TimeInterval = 20.0) async throws -> ProxyWebSocket {
         let socket = ProxyWebSocket()
-        do {
-            try await socket.open(host: domain, path: path, timeout: timeout)
-            return socket
-        } catch {
-            CallDiag.log("ws fail \(domain)\(path) \(String(describing: error))")
-            await socket.close()
-            throw error
+        return try await withCheckedThrowingContinuation { continuation in
+            let once = ProxyOnceFlag()
+            // Hard deadline: a structured task group would wait forever for a
+            // URLSession handshake that never reports, stalling the dial loop.
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + timeout) {
+                if once.trySet() {
+                    CallDiag.log("ws timeout \(domain)\(path)")
+                    Task { await socket.close() }
+                    continuation.resume(throwing: ProxyTimeoutError())
+                }
+            }
+            Task {
+                do {
+                    try await socket.open(host: domain, path: path, timeout: timeout)
+                    if once.trySet() { continuation.resume(returning: socket) }
+                } catch {
+                    if once.trySet() {
+                        CallDiag.log("ws fail \(domain)\(path) \(String(describing: error))")
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
         }
     }
 
@@ -84,14 +99,11 @@ actor ProxyWebSocket {
         self.session = session
         self.task = task
 
-        try await withTimeout(seconds: timeout) {
-            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                delegate.onOpen = { continuation.resume() }
-                delegate.onClose = { error in
-                    continuation.resume(throwing: error ?? ProxyTimeoutError())
-                }
-                task.resume()
-            }
+        let delegateBox = delegate
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            delegateBox.onOpen = { continuation.resume() }
+            delegateBox.onClose = { error in continuation.resume(throwing: error ?? ProxyTimeoutError()) }
+            task.resume()
         }
         proxySocketLogger.info("[WS#\(self.connectionID)] connected \(host)\(path)")
         CallDiag.log("ws open \(host)\(path) id=\(self.connectionID)")
