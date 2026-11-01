@@ -530,13 +530,16 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
     private func processClient(_ connection: NWConnection) async throws {
         try await waitForReady(connection)
+        CallDiag.log("mtproxy.ready")
 
         let handshakeData = try await receiveExact(connection, count: proxyHandshakeLength)
+        CallDiag.log("mtproxy.handshake bytes=\(handshakeData.count)")
         let handshake = [UInt8](handshakeData)
         let secretBytes = proxyHexToBytes(config.secretHex)
 
         guard secretBytes.count == 16, let result = proxyTryHandshake(handshake, secret: secretBytes) else {
             proxyServerLogger.debug("Bad handshake (wrong secret or proto)")
+            CallDiag.log("mtproxy.handshake fail (secret/proto)")
             _ = try? await receiveData(connection, maxLength: 4096, timeout: 20)
             return
         }
@@ -569,6 +572,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
         let mediaTag = result.isMedia ? "m" : ""
         proxyServerLogger.info("Handshake ok: DC\(result.dcId)\(mediaTag)")
+        CallDiag.log("mtproxy.handshake ok dc=\(result.dcId)\(mediaTag)")
 
         // Reconnect storm gate: after a failed upstream dial the same DC must
         // wait 2s → 4s → 8s … before the next dial. TDLib keeps opening local
@@ -584,6 +588,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
         // One of at most two concurrent dials: the UI keeps its frames even
         // while TDLib opens several connections at once.
+        CallDiag.log("mtproxy.dial upstream dc=\(result.dcId)")
         return try await ProxyDialLimiter.shared.withSlot {
         // Never let a dead CF/DC endpoint block authorization for minutes.
         let connectDeadline = Date().addingTimeInterval(5)
