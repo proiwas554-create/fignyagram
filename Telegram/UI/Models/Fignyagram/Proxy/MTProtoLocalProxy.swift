@@ -653,8 +653,8 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         if cfDomains.isEmpty == false && cfAllowed {
             var cfHosts: [String] = []
             for cfDomain in cfDomains.prefix(2) {
-                cfHosts.append("kws\(result.dcId).\(cfDomain)")
                 cfHosts.append("kws1.\(cfDomain)")
+                cfHosts.append("kws\(result.dcId).\(cfDomain)")
             }
             for host in cfHosts {
                 if Date() >= connectDeadline { break }
