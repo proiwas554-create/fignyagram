@@ -46,7 +46,12 @@ final class BuiltInProxyManager: ObservableObject {
 
     private init() {
         let defaults = UserDefaults.standard
-        isEnabled = defaults.bool(forKey: Keys.enabled)
+        // Fresh installs use the built-in proxy automatically; the toggle in
+        // settings still lets the user turn it off explicitly.
+        // Proxy is on by default; only an explicit user disable turns it off.
+        let autoOn = !defaults.bool(forKey: "proxyExplicitlyDisabled")
+        isEnabled = autoOn
+        defaults.set(autoOn, forKey: Keys.enabled)
 
         if let stored = Keychain.string(for: Keys.secret), stored.count == 32 {
             secret = stored
@@ -81,6 +86,7 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func setEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(!enabled, forKey: "proxyExplicitlyDisabled")
         isEnabled = enabled
         UserDefaults.standard.set(enabled, forKey: Keys.enabled)
         if enabled {
@@ -216,7 +222,6 @@ final class BuiltInProxyManager: ObservableObject {
 
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
-        config.customCFIP = UserDefaults.standard.string(forKey: "cfProxyIP")
         operation = Task {
             // Reuse an already listening server instead of binding a second one.
             if let existing = server, existing.isListening {

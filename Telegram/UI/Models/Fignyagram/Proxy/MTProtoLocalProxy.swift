@@ -253,8 +253,11 @@ nonisolated struct ProxyEndpointConfig {
     /// tg-ws-proxy docs). When set, it is tried first; bundled domains remain
     /// as fallback.
     var customCFDomain: String?
-    /// Optional Cloudflare edge IP used instead of DNS (when DNS/anycast is blocked).
-    var customCFIP: String?
+    /// Cloudflare edge IPs tried automatically when DNS/anycast is blocked.
+    static let cleanCFIPs: [String] = [
+        "104.16.132.229", "104.16.133.229", "172.67.73.197",
+        "104.21.41.229", "104.19.241.103"
+    ]
     var cfDomains: [String] = [
         "cakeisalie.co.uk",
         "noskomnadzor.co.uk",
@@ -637,25 +640,27 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 let host = "kws\(result.dcId).\(cfDomain)"
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(host)/apiws (CF proxy)")
                 do {
-                    if let ip = config.customCFIP?.trimmingCharacters(in: .whitespacesAndNewlines), !ip.isEmpty {
-                        websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 4.0)
-                    } else {
-                        websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
+                    websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
+                    CallDiag.log("cf dns ok \(host)")
+                } catch {
+                    CallDiag.log("cf dns fail \(host) \(String(describing: error))")
+                    // Silent anycast fallback: same SNI/Host, different CF edge IP.
+                    for ip in ProxyEndpointConfig.cleanCFIPs where websocket == nil {
+                        if Date() >= connectDeadline { break }
+                        do {
+                            websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 3.0)
+                            CallDiag.log("cf ip ok \(ip) \(host)")
+                            break
+                        } catch {
+                            CallDiag.log("cf ip fail \(ip) \(String(describing: error))")
+                        }
                     }
+                }
+                if websocket != nil {
                     proxyServerLogger.info("WS connected via CF: \(host)")
                     report(.cloudflare)
                     stateLock.lock(); preferredTransport[result.dcId] = .cf; stateLock.unlock()
                     break
-                } catch let error as URLError where error.code == .badServerResponse {
-                    // HTTP-отказ вместо апгрейда: CF-домен мёртв. Больше не
-                    // трогаем Cloudflare до перезапуска прокси и идём в TCP.
-                    proxyServerLogger.warning("DC\(result.dcId) CF \(host) rejected handshake (-1011), CF disabled for session")
-                    stateLock.lock()
-                    cfDeadForSession = true
-                    stateLock.unlock()
-                    break
-                } catch {
-                    proxyServerLogger.warning("DC\(result.dcId) CF \(host) failed: \(String(describing: error))")
                 }
             }
         }
