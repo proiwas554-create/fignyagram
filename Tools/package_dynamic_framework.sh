@@ -64,6 +64,7 @@ MAP
   <key>CFBundleVersion</key><string>7601</string>
   <key>CFBundleSupportedPlatforms</key><array><string>$platform</string></array>
   <key>MinimumOSVersion</key><string>15.0</string>
+  <key>AppExtensionSafe</key><true/>
 </dict>
 </plist>
 PLIST
