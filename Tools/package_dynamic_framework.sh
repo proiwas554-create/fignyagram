@@ -29,11 +29,24 @@ make_framework() {
   cp "$dylib" "$dir/TDLibFramework"
   install_name_tool -id "@rpath/TDLibFramework.framework/TDLibFramework" "$dir/TDLibFramework"
   cp "$HEADER" "$dir/Headers/td_json_client.h"
-  cp "$EXPORT_H" "$dir/Headers/td/telegram/tdjson_export.h"
-  cat > "$dir/Headers/module.modulemap" <<'MAP'
-module TDLibFramework {
-    header "td_json_client.h"
-    export *
+  cp "$EXPORT_H" "$dir/Headers/tdjson_export.h"
+  sed -i '' 's|#include "td/telegram/tdjson_export.h"|#include "tdjson_export.h"|' "$dir/Headers/td_json_client.h"
+  TD_LOG="$(find "$ROOT/Tools/build_workdir/td" -name td_log.h -print -quit)"
+  if [ -n "$TD_LOG" ]; then
+    cp "$TD_LOG" "$dir/Headers/td_log.h"
+    sed -i '' 's|#include "td/telegram/tdjson_export.h"|#include "tdjson_export.h"|' "$dir/Headers/td_log.h"
+  fi
+  cat > "$dir/Headers/td.h" <<'UMBRELLA'
+#import "td_json_client.h"
+#import "td_log.h"
+UMBRELLA
+  mkdir -p "$dir/Modules"
+  cat > "$dir/Modules/module.modulemap" <<'MAP'
+framework module TDLibFramework {
+  umbrella header "td.h"
+
+  export *
+  module * { export * }
 }
 MAP
   cat > "$dir/Info.plist" <<PLIST
