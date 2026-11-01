@@ -598,10 +598,9 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         return try await ProxyDialLimiter.shared.withSlot {
         // Never let a dead CF/DC endpoint block authorization for minutes.
         let connectDeadline = Date().addingTimeInterval(5)
-        let preferTCP: Bool = {
-            stateLock.lock(); defer { stateLock.unlock() }
-            return preferredTransport[result.dcId] == .tcp
-        }()
+        // Always try Cloudflare first: the cached .tcp preference is sticky and
+        // would silently skip the only working route on DPI-blocked networks.
+        let preferTCP = false
         if preferTCP {
             let fallbackIP = config.dcRedirects[result.dcId]
                 ?? ProxyEndpointConfig.dcDefaultIPs[result.dcId]
