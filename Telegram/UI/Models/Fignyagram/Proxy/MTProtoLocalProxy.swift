@@ -253,6 +253,8 @@ nonisolated struct ProxyEndpointConfig {
     /// tg-ws-proxy docs). When set, it is tried first; bundled domains remain
     /// as fallback.
     var customCFDomain: String?
+    /// Optional Cloudflare edge IP used instead of DNS (when DNS/anycast is blocked).
+    var customCFIP: String?
     var cfDomains: [String] = [
         "cakeisalie.co.uk",
         "noskomnadzor.co.uk",
@@ -635,7 +637,11 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 let host = "kws\(result.dcId).\(cfDomain)"
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(host)/apiws (CF proxy)")
                 do {
-                    websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
+                    if let ip = config.customCFIP?.trimmingCharacters(in: .whitespacesAndNewlines), !ip.isEmpty {
+                        websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 4.0)
+                    } else {
+                        websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
+                    }
                     proxyServerLogger.info("WS connected via CF: \(host)")
                     report(.cloudflare)
                     stateLock.lock(); preferredTransport[result.dcId] = .cf; stateLock.unlock()

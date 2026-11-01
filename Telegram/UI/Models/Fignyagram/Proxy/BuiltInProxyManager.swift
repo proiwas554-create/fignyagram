@@ -216,6 +216,7 @@ final class BuiltInProxyManager: ObservableObject {
 
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
+        config.customCFIP = UserDefaults.standard.string(forKey: "cfProxyIP")
         operation = Task {
             // Reuse an already listening server instead of binding a second one.
             if let existing = server, existing.isListening {
