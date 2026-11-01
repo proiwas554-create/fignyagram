@@ -85,6 +85,7 @@ actor ProxyWebSocket {
 
         let params = NWParameters(tls: tlsOptions, tcp: tcpOptions)
         params.allowLocalEndpointReuse = true
+        params.includePeerToPeer = false
 
         guard let endpointPort = NWEndpoint.Port(rawValue: UInt16(port)) else {
             throw ProxyWebSocketError(statusCode: 0, statusLine: "bad port", headers: [:], location: nil)

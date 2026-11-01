@@ -380,7 +380,9 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         // peer-to-peer so the OS never applies carrier/joining-protocol
         // policies to 127.0.0.1 traffic.
         params.allowLocalEndpointReuse = true
-        params.includePeerToPeer = true
+        // iOS 26/27 marks P2P listeners as "prohibit joining"; plain TCP
+        // loopback keeps local TDLib traffic connectable.
+        params.includePeerToPeer = false
 
         guard let port = NWEndpoint.Port(rawValue: UInt16(config.port)) else {
             throw NWError.posix(.EINVAL)
