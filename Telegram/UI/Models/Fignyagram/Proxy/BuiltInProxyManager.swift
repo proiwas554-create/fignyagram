@@ -225,6 +225,7 @@ final class BuiltInProxyManager: ObservableObject {
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
         operation = Task {
+            CallDiag.log("proxy.task started")
             // Reuse an already listening server instead of binding a second one.
             if let existing = server, existing.isListening {
                 do {
@@ -259,6 +260,7 @@ final class BuiltInProxyManager: ObservableObject {
             var lastStartError: Error?
             for attempt in 0..<3 {
                 if Task.isCancelled || !isEnabled { break }
+                CallDiag.log("proxy.attempt \(attempt)")
                 let candidate = LocalMTProtoProxy(config: config)
                 candidate.onHealth = { [weak self] health in
                     Task { @MainActor [weak self] in
@@ -267,6 +269,7 @@ final class BuiltInProxyManager: ObservableObject {
                 }
                 do {
                     try await candidate.start()
+                    CallDiag.log("proxy.listener ready on port \(port)")
                     startedProxy = candidate
                     break
                 } catch {
