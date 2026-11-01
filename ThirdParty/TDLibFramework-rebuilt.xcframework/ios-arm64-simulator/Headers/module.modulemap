@@ -1,0 +1,4 @@
+module TDLibFramework {
+    header "td_json_client.h"
+    export *
+}

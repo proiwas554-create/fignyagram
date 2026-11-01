@@ -43,12 +43,21 @@ rm -rf "$STAGE" "$OUT"
 mkdir -p "$STAGE/device" "$STAGE/simulator"
 
 package_slice() {
-  local name="$1" lib="$2" ssl="$3" dir="$STAGE/$name"
+  local name="$1"
+  local lib="$2"
+  local ssl="$3"
+  local dir="$STAGE/$name"
   mkdir -p "$dir/Headers"
   step "Merging $name"
+  # tdjson_static.a only holds its own objects: merge every TDLib archive.
+  local build_dir="$4"
   libtool -static -o "$dir/libTDLibFramework.a" \
-    "$lib" "$ssl/libssl.a" "$ssl/libcrypto.a"
+    "$lib" "$(find "$build_dir" -maxdepth 2 -name '*.a' -not -name 'libtdjson_static.a' | tr '\n' ' ')" \
+    "$ssl/libssl.a" "$ssl/libcrypto.a"
   cp "$HEADER_SRC" "$dir/Headers/"
+  mkdir -p "$dir/Headers/td/telegram"
+  EXPORT_H="$(find "$ROOT/Tools/build_workdir" -name tdjson_export.h -print -quit)"
+  cp "$EXPORT_H" "$dir/Headers/td/telegram/"
   cp "$ROOT/Tools/build_workdir/td/td/telegram/td_json_client.h" "$dir/Headers/" 2>/dev/null || true
   cat > "$dir/Headers/module.modulemap" <<'MAP'
 module TDLibFramework {
@@ -59,8 +68,8 @@ MAP
   lipo -info "$dir/libTDLibFramework.a"
 }
 
-package_slice device "$SRC/ios-arm64/libtdjson_static.a" "$DEV_SSL"
-package_slice simulator "$SRC/ios-arm64-simulator/libtdjson_static.a" "$SIM_SSL"
+package_slice device "$SRC/ios-arm64/libtdjson_static.a" "$DEV_SSL" "$ROOT/Tools/build_workdir/build-ios"
+package_slice simulator "$SRC/ios-arm64-simulator/libtdjson_static.a" "$SIM_SSL" "$ROOT/Tools/build_workdir/build-sim"
 
 step "Creating xcframework"
 xcodebuild -create-xcframework \
