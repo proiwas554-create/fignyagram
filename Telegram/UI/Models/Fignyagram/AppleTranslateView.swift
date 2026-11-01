@@ -38,6 +38,7 @@ struct AppleTranslateSheet: View {
                     Button(L10n.t("Common.Close")) { dismiss() }
                 }
             }
+#if !targetEnvironment(macCatalyst)
             .translationTask(configuration) { session in
                 do {
                     let response = try await session.translate(text)
@@ -46,6 +47,7 @@ struct AppleTranslateSheet: View {
                     failed = true
                 }
             }
+#endif
         }
         .navigationViewStyle(.stack)
     }

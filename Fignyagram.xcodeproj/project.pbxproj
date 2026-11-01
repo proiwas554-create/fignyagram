@@ -15,8 +15,8 @@
 		849E0117308A83FA008B5F4E /* TDLibKit in Frameworks */ = {isa = PBXBuildFile; productRef = 849E0116308A83FA008B5F4E /* TDLibKit */; };
 		849E04A4308EBB11008B5F4E /* LiveKitWebRTC.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; };
 		A5B6347D76D3A2B7BF09BBE9 /* LiveKitWebRTC.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 849E04A3308EBB11008B5F4E /* LiveKitWebRTC.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; };
-		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A71000000000000000000002 /* ThirdParty/TgVoipWebrtc.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; platformFilter = ios; };
+		A71000000000000000000003 /* ThirdParty/TgVoipWebrtc.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A71000000000000000000001 /* ThirdParty/TgVoipWebrtc.xcframework */; platformFilter = ios; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		AA1000000000000000000006 /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000003 /* ShareViewController.swift */; };
 		AA1000000000000000000007 /* FignyagramShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AA1000000000000000000002 /* FignyagramShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AABBCCDD00000000000000E1 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = AABBCCDD00000000000000E0 /* Localizable.strings */; };

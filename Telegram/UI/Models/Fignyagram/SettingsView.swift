@@ -346,10 +346,14 @@ private struct TranslationPresentationModifier: ViewModifier {
     let target: String
 
     func body(content: Content) -> some View {
+#if targetEnvironment(macCatalyst)
+        content
+#else
         if #available(iOS 18.0, *) {
             content.translationPresentation(isPresented: $isPresented, text: text)
         } else {
             content
         }
+#endif
     }
 }
