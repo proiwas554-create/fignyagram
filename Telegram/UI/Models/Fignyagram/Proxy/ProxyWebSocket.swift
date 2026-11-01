@@ -89,6 +89,9 @@ actor ProxyWebSocket {
         var request = URLRequest(url: url)
         request.timeoutInterval = timeout
         request.setValue("binary", forHTTPHeaderField: "Sec-WebSocket-Protocol")
+        request.setValue("https://web.telegram.org", forHTTPHeaderField: "Origin")
+        request.setValue("Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+                         forHTTPHeaderField: "User-Agent")
 
         let config = URLSessionConfiguration.ephemeral
         config.waitsForConnectivity = false
