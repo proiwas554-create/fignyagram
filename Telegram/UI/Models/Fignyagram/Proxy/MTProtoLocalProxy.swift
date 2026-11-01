@@ -253,13 +253,6 @@ nonisolated struct ProxyEndpointConfig {
     /// tg-ws-proxy docs). When set, it is tried first; bundled domains remain
     /// as fallback.
     var customCFDomain: String?
-    /// Cloudflare edge IPs tried automatically when DNS/anycast is blocked.
-    static let cleanCFIPs: [String] = [
-        "104.16.132.229", "104.16.133.229", "172.67.73.197",
-        "104.21.41.229", "104.19.241.103",
-        // Additional Cloudflare edge subnets used by large CDNs/whitelisted sites.
-        "104.18.26.155", "104.17.156.120", "162.159.135.42", "172.64.150.18"
-    ]
     var cfDomains: [String] = [
         "cakeisalie.co.uk",
         "noskomnadzor.co.uk",
@@ -379,12 +372,6 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
     }
 
     func start() async throws {
-        stateLock.lock()
-        cfDeadForSession = false
-        cfBrokenDCs.removeAll()
-        preferredTransport.removeAll()
-        stateLock.unlock()
-        CallDiag.log("mtproxy.start cf state reset")
         let tcpOptions = NWProtocolTCP.Options()
         tcpOptions.noDelay = true
 
@@ -402,7 +389,6 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         setListener(listener)
 
         listener.newConnectionHandler = { [weak self] connection in
-            CallDiag.log("mtproxy.accept port=\(self?.config.port ?? -1)")
             guard let self else {
                 connection.cancel()
                 return
@@ -536,16 +522,13 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
     private func processClient(_ connection: NWConnection) async throws {
         try await waitForReady(connection)
-        CallDiag.log("mtproxy.ready")
 
         let handshakeData = try await receiveExact(connection, count: proxyHandshakeLength)
-        CallDiag.log("mtproxy.handshake bytes=\(handshakeData.count)")
         let handshake = [UInt8](handshakeData)
         let secretBytes = proxyHexToBytes(config.secretHex)
 
         guard secretBytes.count == 16, let result = proxyTryHandshake(handshake, secret: secretBytes) else {
             proxyServerLogger.debug("Bad handshake (wrong secret or proto)")
-            CallDiag.log("mtproxy.handshake fail (secret/proto)")
             _ = try? await receiveData(connection, maxLength: 4096, timeout: 20)
             return
         }
@@ -578,7 +561,6 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
         let mediaTag = result.isMedia ? "m" : ""
         proxyServerLogger.info("Handshake ok: DC\(result.dcId)\(mediaTag)")
-        CallDiag.log("mtproxy.handshake ok dc=\(result.dcId)\(mediaTag)")
 
         // Reconnect storm gate: after a failed upstream dial the same DC must
         // wait 2s → 4s → 8s … before the next dial. TDLib keeps opening local
@@ -594,15 +576,13 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
 
         // One of at most two concurrent dials: the UI keeps its frames even
         // while TDLib opens several connections at once.
-        CallDiag.log("mtproxy.dial upstream dc=\(result.dcId)")
-        CallDiag.log("mtproxy.slot wait dc=\(result.dcId)")
         return try await ProxyDialLimiter.shared.withSlot {
-        CallDiag.log("mtproxy.slot acquired dc=\(result.dcId)")
         // Never let a dead CF/DC endpoint block authorization for minutes.
         let connectDeadline = Date().addingTimeInterval(5)
-        // Always try Cloudflare first: the cached .tcp preference is sticky and
-        // would silently skip the only working route on DPI-blocked networks.
-        let preferTCP = false
+        let preferTCP: Bool = {
+            stateLock.lock(); defer { stateLock.unlock() }
+            return preferredTransport[result.dcId] == .tcp
+        }()
         if preferTCP {
             let fallbackIP = config.dcRedirects[result.dcId]
                 ?? ProxyEndpointConfig.dcDefaultIPs[result.dcId]
@@ -649,49 +629,27 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             return !cfDeadForSession && !cfBrokenDCs.contains(result.dcId)
         }()
         let cfDomains = config.effectiveCFDomains
-        CallDiag.log("mtproxy.cf allowed=\(cfAllowed) domains=\(cfDomains.count)")
         if cfDomains.isEmpty == false && cfAllowed {
-            var cfHosts: [String] = []
             for cfDomain in cfDomains.prefix(2) {
-                cfHosts.append("kws1.\(cfDomain)")
-                cfHosts.append("kws\(result.dcId).\(cfDomain)")
-            }
-            for host in cfHosts {
                 if Date() >= connectDeadline { break }
+                let host = "kws\(result.dcId).\(cfDomain)"
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(host)/apiws (CF proxy)")
                 do {
                     websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
-                    CallDiag.log("cf dns ok \(host)")
-                } catch {
-                    CallDiag.log("cf dns fail \(host) \(String(describing: error))")
-                    // Silent anycast fallback: same SNI/Host, different CF edge IP.
-                    // Some ISPs block CF on 443 but allow alternative TLS ports.
-                    if websocket == nil {
-                        for altPort in [8443, 2053, 2087, 2096] {
-                            do {
-                                websocket = try await ProxyWebSocket.connect(domain: host, port: altPort, timeout: 1.5)
-                                CallDiag.log("cf port ok \(host):\(altPort)")
-                                break
-                            } catch {
-                                CallDiag.log("cf port fail \(host):\(altPort) \(String(describing: error))")
-                            }
-                        }
-                    }
-                    for ip in ProxyEndpointConfig.cleanCFIPs where websocket == nil {
-                        do {
-                            websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 1.2)
-                            CallDiag.log("cf ip ok \(ip) \(host)")
-                            break
-                        } catch {
-                            CallDiag.log("cf ip fail \(ip) \(String(describing: error))")
-                        }
-                    }
-                }
-                if websocket != nil {
                     proxyServerLogger.info("WS connected via CF: \(host)")
                     report(.cloudflare)
                     stateLock.lock(); preferredTransport[result.dcId] = .cf; stateLock.unlock()
                     break
+                } catch let error as URLError where error.code == .badServerResponse {
+                    // HTTP-отказ вместо апгрейда: CF-домен мёртв. Больше не
+                    // трогаем Cloudflare до перезапуска прокси и идём в TCP.
+                    proxyServerLogger.warning("DC\(result.dcId) CF \(host) rejected handshake (-1011), CF disabled for session")
+                    stateLock.lock()
+                    cfDeadForSession = true
+                    stateLock.unlock()
+                    break
+                } catch {
+                    proxyServerLogger.warning("DC\(result.dcId) CF \(host) failed: \(String(describing: error))")
                 }
             }
         }
