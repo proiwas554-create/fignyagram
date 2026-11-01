@@ -140,6 +140,10 @@ actor ProxyWebSocket {
                         timer.cancel()
                         conn.stateUpdateHandler = nil
                         cont.resume(throwing: error)
+                    case .waiting(let error):
+                        CallDiag.log("nwstate waiting \(domain):\(port) \(error)")
+                    case .preparing:
+                        CallDiag.log("nwstate preparing \(domain):\(port)")
                     case .cancelled:
                         CallDiag.log("nwstate cancelled \(domain):\(port)")
                         guard once.trySet() else { return }
