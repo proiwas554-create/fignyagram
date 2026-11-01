@@ -77,6 +77,9 @@ actor ProxyWebSocket {
         if port == 443 {
             let options = NWProtocolTLS.Options()
             sec_protocol_options_set_tls_server_name(options.securityProtocolOptions, domain)
+            // iOS 26 may attempt ECH via TLS 1.3 to CF; pin TLS 1.2 to avoid it.
+            sec_protocol_options_set_min_tls_protocol_version(options.securityProtocolOptions, .TLSv12)
+            sec_protocol_options_set_max_tls_protocol_version(options.securityProtocolOptions, .TLSv12)
             tlsOptions = options
         }
         let tcpOptions = NWProtocolTCP.Options()
