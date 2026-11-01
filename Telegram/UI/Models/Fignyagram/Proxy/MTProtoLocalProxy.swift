@@ -256,7 +256,9 @@ nonisolated struct ProxyEndpointConfig {
     /// Cloudflare edge IPs tried automatically when DNS/anycast is blocked.
     static let cleanCFIPs: [String] = [
         "104.16.132.229", "104.16.133.229", "172.67.73.197",
-        "104.21.41.229", "104.19.241.103"
+        "104.21.41.229", "104.19.241.103",
+        // Additional Cloudflare edge subnets used by large CDNs/whitelisted sites.
+        "104.18.26.155", "104.17.156.120", "162.159.135.42", "172.64.150.18"
     ]
     var cfDomains: [String] = [
         "cakeisalie.co.uk",
@@ -646,9 +648,8 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                     CallDiag.log("cf dns fail \(host) \(String(describing: error))")
                     // Silent anycast fallback: same SNI/Host, different CF edge IP.
                     for ip in ProxyEndpointConfig.cleanCFIPs where websocket == nil {
-                        if Date() >= connectDeadline { break }
                         do {
-                            websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 3.0)
+                            websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 1.2)
                             CallDiag.log("cf ip ok \(ip) \(host)")
                             break
                         } catch {
