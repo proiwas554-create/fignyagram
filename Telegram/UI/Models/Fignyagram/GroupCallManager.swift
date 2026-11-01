@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import TDLibKit
+#if !targetEnvironment(macCatalyst)
 import TgVoipWebrtc
 
 /// Group (video chat) calls: TDLib provides the call object and the encrypted
@@ -314,3 +315,16 @@ final class GroupCallManager: ObservableObject {
         }
     }
 }
+
+#else
+/// Mac Catalyst build: WebRTC binary has no Catalyst slice yet, calls are off.
+@MainActor
+final class GroupCallManager: ObservableObject {
+    static let shared = GroupCallManager()
+    @Published private(set) var isActive = false
+    func handleGroupCallUpdate(_ call: GroupCall) {}
+    func handleParticipantIds(_ ids: [Int64]) {}
+    func handleParticipant(_ participant: GroupCallParticipant) {}
+    func startOrJoin(chatId: Int64, title: String, video: Bool = false) async {}
+}
+#endif

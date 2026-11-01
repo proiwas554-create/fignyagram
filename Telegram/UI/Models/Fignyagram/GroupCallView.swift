@@ -1,4 +1,5 @@
 import SwiftUI
+#if !targetEnvironment(macCatalyst)
 
 /// Full-screen UI for a group (video chat) call.
 struct GroupCallView: View {
@@ -132,3 +133,12 @@ struct GroupCallOverlay: View {
         }
     }
 }
+
+#else
+struct GroupCallView: View {
+    var body: some View { EmptyView() }
+}
+struct GroupCallOverlay: View {
+    var body: some View { EmptyView() }
+}
+#endif
