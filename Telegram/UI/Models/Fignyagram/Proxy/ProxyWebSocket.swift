@@ -62,9 +62,9 @@ actor ProxyWebSocket {
         self.task = task
 
         try await withTimeout(seconds: timeout) {
-            try await delegate.waitReady()
             task.resume()
             task.startSecureConnection()
+            try await delegate.waitReady()
         }
         CallDiag.log("stream tls \\(host):\\(port)")
 
