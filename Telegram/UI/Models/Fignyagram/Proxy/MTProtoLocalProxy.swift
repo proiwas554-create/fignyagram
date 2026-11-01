@@ -396,6 +396,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         setListener(listener)
 
         listener.newConnectionHandler = { [weak self] connection in
+            CallDiag.log("mtproxy.accept port=\(self?.config.port ?? -1)")
             guard let self else {
                 connection.cancel()
                 return
