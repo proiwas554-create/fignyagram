@@ -109,16 +109,20 @@ actor ProxyWebSocket {
                 conn.stateUpdateHandler = { state in
                     switch state {
                     case .ready:
+                        // Metadata/endpoint access is only valid from .ready.
+                        CallDiag.log("nw ready \(domain):\(port)")
                         guard once.trySet() else { return }
                         timer.cancel()
                         conn.stateUpdateHandler = nil
                         cont.resume()
                     case .failed(let error):
+                        CallDiag.log("nw failed \(domain):\(port) \(error)")
                         guard once.trySet() else { return }
                         timer.cancel()
                         conn.stateUpdateHandler = nil
                         cont.resume(throwing: error)
                     case .cancelled:
+                        CallDiag.log("nw cancelled \(domain):\(port)")
                         guard once.trySet() else { return }
                         timer.cancel()
                         conn.stateUpdateHandler = nil
