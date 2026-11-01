@@ -300,44 +300,20 @@ final class BuiltInProxyManager: ObservableObject {
                 return
             }
 
-            do {
-                // TDLib may be busy connecting: never block the listener forever.
-                let activationPort = port
-                let activationSecret = secret
-                try await Self.withTimeout(seconds: 4) {
-                    try await TelegramClient.shared.activateBuiltInProxy(port: activationPort,
-                                                                        secret: activationSecret)
-                }
-            } catch is TimeoutError {
-                CallDiag.log("proxy.activate timeout, listener kept; will retry")
-                let retryPort = port
-                let retrySecret = secret
-                Task { @MainActor [weak self] in
-                    for attempt in 0..<3 {
-                        try? await Task.sleep(nanoseconds: 2_000_000_000)
-                        guard let self, self.isEnabled else { return }
-                        do {
-                            try await Self.withTimeout(seconds: 4) {
-                                try await TelegramClient.shared.activateBuiltInProxy(
-                                    port: retryPort, secret: retrySecret)
-                            }
-                            CallDiag.log("proxy.activate retry ok attempt=\(attempt)")
-                            return
-                        } catch {
-                            CallDiag.log("proxy.activate retry fail attempt=\(attempt) \(String(describing: error))")
-                        }
+            // Fire-and-forget: the listener is already up; awaiting TDLib's
+            // execute() blocks activation forever while TDLib is connecting.
+            let activationPort = port
+            let activationSecret = secret
+            Task { @MainActor in
+                do {
+                    try await Self.withTimeout(seconds: 6) {
+                        try await TelegramClient.shared.activateBuiltInProxy(
+                            port: activationPort, secret: activationSecret)
                     }
+                    CallDiag.log("proxy.activate ok port=\(activationPort)")
+                } catch {
+                    CallDiag.log("proxy.activate deferred \(String(describing: error))")
                 }
-            } catch {
-                CallDiag.log("proxy.activate failed \(String(describing: error))")
-                proxy.stop()
-                await TelegramClient.shared.deactivateBuiltInProxy(port: port)
-                isRunning = false
-                status = NSLocalizedString("Generated.2ffa90882c2a", comment: "")
-                lastError = TelegramClient.describe(error)
-                CallDiag.log("proxy.start failed \(String(describing: lastStartError))")
-                operation = nil
-                return
             }
 
             guard !Task.isCancelled, isEnabled else {
