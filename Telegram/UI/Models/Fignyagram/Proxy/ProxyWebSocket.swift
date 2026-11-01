@@ -58,6 +58,7 @@ actor ProxyWebSocket {
             try await socket.open(host: domain, path: path, timeout: timeout)
             return socket
         } catch {
+            CallDiag.log("ws fail \(domain)\(path) \(String(describing: error))")
             await socket.close()
             throw error
         }
@@ -93,6 +94,7 @@ actor ProxyWebSocket {
             }
         }
         proxySocketLogger.info("[WS#\(self.connectionID)] connected \(host)\(path)")
+        CallDiag.log("ws open \(host)\(path) id=\(self.connectionID)")
     }
 
     func send(_ data: Data) async throws {
