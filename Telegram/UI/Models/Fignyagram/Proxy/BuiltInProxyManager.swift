@@ -388,9 +388,12 @@ final class BuiltInProxyManager: ObservableObject {
             // Guaranteed fallback: a dead tunnel must not keep TDLib offline.
             // Disable the proxy so the client reconnects directly (works under VPN).
             let fallbackPort = port
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 CallDiag.log("proxy.health failed: disabling proxy, direct fallback")
                 await TelegramClient.shared.deactivateBuiltInProxy(port: fallbackPort)
+                // Switch the toggle off too: a dead tunnel must not stay enabled,
+                // otherwise TDLib keeps routing into the blocked local proxy.
+                self?.setEnabled(false)
             }
         }
     }
