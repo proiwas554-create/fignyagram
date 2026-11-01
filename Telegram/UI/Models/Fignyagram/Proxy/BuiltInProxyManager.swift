@@ -301,7 +301,15 @@ final class BuiltInProxyManager: ObservableObject {
             }
 
             do {
-                try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
+                // TDLib may be busy connecting: never block the listener forever.
+                let activationPort = port
+                let activationSecret = secret
+                try await Self.withTimeout(seconds: 4) {
+                    try await TelegramClient.shared.activateBuiltInProxy(port: activationPort,
+                                                                        secret: activationSecret)
+                }
+            } catch is TimeoutError {
+                CallDiag.log("proxy.activate timeout, listener kept; will retry")
             } catch {
                 CallDiag.log("proxy.activate failed \(String(describing: error))")
                 proxy.stop()
@@ -329,6 +337,22 @@ final class BuiltInProxyManager: ObservableObject {
             lastError = nil
             operation = nil
             startHealthTimeout()
+        }
+    }
+
+    struct TimeoutError: Error {}
+
+    private static func withTimeout<T>(seconds: Double,
+                                       _ operation: @escaping () async throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask { try await operation() }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw TimeoutError()
+            }
+            guard let result = try await group.next() else { throw TimeoutError() }
+            group.cancelAll()
+            return result
         }
     }
 
