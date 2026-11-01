@@ -595,7 +595,9 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         // One of at most two concurrent dials: the UI keeps its frames even
         // while TDLib opens several connections at once.
         CallDiag.log("mtproxy.dial upstream dc=\(result.dcId)")
+        CallDiag.log("mtproxy.slot wait dc=\(result.dcId)")
         return try await ProxyDialLimiter.shared.withSlot {
+        CallDiag.log("mtproxy.slot acquired dc=\(result.dcId)")
         // Never let a dead CF/DC endpoint block authorization for minutes.
         let connectDeadline = Date().addingTimeInterval(5)
         // Always try Cloudflare first: the cached .tcp preference is sticky and
@@ -647,6 +649,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             return !cfDeadForSession && !cfBrokenDCs.contains(result.dcId)
         }()
         let cfDomains = config.effectiveCFDomains
+        CallDiag.log("mtproxy.cf allowed=\(cfAllowed) domains=\(cfDomains.count)")
         if cfDomains.isEmpty == false && cfAllowed {
             var cfHosts: [String] = []
             for cfDomain in cfDomains.prefix(2) {
