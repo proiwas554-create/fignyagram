@@ -637,9 +637,13 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         }()
         let cfDomains = config.effectiveCFDomains
         if cfDomains.isEmpty == false && cfAllowed {
+            var cfHosts: [String] = []
             for cfDomain in cfDomains.prefix(2) {
+                cfHosts.append("kws\(result.dcId).\(cfDomain)")
+                cfHosts.append("kws1.\(cfDomain)")
+            }
+            for host in cfHosts {
                 if Date() >= connectDeadline { break }
-                let host = "kws\(result.dcId).\(cfDomain)"
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(host)/apiws (CF proxy)")
                 do {
                     websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
