@@ -665,6 +665,18 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 } catch {
                     CallDiag.log("cf dns fail \(host) \(String(describing: error))")
                     // Silent anycast fallback: same SNI/Host, different CF edge IP.
+                    // Some ISPs block CF on 443 but allow alternative TLS ports.
+                    if websocket == nil {
+                        for altPort in [8443, 2053, 2087, 2096] {
+                            do {
+                                websocket = try await ProxyWebSocket.connect(domain: host, port: altPort, timeout: 1.5)
+                                CallDiag.log("cf port ok \(host):\(altPort)")
+                                break
+                            } catch {
+                                CallDiag.log("cf port fail \(host):\(altPort) \(String(describing: error))")
+                            }
+                        }
+                    }
                     for ip in ProxyEndpointConfig.cleanCFIPs where websocket == nil {
                         do {
                             websocket = try await ProxyWebSocket.connect(ip: ip, domain: host, timeout: 1.2)

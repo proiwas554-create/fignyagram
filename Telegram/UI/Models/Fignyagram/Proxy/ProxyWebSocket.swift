@@ -67,7 +67,7 @@ actor ProxyWebSocket {
             }
             Task {
                 do {
-                    try await socket.open(host: domain, path: path, timeout: timeout)
+                    try await socket.open(host: domain, path: path, port: port, timeout: timeout)
                     if once.trySet() { continuation.resume(returning: socket) }
                 } catch {
                     if once.trySet() {
@@ -79,11 +79,12 @@ actor ProxyWebSocket {
         }
     }
 
-    private func open(host: String, path: String, timeout: TimeInterval) async throws {
+    private func open(host: String, path: String, port: Int = 443, timeout: TimeInterval) async throws {
         var components = URLComponents()
         components.scheme = "wss"
         components.host = host
         components.path = path
+        components.port = port
         guard let url = components.url else { throw ConnectionError.closed }
 
         var request = URLRequest(url: url)
