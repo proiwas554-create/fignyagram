@@ -285,11 +285,13 @@ final class BuiltInProxyManager: ObservableObject {
                     status = NSLocalizedString("Generated.560c8e8a9a80", comment: "")
                     lastError = TelegramClient.describe(lastStartError ?? ProxyTimeoutError())
                 }
+                CallDiag.log("proxy.start failed \(String(describing: lastStartError))")
                 operation = nil
                 return
             }
 
             guard !Task.isCancelled, isEnabled else {
+                CallDiag.log("proxy.start cancelled/disabled after listen")
                 proxy.stop()
                 operation = nil
                 return
@@ -298,16 +300,19 @@ final class BuiltInProxyManager: ObservableObject {
             do {
                 try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
             } catch {
+                CallDiag.log("proxy.activate failed \(String(describing: error))")
                 proxy.stop()
                 await TelegramClient.shared.deactivateBuiltInProxy(port: port)
                 isRunning = false
                 status = NSLocalizedString("Generated.2ffa90882c2a", comment: "")
                 lastError = TelegramClient.describe(error)
+                CallDiag.log("proxy.start failed \(String(describing: lastStartError))")
                 operation = nil
                 return
             }
 
             guard !Task.isCancelled, isEnabled else {
+                CallDiag.log("proxy.start cancelled/disabled after listen")
                 await TelegramClient.shared.deactivateBuiltInProxy(port: port)
                 proxy.stop()
                 operation = nil
