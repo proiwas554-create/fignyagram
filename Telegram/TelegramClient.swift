@@ -2405,7 +2405,9 @@ final class TelegramClient: ObservableObject {
         }
         let encoded = "dd" + secret.lowercased()
 
+        CallDiag.log("proxy.activate begin port=\(port)")
         let existing = (try? await client.getProxies().proxies) ?? []
+        CallDiag.log("proxy.activate getProxies ok count=\(existing.count)")
         for proxy in existing where proxy.proxy.server == "127.0.0.1" && proxy.proxy.port == port {
             if case .proxyTypeMtproto(let mtproto) = proxy.proxy.type,
                mtproto.secret.lowercased() == encoded {
@@ -2415,6 +2417,7 @@ final class TelegramClient: ObservableObject {
             try? await client.removeProxy(proxyId: proxy.id)
         }
 
+        CallDiag.log("proxy.activate addProxy")
         _ = try await client.addProxy(
             comment: NSLocalizedString("Generated.456e22f2b7dd", comment: ""),
             enable: true,
@@ -2438,10 +2441,13 @@ final class TelegramClient: ObservableObject {
         if !encoded.hasPrefix("dd") {
             encoded = "dd" + encoded
         }
+        CallDiag.log("proxy.activate begin port=\(port)")
         let existing = (try? await client.getProxies().proxies) ?? []
+        CallDiag.log("proxy.activate getProxies ok count=\(existing.count)")
         for proxy in existing {
             try? await client.removeProxy(proxyId: proxy.id)
         }
+        CallDiag.log("proxy.activate addProxy")
         _ = try await client.addProxy(
             comment: NSLocalizedString("Generated.9479495c19d6", comment: ""),
             enable: true,

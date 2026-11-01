@@ -310,6 +310,24 @@ final class BuiltInProxyManager: ObservableObject {
                 }
             } catch is TimeoutError {
                 CallDiag.log("proxy.activate timeout, listener kept; will retry")
+                let retryPort = port
+                let retrySecret = secret
+                Task { @MainActor [weak self] in
+                    for attempt in 0..<3 {
+                        try? await Task.sleep(nanoseconds: 2_000_000_000)
+                        guard let self, self.isEnabled else { return }
+                        do {
+                            try await Self.withTimeout(seconds: 4) {
+                                try await TelegramClient.shared.activateBuiltInProxy(
+                                    port: retryPort, secret: retrySecret)
+                            }
+                            CallDiag.log("proxy.activate retry ok attempt=\(attempt)")
+                            return
+                        } catch {
+                            CallDiag.log("proxy.activate retry fail attempt=\(attempt) \(String(describing: error))")
+                        }
+                    }
+                }
             } catch {
                 CallDiag.log("proxy.activate failed \(String(describing: error))")
                 proxy.stop()
