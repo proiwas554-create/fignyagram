@@ -79,11 +79,6 @@ final class TelegramClient: ObservableObject {
         guard client == nil else { return }
         // On a cold launch from a locked device (background audio/notification)
         // the app container may be inaccessible until protected data is available.
-        guard NetworkIgnition.shouldStartAutomatically else {
-            DiagnosticsLog.log("network ignition: auto start disabled (safe offline mode)")
-            CallDiag.log("network ignition: TDLib autostart suppressed")
-            return
-        }
         guard UIApplication.shared.isProtectedDataAvailable else {
             observeProtectedDataIfNeeded()
             return

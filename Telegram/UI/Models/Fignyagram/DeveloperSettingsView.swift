@@ -10,164 +10,37 @@ struct DeveloperSettingsView: View {
     @ObservedObject private var monitor = PerformanceMonitor.shared
     @ObservedObject private var proxy = BuiltInProxyManager.shared
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var verbosity: Double = 1
     @State private var showTerminal = false
     @State private var storageInfo: String?
     @State private var decodeConcurrency = 2
     @AppStorage("showFPS") private var showFPS = false
     @AppStorage("developerVerboseLogs") private var verboseLogs = false
-
+    
     var body: some View {
         NavigationView {
             List {
-                Section("Network ignition") {
-                    Button("Активировать живую сеть (Тест OpenSSL)") {
-                        NetworkIgnition.requestLiveStart()
-                        TelegramClient.shared.start()
-                    }
-                    Text(NetworkIgnition.isLiveRequested
-                         ? "Живая сеть разрешена. Перезапустите приложение при необходимости."
-                         : "Автозапуск TDLib отключён: приложение работает офлайн, пока сеть не активирована здесь.")
-                        .font(.appFootnote)
-                        .foregroundColor(.secondary)
-                }
                 Section(L10n.header("Auto.0d7f2e6b48")) {
-                    row(L10n.t("Dev.Version"), Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
+                    row(L10n.t("Dev.Version"), 
+                        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "-")
                     row("iOS", UIDevice.current.systemVersion)
-                    row("TDLib API", "1.8.68")
-                    row(L10n.t("Dev.Account"), client.me.map { "\($0.id)" } ?? "—")
-                }
-
-                Section(L10n.header("Dev.AppLoad")) {
-                    row(NSLocalizedString("Generated.292706b12327", comment: ""), String(format: NSLocalizedString("Generated.2d0ddc2e72e9", comment: ""), monitor.memoryMB))
-                    row("CPU", String(format: "%.1f%%", monitor.cpuPercent))
-                    row("Потоки", "\(monitor.threadCount)")
-                    row(L10n.t("Dev.LoadedMessages"), "\(monitor.loadedMessages)")
-                    row(L10n.t("Dev.LoadedChats"), "\(monitor.loadedChats)")
-                    row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(monitor.cacheBytes))
-                    Button(L10n.t("Auto.efc373dea9")) { monitor.sample() }
-                }
-
-                Section {
-                    Toggle(L10n.t("Auto.4cea4bc37d"), isOn: $showFPS)
-                    Toggle(L10n.t("Auto.50770cdcde"), isOn: $verboseLogs)
-                        .onChange(of: verboseLogs) { enabled in
-                            client.setLogVerbosity(enabled ? 3 : 1)
-                        }
-                    Button(L10n.t("Dev.SimulateMemory")) {
-                        ImageCache.clear()
-                        monitor.sample()
-                    }
-                    Button(L10n.t("Auto.08126612ba")) {
-                        ChatStore.shared.clearLoadedMessages()
-                        monitor.sample()
-                    }
-                    Button(L10n.t("Dev.RestartProxy")) {
-                        proxy.restart()
-                    }
-                    .disabled(!proxy.isEnabled)
-                    Button(L10n.t("Dev.StorageStats")) {
-                        Task {
-                            storageInfo = await client.storageStatisticsSummary()
-                        }
-                    }
-                    if let storageInfo {
-                        Text(storageInfo).font(.appCaption).foregroundColor(.secondary)
-                    }
-                } header: {
-                    Text(L10n.t("Auto.7f488607de"))
-                } footer: {
-                    Text(L10n.t("Auto.ae0df04654"))
-                        .font(.appFootnote)
-                }
-
-                Section(L10n.header("Auto.23bdac65fb")) {
-                    row("Чатов", "\(store.chats.count)")
-                    row("Пользователей", "\(store.users.count)")
-                    row(L10n.t("Dev.Cache"), MessageFormatter.fileSize(cache.totalBytes))
-                    row(NSLocalizedString("Generated.cc2c809533b3", comment: ""), performance.isEnabled ? performance.level.title : NSLocalizedString("Generated.b39d0c942c47", comment: ""))
-                    Button(L10n.t("Dev.RefreshStats")) { cache.refresh() }
-                }
-
-                Section {
-                    Toggle(L10n.t("Auto.6e51b09768"), isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "gpuEffectsEnabled") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "gpuEffectsEnabled") }
-                    ))
-                    Toggle(L10n.t("Auto.5d46bb7fa7"), isOn: Binding(
-                        get: { UserDefaults.standard.object(forKey: "renderBatchingEnabled") as? Bool ?? true },
-                        set: { UserDefaults.standard.set($0, forKey: "renderBatchingEnabled") }
-                    ))
-                    Stepper(String(format: L10n.t("Dev.DecodeThreads"), decodeConcurrency), value: $decodeConcurrency, in: 1...4)
-                        .onChange(of: decodeConcurrency) { value in
-                            ImageCache.setDecodeConcurrency(value)
-                        }
-                    Button(L10n.t("Dev.LegacyProfile")) {
-                        ImageCache.applyLegacyDeviceTuning()
-                    }
-                } header: {
-                    Text(L10n.t("Dev.Graphics"))
-                } footer: {
-                    Text(L10n.t("Auto.d2cc8935b8"))
-                        .font(.appFootnote)
-                }
-
-                Section(L10n.header("Dev.Console")) {
-                    Button {
-                        showTerminal = true
-                    } label: {
-                        Label(L10n.t("Auto.4169915af6"), systemImage: "terminal")
-                    }
-                }
-
-                Section(L10n.header("Dev.TDLib")) {
-                    Stepper("Log verbosity: \(Int(verbosity))", value: $verbosity, in: 0...5)
-                    Button(L10n.t("Dev.ApplyLogLevel")) {
-                        client.setLogVerbosity(Int(verbosity))
-                    }
-                }
-
-                Section(L10n.header("Settings.Developer.Terminal")) {
-                    NavigationLink(L10n.t("Settings.Automation.Macros")) {
-                        MacroSettingsView()
-                    }
-                    Button(L10n.t("Auto.610bc3b777"), role: .destructive) {
-                        cache.clearAll()
-                    }
-                    Button(L10n.t("Dev.Lock"), role: .destructive) {
-                        developer.lock()
-                        dismiss()
-                    }
+                    row("TDLib API", "1.8.69")
                 }
             }
-            .navigationTitle(L10n.t("Dev.Title"))
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Меню разработчика")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(L10n.t("Common.Close")) { dismiss() }
-                }
-            }
-            .task { cache.refresh() }
-            .onAppear {
-                monitor.start()
-                decodeConcurrency = max(1, min(ProcessInfo.processInfo.activeProcessorCount / 2, 4))
-            }
-            .onDisappear { monitor.stop() }
-            .sheet(isPresented: $showTerminal) {
-                DeveloperTerminalView()
+                Button("Закрыть") { dismiss() }
             }
         }
-        .navigationViewStyle(.stack)
     }
-
+    
+    @ViewBuilder
     private func row(_ title: String, _ value: String) -> some View {
         HStack {
             Text(title)
             Spacer()
-            Text(value)
-                .foregroundColor(.secondary)
-                .font(.footnote.monospacedDigit())
+            Text(value).foregroundColor(.secondary)
         }
     }
 }
