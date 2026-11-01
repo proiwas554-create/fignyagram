@@ -379,6 +379,11 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
     }
 
     func start() async throws {
+        stateLock.lock()
+        cfDeadForSession = false
+        cfBrokenDCs.removeAll()
+        stateLock.unlock()
+        CallDiag.log("mtproxy.start cf state reset")
         let tcpOptions = NWProtocolTCP.Options()
         tcpOptions.noDelay = true
 
