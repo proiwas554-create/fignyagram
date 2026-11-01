@@ -48,10 +48,10 @@ final class BuiltInProxyManager: ObservableObject {
         let defaults = UserDefaults.standard
         // Fresh installs use the built-in proxy automatically; the toggle in
         // settings still lets the user turn it off explicitly.
-        // Proxy is on by default; only an explicit user disable turns it off.
-        let autoOn = !defaults.bool(forKey: "proxyExplicitlyDisabled")
-        isEnabled = autoOn
-        defaults.set(autoOn, forKey: Keys.enabled)
+        // Direct MTProto route: the built-in proxy is disabled entirely.
+        isEnabled = false
+        defaults.set(false, forKey: Keys.enabled)
+        defaults.set(true, forKey: "proxyExplicitlyDisabled")
 
         if let stored = Keychain.string(for: Keys.secret), stored.count == 32 {
             secret = stored

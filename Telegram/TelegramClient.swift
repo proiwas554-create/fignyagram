@@ -88,6 +88,8 @@ final class TelegramClient: ObservableObject {
         TDLibDatabaseRecovery.prepare(databaseDirectory: AccountStore.shared.current.databaseDirectory)
         if manager == nil {
             manager = TDLibClientManager()
+            // Direct MTProto route: clear any proxy left enabled by older builds.
+            Task.detached { await TelegramClient.shared.deactivateBuiltInProxy(port: 1443) }
             let dir = AccountStore.shared.current.databaseDirectory
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 20_000_000_000)
