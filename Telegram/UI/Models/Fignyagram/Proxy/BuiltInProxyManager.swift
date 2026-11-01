@@ -178,6 +178,7 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     func applyIfEnabled() {
+        CallDiag.log("proxy.applyIfEnabled enabled=\(isEnabled) running=\(isRunning)")
         if isEnabled {
             start()
         } else {
@@ -206,6 +207,7 @@ final class BuiltInProxyManager: ObservableObject {
 
     func start() {
         DiagnosticsLog.log("proxy.start enabled=\(isEnabled) running=\(isRunning)")
+        CallDiag.log("proxy.start enabled=\(isEnabled) running=\(isRunning) server=\(server != nil)")
         #if targetEnvironment(simulator)
         // Xcode 27 simulator: TDLib's OpenSSL cert store aborts in xzone malloc.
         // Instead of faking a green tunnel pointing at a dead port, keep the
@@ -228,6 +230,8 @@ final class BuiltInProxyManager: ObservableObject {
                 do {
                     try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
                     isRunning = true
+            CallDiag.log("proxy.listening port=\(port)")
+                    CallDiag.log("proxy.activated port=\(port)")
                     status = "Работает — \(host):\(port)"
                     lastError = nil
                 } catch {
