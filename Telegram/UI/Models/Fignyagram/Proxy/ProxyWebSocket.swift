@@ -280,8 +280,17 @@ actor ProxyWebSocket {
 
     // MARK: - Low-level I/O (all on connectionQueue)
 
+    /// Guard: NWConnection must be fully established before any I/O.
+    private func requireReady(_ conn: NWConnection) throws {
+        guard conn.state == .ready else {
+            CallDiag.log("nw guard: I/O attempted in state \(conn.state)")
+            throw ConnectionError.closed
+        }
+    }
+
     private func sendRaw(_ data: Data, timeout: TimeInterval = 20) async throws {
         guard let conn = connection, !isDead(conn) else { throw ConnectionError.closed }
+        try requireReady(conn)
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             let once = ProxyOnceFlag()
             let timer = DispatchWorkItem {
@@ -303,6 +312,7 @@ actor ProxyWebSocket {
 
     private func receiveRaw(maxLength: Int, timeout: TimeInterval = 300) async throws -> Data {
         guard let conn = connection, !isDead(conn) else { throw ConnectionError.closed }
+        try requireReady(conn)
         return try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Data, Error>) in
             let once = ProxyOnceFlag()
             let timer = DispatchWorkItem {
