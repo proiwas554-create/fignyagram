@@ -355,7 +355,7 @@ final class BuiltInProxyManager: ObservableObject {
     private func startHealthTimeout() {
         healthTimeoutTask?.cancel()
         healthTimeoutTask = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: 60_000_000_000)
+            try? await Task.sleep(nanoseconds: 12_000_000_000)
             guard !Task.isCancelled, let self else { return }
             if self.isRunning, self.status.hasPrefix("Ожидание") {
                 self.health = .failed
@@ -385,6 +385,13 @@ final class BuiltInProxyManager: ObservableObject {
             status = NSLocalizedString("Generated.7aef029a9610", comment: "")
             lastError = NSLocalizedString("Generated.a56145585e65", comment: "")
             registerUpstreamFailure()
+            // Guaranteed fallback: a dead tunnel must not keep TDLib offline.
+            // Disable the proxy so the client reconnects directly (works under VPN).
+            let fallbackPort = port
+            Task { @MainActor in
+                CallDiag.log("proxy.health failed: disabling proxy, direct fallback")
+                await TelegramClient.shared.deactivateBuiltInProxy(port: fallbackPort)
+            }
         }
     }
 
