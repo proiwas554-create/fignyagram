@@ -370,9 +370,13 @@ struct ChatView: View {
             .navigationViewStyle(.stack)
         }
         .sheet(item: $appleTranslateText) { target in
+#if targetEnvironment(macCatalyst)
+            EmptyView()
+#else
             if #available(iOS 18.0, *) {
                 AppleTranslateSheet(text: target.text)
             }
+#endif
         }
         .sheet(isPresented: $showAttachmentDialog, onDismiss: applyPendingAttachment) {
             AttachmentMenuView(spoilerEnabled: sendAsSpoiler, compact: ultra.isEnabled) { action in

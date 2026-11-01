@@ -13,7 +13,7 @@ if [ ! -d "$PREFIX/lib" ]; then
   log "OpenSSL 1.1.1w for Mac Catalyst (no-asm)"
   rm -rf "$SRC"; mkdir -p "$SRC"; tar -xzf "$SRC_TGZ" -C "$SRC" --strip-components=1
   cd "$SRC"
-  export CC="$(xcrun -sdk macosx -f clang) -target arm64-apple-ios15.0-macabi -isysroot $(xcrun --sdk macosx --show-sdk-path)"
+  export CC="$(xcrun -sdk macosx -f clang) -target arm64-apple-ios${CATALYST_MIN:-15.0}-macabi -isysroot $(xcrun --sdk macosx --show-sdk-path)"
   export CFLAGS="-DOPENSSL_NO_ASM"
   ./Configure darwin64-arm64-cc no-asm no-shared no-tests --prefix="$PREFIX" --openssldir="$PREFIX"
   make -j8

@@ -7,6 +7,6 @@
 <key>CFBundleShortVersionString</key><string>1.8.69</string>
 <key>CFBundleVersion</key><string>7601</string>
 <key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
-<key>MinimumOSVersion</key><string>15.0</string>
+<key>MinimumOSVersion</key><string>13.1</string>
 <key>AppExtensionSafe</key><true/>
 </dict></plist>

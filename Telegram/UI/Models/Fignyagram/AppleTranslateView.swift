@@ -3,7 +3,7 @@ import Translation
 
 /// On-device translation through Apple's Translation framework: no network
 /// calls, no third-party API keys, nothing leaves the device.
-@available(iOS 18.0, *)
+@available(iOS 18.0, macCatalyst 26.0, *)
 struct AppleTranslateSheet: View {
     let text: String
     @Environment(\.dismiss) private var dismiss

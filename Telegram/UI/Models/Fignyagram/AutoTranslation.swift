@@ -49,7 +49,7 @@ final class AutoTranslationSettings: ObservableObject {
 
     /// Apple's Translation framework is unavailable before iOS 18.
     var isSupported: Bool {
-        if #available(iOS 18.0, *) { return true }
+        if #available(iOS 18.0, macCatalyst 26.0, *) { return true }
         return false
     }
 
@@ -226,7 +226,7 @@ final class AutoTranslationManager: ObservableObject {
     /// Anything else silently keeps the original TDLib text and never starts a
     /// translation session (that is what triggered Apple's download sheet).
     nonisolated static func isPackInstalled(text: String, target: String) async -> Bool {
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macCatalyst 26.0, *) {
             let source = Locale.Language(identifier: language(of: text) ?? "en")
             let destination = Locale.Language(identifier: target)
             let status = await LanguageAvailability().status(from: source, to: destination)
@@ -388,7 +388,7 @@ final class AutoTranslationManager: ObservableObject {
     func markUnavailable() {
         guard !isUnavailable else { return }
         isUnavailable = true
-        if #available(iOS 18.0, *) {} else {
+        if #available(iOS 18.0, macCatalyst 26.0, *) {} else {
             AutoTranslationSettings.shared.mode = .disabled
         }
         CallDiag.log("auto translation unavailable on this device")
@@ -405,7 +405,7 @@ final class AutoTranslationManager: ObservableObject {
     /// availability service.
     nonisolated static func backgroundPrefetch(text: String, target: String) async -> Bool {
         guard let source = language(of: text) else { return false }
-        if #available(iOS 18.0, *) {
+        if #available(iOS 18.0, macCatalyst 26.0, *) {
             let status = await LanguageAvailability().status(
                 from: Locale.Language(identifier: source),
                 to: Locale.Language(identifier: target)
@@ -417,7 +417,7 @@ final class AutoTranslationManager: ObservableObject {
 
     private func attachHostIfNeeded() {
         guard host == nil else { return }
-        guard #available(iOS 18.0, *) else {
+        guard #available(iOS 18.0, macCatalyst 26.0, *) else {
             markUnavailable()
             return
         }
@@ -434,7 +434,7 @@ final class AutoTranslationManager: ObservableObject {
 }
 
 /// Invisible host that owns the Apple Translation session.
-@available(iOS 18.0, *)
+@available(iOS 18.0, macCatalyst 26.0, *)
 struct TranslationHostView: View {
     @ObservedObject var manager: AutoTranslationManager
     @ObservedObject private var settings = AutoTranslationSettings.shared
@@ -480,7 +480,7 @@ struct TranslationHostView: View {
             }
             // Never let Apple show its download sheet from a chat: translate
             // only when the language pack is already installed.
-            if #available(iOS 18.0, *) {
+            if #available(iOS 18.0, macCatalyst 26.0, *) {
                 let target = Locale.Language(identifier: AutoTranslationSettings.shared.targetLanguage)
                 var installed = false
                 if let code = AutoTranslationManager.language(of: request.text) {
