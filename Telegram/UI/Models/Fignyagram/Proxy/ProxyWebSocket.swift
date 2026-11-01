@@ -61,10 +61,21 @@ actor ProxyWebSocket {
         self.session = session
         self.task = task
 
-        try await withTimeout(seconds: timeout) {
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            let once = ProxyOnceFlag()
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + timeout) {
+                if once.trySet() { cont.resume(throwing: ProxyTimeoutError()) }
+            }
             task.resume()
             task.startSecureConnection()
-            try await delegate.waitReady()
+            Task {
+                do {
+                    try await delegate.waitReady()
+                    if once.trySet() { cont.resume() }
+                } catch {
+                    if once.trySet() { cont.resume(throwing: error) }
+                }
+            }
         }
         CallDiag.log("stream tls \\(host):\\(port)")
 
