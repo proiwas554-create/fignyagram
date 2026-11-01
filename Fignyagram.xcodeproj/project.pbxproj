@@ -340,7 +340,7 @@
 			mainGroup = 8480856C308210CA00D269FE;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				849E0115308A83FA008B5F4E /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */,
+				84BAC2C130973B8000EC5473 /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 84808576308210CA00D269FE /* Products */;
@@ -890,7 +890,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		849E0115308A83FA008B5F4E /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */ = {
+		84BAC2C130973B8000EC5473 /* XCLocalSwiftPackageReference "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../Downloads/TDLibKit-1.5.2-tdlib-1.8.68-7601cdfb";
 		};

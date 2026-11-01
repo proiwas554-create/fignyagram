@@ -21,7 +21,10 @@ fail() { echo "ERROR: $*" >&2; exit 1; }
 rm -rf "$STAGE" "$OUT"
 
 make_framework() {
-  local name="$1" dylib="$2" platform="$3" dir="$STAGE/$name/TDLibFramework.framework"
+  local name="$1"
+  local dylib="$2"
+  local platform="$3"
+  local dir="$STAGE/$name/TDLibFramework.framework"
   mkdir -p "$dir/Headers/td/telegram"
   cp "$dylib" "$dir/TDLibFramework"
   install_name_tool -id "@rpath/TDLibFramework.framework/TDLibFramework" "$dir/TDLibFramework"
