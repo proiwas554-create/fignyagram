@@ -18,7 +18,34 @@ final class BuiltInProxyManager: ObservableObject {
     }
 
     let host = "127.0.0.1"
-    let port = 1443
+    private(set) var port = 1443
+
+    /// macOS/Catalyst: 1443 may be taken by other software; ask the OS for a
+    /// free loopback port before binding the listener.
+    private static func freeLoopbackPort() -> Int? {
+        let fd = socket(AF_INET, SOCK_STREAM, 0)
+        guard fd >= 0 else { return nil }
+        defer { close(fd) }
+        var addr = sockaddr_in()
+        addr.sin_family = sa_family_t(AF_INET)
+        addr.sin_port = 0
+        addr.sin_addr.s_addr = inet_addr("127.0.0.1")
+        let bound = withUnsafePointer(to: &addr) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                bind(fd, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+            }
+        }
+        guard bound == 0 else { return nil }
+        var result = sockaddr_in()
+        var len = socklen_t(MemoryLayout<sockaddr_in>.size)
+        let named = withUnsafeMutablePointer(to: &result) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                getsockname(fd, $0, &len)
+            }
+        }
+        guard named == 0 else { return nil }
+        return Int(UInt16(bigEndian: result.sin_port))
+    }
 
     @Published private(set) var isEnabled: Bool
     @Published private(set) var isRunning = false
@@ -196,6 +223,10 @@ final class BuiltInProxyManager: ObservableObject {
         status = NSLocalizedString("Generated.81392999a5d2", comment: "")
         lastError = nil
 
+#if targetEnvironment(macCatalyst)
+        if let free = Self.freeLoopbackPort() { port = free }
+        CallDiag.log("proxy.catalyst dynamic port=\(port)")
+#endif
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
         operation = Task {
