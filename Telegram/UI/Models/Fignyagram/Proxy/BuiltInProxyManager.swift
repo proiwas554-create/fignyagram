@@ -279,6 +279,8 @@ final class BuiltInProxyManager: ObservableObject {
                 }
                 do {
                     try await candidate.start()
+                    if candidate.boundPort > 0 { port = candidate.boundPort }
+                    CallDiag.log("proxy.listener ready port=\(port)")
                     startedProxy = candidate
                     break
                 } catch {

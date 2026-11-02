@@ -291,6 +291,8 @@ nonisolated enum ProxyHealth: Sendable {
 }
 
 nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
+    /// Actual port macOS assigned (Catalyst binds to .any).
+    private(set) var boundPort: Int = 0
     private let config: ProxyEndpointConfig
     /// Reports the actual upstream transport of the last Telegram connection.
     var onHealth: (@Sendable (ProxyHealth) -> Void)?
@@ -387,7 +389,11 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         guard let port = NWEndpoint.Port(rawValue: UInt16(config.port)) else {
             throw NWError.posix(.EINVAL)
         }
+#if targetEnvironment(macCatalyst)
+        let listener = try NWListener(using: params, on: .any)
+#else
         let listener = try NWListener(using: params, on: port)
+#endif
         setListener(listener)
 
         listener.newConnectionHandler = { [weak self] connection in
@@ -415,6 +421,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                     guard once.trySet() else { return }
                     timer.cancel()
                     listener.stateUpdateHandler = nil
+                    if let actual = listener.port?.rawValue { self?.boundPort = Int(actual) }
                     self?.setReady(true)
                     proxyServerLogger.info("Local proxy listening on port \(self?.config.port ?? 0)")
                     cont.resume()
