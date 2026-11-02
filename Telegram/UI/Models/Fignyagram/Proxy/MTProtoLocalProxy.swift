@@ -774,7 +774,8 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                             try? await Task.sleep(nanoseconds: 10_000_000)
                         }
                     }
-                } catch {}
+                    CallDiag.log("ws bridge client side closed")
+                } catch { CallDiag.log("ws bridge client read stop: \(error)") }
                 await websocket.close()
             }
 
@@ -782,26 +783,23 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 guard let self else { return }
                 do {
                     while true {
-                        guard let data = try await websocket.recv() else { break }
+                        guard let data = try await websocket.recv() else {
+                            CallDiag.log("ws bridge upstream closed (no frame)")
+                            break
+                        }
                         stats.addDown(data.count)
                         let plain = telegramDecryptor.process(data)
                         let encrypted = clientEncryptor.process(plain)
                         try await self.sendData(connection, data: encrypted)
                     }
-                } catch {}
+                } catch { CallDiag.log("ws bridge upstream stop: \(error)") }
                 connection.cancel()
             }
 
-            // Keepalive: Cloudflare drops idle sessions, which reads as an
-            // instant "closed" right after a successful dial.
-            group.addTask { [weak self] in
-                guard let self else { return }
-                while !Task.isCancelled {
-                    try? await Task.sleep(nanoseconds: 20_000_000_000)
-                    guard !Task.isCancelled else { break }
-                    do { try await websocket.ping() } catch { break }
-                }
-            }
+            // No WebSocket-level keepalive: Telegram's kws backend closes the
+            // socket right after a ping frame (measured: lifetime == ping
+            // interval), so it only shortened healthy sessions. MTProto has its
+            // own ping/pong, and TDLib drives it.
 
             do {
                 try await group.next()
@@ -894,7 +892,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                         let encrypted = clientEncryptor.process(plain)
                         try await self.sendData(connection, data: encrypted)
                     }
-                } catch {}
+                } catch { CallDiag.log("ws bridge upstream stop: \(error)") }
                 connection.cancel()
             }
 
