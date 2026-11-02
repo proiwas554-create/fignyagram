@@ -337,40 +337,44 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
     /// pointed at the local proxy. If they are blocked, the app keeps working directly.
     static func preflight() async throws {
         let domains = ["kws2.web.telegram.org", "kws4.web.telegram.org"]
-        // Telegram occasionally rotates the WebSocket frontends; DNS is the
-        // primary source of truth, with a few known IPs as fallback.
-        let fallbackIPs = [
-            "149.154.167.220",
-            "149.154.167.51",
-            "149.154.175.100",
-            "91.108.56.130"
-        ]
-
         var lastError: Error = ProxyTimeoutError()
         for domain in domains {
             do {
-                let socket = try await ProxyWebSocket.connect(domain: domain, timeout: 20)
+                let socket = try await dialWebSocket(host: domain, timeout: 5)
                 await socket.close()
-                proxyServerLogger.info("Proxy preflight OK via DNS \(domain)")
+                proxyServerLogger.info("Proxy preflight OK \(domain)")
                 return
             } catch {
                 lastError = error
-                proxyServerLogger.warning("Proxy preflight DNS failed via \(domain): \(String(describing: error))")
-            }
-
-            for ip in fallbackIPs {
-                do {
-                    let socket = try await ProxyWebSocket.connect(ip: ip, domain: domain, timeout: 20)
-                    await socket.close()
-                    proxyServerLogger.info("Proxy preflight OK via \(domain) / \(ip)")
-                    return
-                } catch {
-                    lastError = error
-                    proxyServerLogger.warning("Proxy preflight failed \(domain) / \(ip): \(String(describing: error))")
-                }
+                proxyServerLogger.warning("Proxy preflight failed \(domain): \(String(describing: error))")
             }
         }
         throw ProxyTimeoutError(underlying: lastError)
+    }
+
+    /// Dials a Telegram WebSocket frontend.
+    ///
+    /// Port 80 is tried first: on networks where TLS ClientHello is filtered by
+    /// SNI (the front domains hang in NWConnection at .preparing on :443, while
+    /// the same host answers a plain HTTP upgrade on :80 in under a second),
+    /// this is the only transport that works. The payload is MTProto-encrypted
+    /// end to end, so the missing TLS hop does not expose message content.
+    static func dialWebSocket(host: String, timeout: TimeInterval = 2.5) async throws -> ProxyWebSocket {
+        var lastError: Error = ProxyTimeoutError()
+        let deadline = Date().addingTimeInterval(timeout)
+        for port in [80, 443] {
+            let remaining = deadline.timeIntervalSinceNow
+            guard remaining > 0.3 else { break }
+            do {
+                let socket = try await ProxyWebSocket.connect(domain: host, port: port, timeout: max(1.0, remaining))
+                CallDiag.log("ws open \(host):\(port)")
+                return socket
+            } catch {
+                lastError = error
+                CallDiag.log("ws dial \(host):\(port) failed: \(error)")
+            }
+        }
+        throw lastError
     }
 
     func start() async throws {
@@ -454,6 +458,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
     }
 
     private func report(_ health: ProxyHealth) {
+        CallDiag.log("proxy.health \(health)")
         onHealth?(health)
     }
 
@@ -646,7 +651,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 let host = "kws\(result.dcId).\(cfDomain)"
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(host)/apiws (CF proxy)")
                 do {
-                    websocket = try await ProxyWebSocket.connect(domain: host, timeout: 2.5)
+                    websocket = try await Self.dialWebSocket(host: host, timeout: 3.0)
                     proxyServerLogger.info("WS connected via CF: \(host)")
                     report(.cloudflare)
                     stateLock.lock(); preferredTransport[result.dcId] = .cf; stateLock.unlock()
@@ -671,7 +676,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             if Date() < connectDeadline {
                 proxyServerLogger.info("DC\(result.dcId)\(mediaTag) -> wss://\(domain)/apiws")
                 do {
-                    websocket = try await ProxyWebSocket.connect(domain: domain, timeout: 2.0)
+                    websocket = try await Self.dialWebSocket(host: domain, timeout: 3.0)
                     proxyServerLogger.info("WS connected via DNS: \(domain)")
                     report(.webSocket)
                     stateLock.lock(); preferredTransport[result.dcId] = .direct; stateLock.unlock()

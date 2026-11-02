@@ -61,13 +61,69 @@ actor ProxyWebSocket {
 
     static func connect(domain: String, path: String = "/apiws",
                         port: Int, timeout: TimeInterval = 20.0) async throws -> ProxyWebSocket {
-        let socket = ProxyWebSocket()
-        do {
-            try await socket.performConnect(ip: nil, domain: domain, path: path, port: port, timeout: timeout)
-            return socket
-        } catch {
-            await socket.hardReset(sendCloseFrame: false)
-            throw error
+        // Handing a hostname to NWConnection leaves the socket stuck in
+        // .preparing forever on macOS/Catalyst (its internal resolver never
+        // completes here), while connecting to a literal IPv4 address reaches
+        // .ready immediately. Resolve ourselves and dial by IP, keeping the
+        // hostname as TLS SNI.
+        let ips = await resolveIPv4(domain)
+        if ips.isEmpty {
+            let socket = ProxyWebSocket()
+            do {
+                try await socket.performConnect(ip: nil, domain: domain, path: path, port: port, timeout: timeout)
+                return socket
+            } catch {
+                await socket.hardReset(sendCloseFrame: false)
+                throw error
+            }
+        }
+        let candidates = Array(ips.prefix(3))
+        let perAttempt = max(1.5, timeout / Double(candidates.count))
+        var lastError: Error = ProxyTimeoutError()
+        for ip in candidates {
+            do {
+                return try await connect(ip: ip, domain: domain, path: path, port: port, timeout: perAttempt)
+            } catch {
+                lastError = error
+                CallDiag.log("ws dial \(domain) via \(ip) failed: \(error)")
+            }
+        }
+        throw lastError
+    }
+
+    /// Resolves a hostname to literal IPv4 addresses with a hard timeout.
+    /// getaddrinfo can block for seconds on a broken DNS setup, so it runs on
+    /// a background queue and is abandoned when the deadline passes.
+    static func resolveIPv4(_ host: String, timeout: TimeInterval = 2.0) async -> [String] {
+        await withCheckedContinuation { (cont: CheckedContinuation<[String], Never>) in
+            let once = ProxyOnceFlag()
+            DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + timeout) {
+                if once.trySet() { cont.resume(returning: []) }
+            }
+            DispatchQueue.global(qos: .userInitiated).async {
+                var hints = addrinfo()
+                hints.ai_family = AF_INET
+                hints.ai_socktype = SOCK_STREAM
+                var result: UnsafeMutablePointer<addrinfo>?
+                let status = getaddrinfo(host, nil, &hints, &result)
+                var ips: [String] = []
+                if status == 0, let head = result {
+                    var node: UnsafeMutablePointer<addrinfo>? = head
+                    while let current = node {
+                        if let addr = current.pointee.ai_addr {
+                            var buffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                            if getnameinfo(addr, current.pointee.ai_addrlen, &buffer, socklen_t(buffer.count),
+                                           nil, 0, NI_NUMERICHOST) == 0 {
+                                let ip = String(cString: buffer)
+                                if !ip.isEmpty && !ips.contains(ip) { ips.append(ip) }
+                            }
+                        }
+                        node = current.pointee.ai_next
+                    }
+                    freeaddrinfo(head)
+                }
+                if once.trySet() { cont.resume(returning: ips) }
+            }
         }
     }
 
@@ -77,9 +133,15 @@ actor ProxyWebSocket {
         if port == 443 {
             let options = NWProtocolTLS.Options()
             sec_protocol_options_set_tls_server_name(options.securityProtocolOptions, domain)
+            #if targetEnvironment(macCatalyst)
+            // On this network TLS 1.2 handshakes to the CF edge stall, while
+            // TLS 1.3 (the system default) completes in milliseconds, so let
+            // the stack negotiate freely on the Mac.
+            #else
             // iOS 26 may attempt ECH via TLS 1.3 to CF; pin TLS 1.2 to avoid it.
             sec_protocol_options_set_min_tls_protocol_version(options.securityProtocolOptions, .TLSv12)
             sec_protocol_options_set_max_tls_protocol_version(options.securityProtocolOptions, .TLSv12)
+            #endif
             tlsOptions = options
         }
         let tcpOptions = NWProtocolTCP.Options()
@@ -124,6 +186,10 @@ actor ProxyWebSocket {
                         timer.cancel()
                         conn.stateUpdateHandler = nil
                         cont.resume(throwing: error)
+                    case .waiting(let error):
+                        CallDiag.log("nw waiting \(domain):\(port) \(error)")
+                    case .preparing:
+                        CallDiag.log("nw preparing \(domain):\(port)")
                     case .cancelled:
                         CallDiag.log("nw cancelled \(domain):\(port)")
                         guard once.trySet() else { return }
