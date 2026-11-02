@@ -31,7 +31,7 @@ struct ProxySettingsView: View {
                     HStack {
                         Text(L10n.t("Auto.80148fa5ad"))
                         Spacer()
-                        Text("\(proxy.host):\(proxy.port)")
+                        Text(verbatim: "\(proxy.host):\(proxy.port)")
                             .foregroundColor(.secondary)
                             .monospacedDigit()
                     }
