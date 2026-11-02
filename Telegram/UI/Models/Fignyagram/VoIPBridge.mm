@@ -1,3 +1,5 @@
+#import <TargetConditionals.h>
+#if !TARGET_OS_MACCATALYST
 #import "VoIPBridge.h"
 #import <AVFoundation/AVFoundation.h>
 
@@ -1047,3 +1049,5 @@ static NSString *VoIPHexString(NSData *data) {
 }
 
 @end
+
+#endif
