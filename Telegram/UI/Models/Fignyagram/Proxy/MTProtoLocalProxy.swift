@@ -290,6 +290,14 @@ nonisolated enum ProxyHealth: Sendable {
     case failed
 }
 
+nonisolated final class BridgeStats: @unchecked Sendable {
+    private let lock = NSLock()
+    private(set) var up = 0
+    private(set) var down = 0
+    func addUp(_ n: Int) { lock.lock(); up += n; lock.unlock() }
+    func addDown(_ n: Int) { lock.lock(); down += n; lock.unlock() }
+}
+
 nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
     /// Actual port macOS assigned (Catalyst binds to .any).
     private(set) var boundPort: Int = 0
@@ -736,6 +744,8 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
         telegramEncryptor: ProxyAESCTR, telegramDecryptor: ProxyAESCTR,
         splitter: ProxyMessageSplitter
     ) async throws {
+        let stats = BridgeStats()
+        let bridgeStart = Foundation.Date()
         try await withThrowingTaskGroup(of: Void.self) { group in
             group.addTask { [weak self] in
                 guard let self else { return }
@@ -749,6 +759,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                         let encrypted = telegramEncryptor.process(plain)
                         let parts = splitter.split(encrypted)
                         if parts.isEmpty { continue }
+                        stats.addUp(encrypted.count)
 
                         if parts.count > 1 {
                             try await websocket.sendBatch(parts)
@@ -772,6 +783,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                 do {
                     while true {
                         guard let data = try await websocket.recv() else { break }
+                        stats.addDown(data.count)
                         let plain = telegramDecryptor.process(data)
                         let encrypted = clientEncryptor.process(plain)
                         try await self.sendData(connection, data: encrypted)
@@ -794,6 +806,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             do {
                 try await group.next()
             } catch {}
+            CallDiag.log("ws bridge end up=\(stats.up) down=\(stats.down) after \(String(format: "%.1f", Foundation.Date().timeIntervalSince(bridgeStart)))s")
             // Closing both sides resumes the peer task even if it is blocked in receive.
             connection.cancel()
             await websocket.close()
