@@ -183,30 +183,55 @@ final class TelegramClient: ObservableObject {
         parametersRetryTask?.cancel()
         parametersRetryTask = nil
         errorMessage = nil
+        CallDiag.log("params.build begin")
         let language = Locale.preferredLanguages.first.map { String($0.prefix(2)) } ?? "ru"
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
+        let keyStart = Date()
+        let dbKey = ProfileKeychain.databaseEncryptionKey(for: account)
+        CallDiag.log("params.keychain done \(String(format: "%.2f", Date().timeIntervalSince(keyStart)))s key=\(dbKey?.count ?? -1)")
+        let slot = account
         Task.detached(priority: .userInitiated) {
             // The proxy attaches itself asynchronously via BuiltInProxyManager;
             // the first TDLib call must never block the main thread.
             await MainActor.run {
                 TelegramClient.shared.perform { client in
-                try await client.setTdlibParameters(
-                apiHash: Secrets.apiHash,
-                apiId: Secrets.apiId,
-                applicationVersion: "Fignyagram \(version)",
-                databaseDirectory: account.databaseDirectory,
-                databaseEncryptionKey: ProfileKeychain.databaseEncryptionKey(for: account),
-                deviceModel: UIDevice.current.model,
-                filesDirectory: account.filesDirectory,
-                systemLanguageCode: language,
-                systemVersion: UIDevice.current.systemVersion,
-                useChatInfoDatabase: true,
-                useFileDatabase: true,
-                useMessageDatabase: true,
-                useSecretChats: false,
-                useTestDc: false
-            )
-            }
+                    func applyParameters(_ key: Data?) async throws {
+                        try await client.setTdlibParameters(
+                            apiHash: Secrets.apiHash,
+                            apiId: Secrets.apiId,
+                            applicationVersion: "Fignyagram \(version)",
+                            databaseDirectory: slot.databaseDirectory,
+                            databaseEncryptionKey: key,
+                            deviceModel: UIDevice.current.model,
+                            filesDirectory: slot.filesDirectory,
+                            systemLanguageCode: language,
+                            systemVersion: UIDevice.current.systemVersion,
+                            useChatInfoDatabase: true,
+                            useFileDatabase: true,
+                            useMessageDatabase: true,
+                            useSecretChats: false,
+                            useTestDc: false
+                        )
+                    }
+                    do {
+                        try await applyParameters(dbKey)
+                    } catch {
+                        // The local cache was created with a key that is no
+                        // longer available (Keychain item lost or different
+                        // signing identity). TDLib refuses to open it and then
+                        // queues every later request forever, which is what
+                        // made the built-in proxy time out. Rebuild the cache
+                        // once instead of staying in that dead state.
+                        guard Self.describe(error).lowercased().contains("database encryption key") else {
+                            throw error
+                        }
+                        CallDiag.log("params: wrong database key, rebuilding local cache")
+                        TDLibDatabaseRecovery.purgeCorruptedDatabase(slot.databaseDirectory)
+                        ProfileKeychain.deleteKey(for: slot.id)
+                        try await applyParameters(nil)
+                        CallDiag.log("params: local cache rebuilt, retry ok")
+                    }
+                }
             }
         }
     }
@@ -231,7 +256,12 @@ final class TelegramClient: ObservableObject {
     var tdClient: TDLibClient? { client }
 
     private func perform(_ action: @escaping (TDLibClient) async throws -> Void) {
-        guard let client else { return }
+        guard let client else {
+            CallDiag.log("perform skipped: no client")
+            return
+        }
+        let started = Date()
+        CallDiag.log("perform begin")
         isBusy = true
         errorMessage = nil
         // TDLibKit bridges some calls with unsafeForcedSync: running the action
@@ -239,8 +269,10 @@ final class TelegramClient: ObservableObject {
         Task.detached(priority: .userInitiated) {
             do {
                 try await action(client)
+                CallDiag.log("perform ok \(String(format: "%.2f", Date().timeIntervalSince(started)))s")
             } catch {
                 let message = await MainActor.run(resultType: String.self) { Self.describe(error) }
+                CallDiag.log("perform error \(String(format: "%.2f", Date().timeIntervalSince(started)))s \(message)")
                 await MainActor.run { TelegramClient.shared.errorMessage = message }
             }
             await MainActor.run { TelegramClient.shared.isBusy = false }

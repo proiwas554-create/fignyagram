@@ -20,6 +20,14 @@ nonisolated enum ProfileKeychain {
         guard status == errSecSuccess else { return nil }
         let key = Data(bytes)
         save(id: slot.id, key: key)
+        // A key that cannot be read back later locks the database on the next
+        // launch (TDLib: "Wrong database encryption key"). Prefer a plain
+        // database over one we may not be able to open again.
+        guard load(id: slot.id) != nil else {
+            deleteKey(for: slot.id)
+            CallDiag.log("profile key not readable back, using unencrypted database")
+            return nil
+        }
         CallDiag.log("profile key generated for \(slot.id)")
         return key
     }

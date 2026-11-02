@@ -969,7 +969,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             connection.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
-                    CallDiag.log("proxy.listener ready")
+                    CallDiag.log("proxy.conn ready")
                     guard once.trySet() else { return }
                     timer.cancel()
                     connection.stateUpdateHandler = nil
