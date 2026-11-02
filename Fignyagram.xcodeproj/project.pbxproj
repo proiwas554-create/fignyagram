@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DEAD0000000000000000A002 /* DeveloperCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEAD0000000000000000A001 /* DeveloperCore.swift */; };
 		844C68EF3082430C0030F13D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68EC3082430C0030F13D /* ContentView.swift */; };
 		844C68F830824BE30030F13D /* TelegramClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68F730824BE30030F13D /* TelegramClient.swift */; };
 		844C68FC30824C6D0030F13D /* ChatStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844C68FB30824C6D0030F13D /* ChatStore.swift */; };
@@ -76,6 +77,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DEAD0000000000000000A001 /* DeveloperCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeveloperCore.swift; path = Sources/Fignyagram/DeveloperCore.swift; sourceTree = SOURCE_ROOT; };
 		844C68EC3082430C0030F13D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		844C68F730824BE30030F13D /* TelegramClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelegramClient.swift; sourceTree = "<group>"; };
 		844C68FB30824C6D0030F13D /* ChatStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatStore.swift; sourceTree = "<group>"; };
@@ -197,6 +199,7 @@
 			isa = PBXGroup;
 			children = (
 				844C68F430824A0B0030F13D /* Telegram */,
+				DEAD0000000000000000A001 /* DeveloperCore.swift */,
 				BBF4000000000000000C /* FignyagramWatch */,
 				AA1000000000000000000005 /* ShareExtension */,
 				84808576308210CA00D269FE /* Products */,
@@ -382,6 +385,7 @@
 			files = (
 				BBFC000000000000000002 /* Telegram/Support/WebRTCDiagnostics.m in Sources */,
 				BBFC000000000000000004 /* Telegram/Support/RTCAudioSessionCompat.m in Sources */,
+				DEAD0000000000000000A002 /* DeveloperCore.swift in Sources */,
 				844C690030824E740030F13D /* StdOutLogger.swift in Sources */,
 				844C68EF3082430C0030F13D /* ContentView.swift in Sources */,
 				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,

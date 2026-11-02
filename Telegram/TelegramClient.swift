@@ -69,6 +69,11 @@ final class TelegramClient: ObservableObject {
         Task { _ = try? await client.setLogVerbosityLevel(newVerbosityLevel: level) }
     }
 
+    /// Developer hub entry point: applies a TDLib log verbosity level (0...5).
+    func setLogWithVerbosityLevel(_ level: Int) {
+        setLogVerbosity(min(5, max(0, level)))
+    }
+
     func start() {
         #if targetEnvironment(simulator)
         // TDLib's OpenSSL aborts on TLS in the Xcode 27 simulator. Skip the
