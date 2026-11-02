@@ -36,17 +36,35 @@ struct MainNavigationView: View {
     @State private var selectedChat: ChatTarget?
     @State private var showDeveloperHub = false
 
+    @AppStorage(DuoSimulationKeys.active) private var duoSimulationActive = false
+    @AppStorage(DuoSimulationKeys.orientation) private var duoOrientation = DuoSimulationOrientation.portrait.rawValue
+    @AppStorage(DuoSimulationKeys.foldWidth) private var duoFoldWidth = 10.0
+
     var body: some View {
-        Group {
-            if sizeClass == .compact {
-                compactRoot
-            } else {
-                splitRoot
+        GeometryReader { geometry in
+            Group {
+                if useCompactLayout(for: geometry.size) {
+                    compactRoot
+                } else if duoSimulationActive {
+                    simulatorShell
+                } else {
+                    splitRoot
+                }
+            }
+            .sheet(isPresented: $showDeveloperHub) {
+                DeveloperSettingsView()
             }
         }
-        .sheet(isPresented: $showDeveloperHub) {
-            DeveloperSettingsView()
+    }
+
+    /// Portrait phones/tablets (and the Duo simulator in portrait) always use the
+    /// compact mobile shell; only a wide landscape window gets three panes.
+    private func useCompactLayout(for size: CGSize) -> Bool {
+        if duoSimulationActive {
+            return duoOrientation == DuoSimulationOrientation.portrait.rawValue
         }
+        if size.width < size.height { return true }
+        return sizeClass == .compact
     }
 
     // MARK: - Compact (iPhone)
@@ -81,6 +99,34 @@ struct MainNavigationView: View {
             }
         }
         .navigationSplitViewStyle(.balanced)
+    }
+
+    /// Duo simulator: same three columns but stacked manually, so the fold line
+    /// width from the developer hub is visible and adjustable on a real device.
+    private var simulatorShell: some View {
+        HStack(spacing: 0) {
+            SidebarView(currentTab: $currentTab) {
+                showDeveloperHub = true
+            }
+            .frame(width: 230)
+
+            Divider()
+
+            NavigationStack {
+                contentColumn
+            }
+            .frame(width: 340)
+
+            Rectangle()
+                .fill(Color.black.opacity(0.65))
+                .frame(width: CGFloat(duoFoldWidth))
+                .accessibilityHidden(true)
+
+            NavigationStack {
+                detailColumn
+            }
+            .frame(maxWidth: .infinity)
+        }
     }
 
     @ViewBuilder
@@ -168,6 +214,27 @@ struct SidebarView: View {
         .listStyle(.sidebar)
         .navigationTitle("Fignyagram")
         .safeAreaInset(edge: .bottom) {
+            VStack(spacing: 0) {
+                Divider()
+                Button {
+                    onOpenDeveloper()
+                } label: {
+                    Label("Настройки разработчика", systemImage: "gearshape.2")
+                        .font(.appFootnote)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .foregroundColor(developer.isUnlocked ? .accentColor : .primary)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                accountFooter
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var accountFooter: some View {
             if let me = client.me {
                 HStack(spacing: 8) {
                     Image(systemName: "person.crop.circle.fill")
@@ -189,7 +256,6 @@ struct SidebarView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
             }
-        }
     }
 }
 

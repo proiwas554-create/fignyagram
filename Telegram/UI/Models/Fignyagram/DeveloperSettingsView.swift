@@ -19,9 +19,14 @@ struct DeveloperSettingsView: View {
     @State private var showStorageStats = false
     @State private var storageStats = ""
 
+    @AppStorage(DuoSimulationKeys.active) private var duoSimulationActive = false
+    @AppStorage(DuoSimulationKeys.orientation) private var duoOrientation = DuoSimulationOrientation.portrait.rawValue
+    @AppStorage(DuoSimulationKeys.foldWidth) private var duoFoldWidth = 10.0
+
     var body: some View {
         NavigationView {
             List {
+                duoSimulatorSection
                 graphicsSection
                 consoleSection
                 tdlibSection
@@ -52,6 +57,39 @@ struct DeveloperSettingsView: View {
             }
         }
         .navigationViewStyle(.stack)
+    }
+
+    // MARK: - Симулятор iPhone Duo
+
+    private var duoSimulatorSection: some View {
+        Section {
+            Toggle("Режим симуляции Duo", isOn: $duoSimulationActive)
+
+            Picker("Ориентация симуляции", selection: $duoOrientation) {
+                ForEach(DuoSimulationOrientation.allCases) { orientation in
+                    Text(orientation.title).tag(orientation.rawValue)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Text("Ширина линии сгиба")
+                    Spacer()
+                    Text("\(Int(duoFoldWidth)) пкс")
+                        .foregroundColor(.secondary)
+                        .monospacedDigit()
+                }
+                Slider(value: $duoFoldWidth, in: 10...100, step: 5)
+            }
+            .opacity(duoSimulationActive ? 1 : 0.45)
+            .disabled(!duoSimulationActive)
+        } header: {
+            Text("СИМУЛЯТОР IPHONE DUO (ТЕСТ ИНТЕРФЕЙСА)")
+        } footer: {
+            Text("Вертикальная ориентация сворачивает оболочку в компактный TabView, горизонтальная разворачивает три панели. Работает и на реальном iPhone.")
+                .font(.appFootnote)
+        }
     }
 
     // MARK: - Графика и оптимизация

@@ -83,6 +83,30 @@ private extension UserDefaults {
     }
 }
 
+// MARK: - Duo simulator
+
+/// Orientation of the Duo interface simulator. Works exactly the same on a
+/// physical iPhone and in the Xcode simulator (plain UserDefaults state).
+enum DuoSimulationOrientation: String, CaseIterable, Identifiable {
+    case portrait
+    case landscape
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .portrait: return "Вертикальная"
+        case .landscape: return "Горизонтальная"
+        }
+    }
+}
+
+enum DuoSimulationKeys {
+    static let active = "isDuoSimulationActive"
+    static let orientation = "duoSimulationOrientation"
+    static let foldWidth = "duoFoldWidth"
+}
+
 // MARK: - Live system monitor
 
 /// Samples real process metrics once per second: resident memory, CPU load and
