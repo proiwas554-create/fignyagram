@@ -148,7 +148,7 @@ actor ProxyWebSocket {
             "Sec-WebSocket-Version: 13",
             "Sec-WebSocket-Protocol: binary",
             "Origin: https://web.telegram.org",
-            "User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            "User-Agent: \(Self.userAgent)",
             "",
             ""
         ].joined(separator: "\r\n")
@@ -289,6 +289,14 @@ actor ProxyWebSocket {
             CallDiag.log("nw guard: I/O attempted in state \(conn.state)")
             throw ConnectionError.closed
         }
+    }
+
+    private static var userAgent: String {
+#if targetEnvironment(macCatalyst)
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15"
+#else
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15"
+#endif
     }
 
     private func sendRaw(_ data: Data, timeout: TimeInterval = 20) async throws {
