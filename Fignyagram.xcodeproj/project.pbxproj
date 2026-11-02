@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DEAD0000000000000000D002 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEAD0000000000000000D001 /* SidebarView.swift */; };
 		DEAD0000000000000000B002 /* MainNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEAD0000000000000000B001 /* MainNavigationView.swift */; };
 		DEAD0000000000000000C002 /* ChatConversationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEAD0000000000000000C001 /* ChatConversationView.swift */; };
 		DEAD0000000000000000A002 /* DeveloperCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEAD0000000000000000A001 /* DeveloperCore.swift */; };
@@ -79,6 +80,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DEAD0000000000000000D001 /* SidebarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SidebarView.swift; path = Telegram/UI/SidebarView.swift; sourceTree = SOURCE_ROOT; };
 		DEAD0000000000000000B001 /* MainNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = MainNavigationView.swift; path = Telegram/UI/MainNavigationView.swift; sourceTree = SOURCE_ROOT; };
 		DEAD0000000000000000C001 /* ChatConversationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ChatConversationView.swift; path = Telegram/UI/ChatConversationView.swift; sourceTree = SOURCE_ROOT; };
 		DEAD0000000000000000A001 /* DeveloperCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = DeveloperCore.swift; path = Sources/Fignyagram/DeveloperCore.swift; sourceTree = SOURCE_ROOT; };
@@ -203,6 +205,7 @@
 			isa = PBXGroup;
 			children = (
 				844C68F430824A0B0030F13D /* Telegram */,
+				DEAD0000000000000000D001 /* SidebarView.swift */,
 				DEAD0000000000000000B001 /* MainNavigationView.swift */,
 				DEAD0000000000000000C001 /* ChatConversationView.swift */,
 				DEAD0000000000000000A001 /* DeveloperCore.swift */,
@@ -394,6 +397,7 @@
 				DEAD0000000000000000A002 /* DeveloperCore.swift in Sources */,
 				DEAD0000000000000000B002 /* MainNavigationView.swift in Sources */,
 				DEAD0000000000000000C002 /* ChatConversationView.swift in Sources */,
+				DEAD0000000000000000D002 /* SidebarView.swift in Sources */,
 				844C690030824E740030F13D /* StdOutLogger.swift in Sources */,
 				844C68EF3082430C0030F13D /* ContentView.swift in Sources */,
 				844C68FE30824C9C0030F13D /* Secrets.swift in Sources */,
