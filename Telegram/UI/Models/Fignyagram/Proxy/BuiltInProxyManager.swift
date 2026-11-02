@@ -222,6 +222,15 @@ final class BuiltInProxyManager: ObservableObject {
         reconnectAttempts = 0
         status = NSLocalizedString("Generated.81392999a5d2", comment: "")
         lastError = nil
+        // UI must never hang on "starting" forever: surface a concrete state.
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            guard let self, !self.isRunning, self.operation != nil else { return }
+            self.status = NSLocalizedString("Generated.560c8e8a9a80", comment: "")
+            self.lastError = "Local proxy did not become ready (port \(self.port))"
+            CallDiag.log("proxy.start timeout port=\(self.port)")
+            self.operation = nil
+        }
 
 #if targetEnvironment(macCatalyst)
         if let free = Self.freeLoopbackPort() { port = free }
