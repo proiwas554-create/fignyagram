@@ -8,6 +8,8 @@ struct ChatView: View {
     let chatId: Int64
     /// When opened from search, the message to reveal and scroll to.
     var focusMessageId: Int64? = nil
+    /// Multi-selection state; nil keeps the classic single-chat behaviour.
+    var selection: MessageSelectionModel? = nil
 
     @ObservedObject private var client = TelegramClient.shared
     @ObservedObject private var store = ChatStore.shared
@@ -145,7 +147,7 @@ struct ChatView: View {
                     .font(.appFootnote)
                 }
                 .padding(10)
-            } else if store.canWrite(chatId: chatId) {
+            } else if store.canWrite(chatId: chatId) && selection?.isEditing != true {
                 if !mentionSuggestions.isEmpty {
                     mentionSuggestionsView
                 }
@@ -165,6 +167,7 @@ struct ChatView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .modifier(HidesTabBar())
+        .onAppear { wireSelectionActions() }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Button {
@@ -179,6 +182,12 @@ struct ChatView: View {
                     }
                 }
                 .buttonStyle(.plain)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if let selection, !selection.isEditing {
+                    Button("Изменить") { selection.begin() }
+                        .accessibilityLabel("Выбрать сообщения")
+                }
             }
             ToolbarItemGroup(placement: .navigationBarTrailing) {
                 if !ultra.isEnabled {
@@ -601,19 +610,21 @@ struct ChatView: View {
             },
             makeRow: { message in
                 AnyView(
-                    MessageRow(
-                        message: message,
-                        showSender: shouldShowSender(message),
-                        isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
-                        senderName: store.senderName(message.senderId),
-                        forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
-                        onReply: { startReply(message) },
-                        onLongPress: { actionMessage = message },
-                        onReplyTap: { scrollTarget = $0 },
-                        onSenderTap: { openSender($0) },
-                        onOpenReplies: { repliesMessage = message },
-                        onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
-                    )
+                    selectableMessageRow(message) {
+                        MessageRow(
+                            message: message,
+                            showSender: shouldShowSender(message),
+                            isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
+                            senderName: store.senderName(message.senderId),
+                            forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
+                            onReply: { startReply(message) },
+                            onLongPress: { handleLongPress(message) },
+                            onReplyTap: { scrollTarget = $0 },
+                            onSenderTap: { openSender($0) },
+                            onOpenReplies: { repliesMessage = message },
+                            onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
+                        )
+                    }
                 )
             }
         )
@@ -632,19 +643,66 @@ struct ChatView: View {
             if isFirstMessageOfDay(at: index) {
                 dayHeader(for: Date(timeIntervalSince1970: TimeInterval(message.date)))
             }
-            MessageRow(
-                message: message,
-                showSender: shouldShowSender(message),
-                isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
-                senderName: store.senderName(message.senderId),
-                forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
-                onReply: { startReply(message) },
-                onLongPress: { actionMessage = message },
-                onReplyTap: { scrollTarget = $0 },
-                onSenderTap: { openSender($0) },
-                onOpenReplies: { repliesMessage = message },
-                onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
-            )
+            selectableMessageRow(message) {
+                MessageRow(
+                    message: message,
+                    showSender: shouldShowSender(message),
+                    isRead: message.id <= (chat?.lastReadOutboxMessageId ?? 0),
+                    senderName: store.senderName(message.senderId),
+                    forwardedFrom: message.forwardInfo.map { store.originName($0.origin) },
+                    onReply: { startReply(message) },
+                    onLongPress: { handleLongPress(message) },
+                    onReplyTap: { scrollTarget = $0 },
+                    onSenderTap: { openSender($0) },
+                    onOpenReplies: { repliesMessage = message },
+                    onRetry: { client.resendMessage(chatId: message.chatId, messageId: message.id) }
+                )
+            }
+        }
+    }
+
+    /// The bottom bar can ask ChatView to show the full single-message action
+    /// sheet for the only selected message, so entering edit mode does not hide
+    /// reply/edit/react/delete actions.
+    private func wireSelectionActions() {
+        guard let selection else { return }
+        selection.onShowActions = { messageId in
+            if let message = visibleMessages.first(where: { $0.id == messageId }) {
+                actionMessage = message
+            }
+        }
+    }
+
+    /// Long press enters the multi-selection mode (Telegram-style); while it is
+    /// active the same gesture toggles the row. Without a selection model the
+    /// legacy single-message action sheet is kept.
+    private func handleLongPress(_ message: Message) {
+        guard let selection else {
+            actionMessage = message
+            return
+        }
+        if selection.isEditing {
+            selection.toggle(message.id)
+        } else {
+            selection.begin(with: message.id)
+        }
+    }
+
+    /// Adds the sliding checkbox and the tap-to-toggle behaviour in edit mode.
+    @ViewBuilder
+    private func selectableMessageRow<Content: View>(_ message: Message,
+                                                     @ViewBuilder content: () -> Content) -> some View {
+        if let selection {
+            MessageSelectionRow(model: selection, messageId: message.id) {
+                content()
+            }
+            .simultaneousGesture(TapGesture().onEnded {
+                if selection.isEditing {
+                    selection.toggle(message.id)
+                }
+            })
+        } else {
+            content()
         }
     }
 

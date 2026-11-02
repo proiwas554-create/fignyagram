@@ -22,6 +22,10 @@ struct ChatListView: View {
     @AppStorage("recentContactsEnabled") private var recentContactsEnabled = true
     @ObservedObject private var deepLinks = DeepLinkRouter.shared
 
+    /// Desktop split view: tapping a chat updates this selection instead of
+    /// pushing ChatView into the list column.
+    var splitSelection: Binding<ChatTarget?>? = nil
+
     @State private var search = ""
     @State private var showDeveloper = false
     @FocusState private var searchFocused: Bool
@@ -308,6 +312,10 @@ struct ChatListView: View {
             .simultaneousGesture(TapGesture().onEnded { dismissKeyboard() })
             .onDisappear { dismissKeyboard() }
             .onChange(of: openTarget) { target in
+                if let target, let splitSelection {
+                    splitSelection.wrappedValue = target
+                    openTarget = nil
+                }
                 if target == nil { ChatPresentationState.shared.reset() }
             }
             .onAppear { ChatPresentationState.shared.reset() }
@@ -745,7 +753,14 @@ struct ChatListView: View {
         .navigationViewStyle(.stack)
     }
 
+    @ViewBuilder
     private var openChatLink: some View {
+        if splitSelection == nil {
+            pushChatLink
+        }
+    }
+
+    private var pushChatLink: some View {
         NavigationLink(
             destination: Group {
                 if let target = openTarget {

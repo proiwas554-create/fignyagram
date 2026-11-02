@@ -20,13 +20,30 @@ struct ContentView: View {
 
     var body: some View {
         let _ = CrashTrace.step("content body authorized=\(client.isAuthorized)")
+        #if DEBUG
+        // UI-only launch hook: renders the Duo shell without an authorized
+        // session so the desktop layout can be inspected in a simulator.
+        if ProcessInfo.processInfo.environment["FNY_DUO_PREVIEW"] == "1",
+           #available(iOS 16.0, *) {
+            MainNavigationView()
+        } else {
+            rootContent
+        }
+        #else
+        rootContent
+        #endif
+    }
+
+    @ViewBuilder
+    private var rootContent: some View {
+        let _ = CrashTrace.step("content body authorized=\(client.isAuthorized)")
         Group {
             if client.isAuthorized {
                 Group {
                     if classic.isEnabled {
                         classicRoot
                     } else if #available(iOS 16.0, *) {
-                        modernRoot
+                        MainNavigationView()
                     } else {
                         MainRootView()
                     }
@@ -127,25 +144,6 @@ struct ContentView: View {
     /// NavigationViews / searchable controllers), which crashed iOS 15.
     private var legacyRoot: some View {
         MainRootView()
-    }
-
-    /// Original flagship root (iOS 16+): native TabView and its look.
-    private var modernRoot: some View {
-        TabView(selection: $selectedTab) {
-            ChatListView()
-                .tag(0)
-                .tabItem { Label(L10n.t("Auto.19adecc3d1"), systemImage: "bubble.left.and.bubble.right") }
-            if showMusicTab {
-                MusicView()
-                    .tag(1)
-                    .tabItem { Label(L10n.t("Auto.0660a7580a"), systemImage: "music.note") }
-            }
-            if showNewsTab {
-                NewsFeedView()
-                    .tag(2)
-                    .tabItem { Label(L10n.t("Auto.69df1f85b0"), systemImage: "newspaper") }
-            }
-        }
     }
 
     private var classicRoot: some View {
