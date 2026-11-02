@@ -418,6 +418,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             listener.stateUpdateHandler = { [weak self] state in
                 switch state {
                 case .ready:
+                    CallDiag.log("proxy.listener ready")
                     guard once.trySet() else { return }
                     timer.cancel()
                     listener.stateUpdateHandler = nil
@@ -426,6 +427,7 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
                     proxyServerLogger.info("Local proxy listening on port \(self?.config.port ?? 0)")
                     cont.resume()
                 case .failed(let error):
+                    CallDiag.log("proxy.listener failed \(error)")
                     guard once.trySet() else { return }
                     timer.cancel()
                     listener.stateUpdateHandler = nil
@@ -967,11 +969,13 @@ nonisolated final class LocalMTProtoProxy: @unchecked Sendable {
             connection.stateUpdateHandler = { state in
                 switch state {
                 case .ready:
+                    CallDiag.log("proxy.listener ready")
                     guard once.trySet() else { return }
                     timer.cancel()
                     connection.stateUpdateHandler = nil
                     cont.resume()
                 case .failed(let error):
+                    CallDiag.log("proxy.listener failed \(error)")
                     guard once.trySet() else { return }
                     timer.cancel()
                     connection.stateUpdateHandler = nil
