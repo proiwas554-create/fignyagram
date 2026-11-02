@@ -2402,6 +2402,13 @@ final class TelegramClient: ObservableObject {
 
     /// Enables TDLib's MTProto proxy pointing at the local WebSocket bridge.
     nonisolated func activateBuiltInProxy(port: Int, secret: String) async throws {
+        // Never hand a malformed port to TDLib: a localized/grouped port number
+        // (e.g. "62 883" parsed as 62) would silently point the proxy at the
+        // wrong port.
+        guard (1...65535).contains(port) else {
+            CallDiag.log("proxy.activate invalid port=\(port)")
+            throw ChatCreationError.notReady
+        }
         guard let client = await MainActor.run(resultType: TDLibClient?.self, body: { TelegramClient.shared.client }) else {
             throw ChatCreationError.notReady
         }

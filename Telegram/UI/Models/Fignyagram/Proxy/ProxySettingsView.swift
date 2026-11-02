@@ -31,7 +31,7 @@ struct ProxySettingsView: View {
                     HStack {
                         Text(L10n.t("Auto.80148fa5ad"))
                         Spacer()
-                        Text(verbatim: "\(proxy.host):\(proxy.port)")
+                        Text(verbatim: proxy.address)
                             .foregroundColor(.secondary)
                             .monospacedDigit()
                     }
@@ -176,13 +176,18 @@ struct ProxySettingsView: View {
             return
         }
         externalServer = mtproto.server
-        externalPort = String(mtproto.port)
+        externalPort = String(format: "%d", mtproto.port)
         externalSecret = mtproto.secret
         connectExternal()
     }
 
     private func connectExternal() {
-        let port = Int(externalPort) ?? 443
+        // Keep only ASCII digits: pasted or localized text can contain spaces,
+        // non-breaking spaces and thousands separators ("1 443", "62 883").
+        let digits = externalPort.filter { $0.isASCII && $0.isNumber }
+        let parsed = Int(digits) ?? 443
+        let port = (1...65535).contains(parsed) ? parsed : 443
+        externalPort = String(format: "%d", port)
         externalError = nil
         proxy.setEnabled(false)
         Task {

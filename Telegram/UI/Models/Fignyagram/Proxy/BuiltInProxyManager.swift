@@ -20,6 +20,19 @@ final class BuiltInProxyManager: ObservableObject {
     let host = "127.0.0.1"
     private(set) var port = 1443
 
+    /// Deterministic, locale-independent port text.
+    /// `"\(port)"` goes through NumberFormatter and produces `62 883` / `1 443`
+    /// on locales with a thousands separator, which then gets handed to TDLib
+    /// as a literal port or shown broken in the UI.
+    static func portString(_ port: Int) -> String {
+        String(format: "%d", port)
+    }
+
+    /// `127.0.0.1:<port>` with an ungrouped port.
+    var address: String {
+        "\(host):\(Self.portString(port))"
+    }
+
     /// macOS/Catalyst: 1443 may be taken by other software; ask the OS for a
     /// free loopback port before binding the listener.
     private static func freeLoopbackPort() -> Int? {
@@ -227,14 +240,14 @@ final class BuiltInProxyManager: ObservableObject {
             try? await Task.sleep(nanoseconds: 8_000_000_000)
             guard let self, !self.isRunning, self.operation != nil else { return }
             self.status = NSLocalizedString("Generated.560c8e8a9a80", comment: "")
-            self.lastError = "Local proxy did not become ready (port \(self.port))"
-            CallDiag.log("proxy.start timeout port=\(self.port)")
+            self.lastError = String(format: "Local proxy did not become ready (port %d)", self.port)
+            CallDiag.log("proxy.start timeout port=" + Self.portString(self.port))
             self.operation = nil
         }
 
 #if targetEnvironment(macCatalyst)
         if let free = Self.freeLoopbackPort() { port = free }
-        CallDiag.log("proxy.catalyst dynamic port=\(port)")
+        CallDiag.log("proxy.catalyst dynamic port=" + Self.portString(port))
 #endif
         var config = ProxyEndpointConfig(port: port, secretHex: secret)
         config.customCFDomain = UserDefaults.standard.string(forKey: "cfProxyDomain")
@@ -244,7 +257,7 @@ final class BuiltInProxyManager: ObservableObject {
                 do {
                     try await TelegramClient.shared.activateBuiltInProxy(port: port, secret: secret)
                     isRunning = true
-                    status = "Работает — \(host):\(port)"
+                    status = "Работает — \(address)"
                     lastError = nil
                 } catch {
                     await TelegramClient.shared.deactivateBuiltInProxy(port: port)
@@ -280,7 +293,7 @@ final class BuiltInProxyManager: ObservableObject {
                 do {
                     try await candidate.start()
                     if candidate.boundPort > 0 { port = candidate.boundPort }
-                    CallDiag.log("proxy.listener ready port=\(port)")
+                    CallDiag.log("proxy.listener ready port=" + Self.portString(port))
                     startedProxy = candidate
                     break
                 } catch {
@@ -331,7 +344,7 @@ final class BuiltInProxyManager: ObservableObject {
             server = proxy
             isRunning = true
             status = NSLocalizedString("Generated.f29aa48606b4", comment: "")
-            DiagnosticsLog.log("proxy.running port=\(port)")
+            DiagnosticsLog.log("proxy.running port=" + Self.portString(port))
             lastError = nil
             operation = nil
             startHealthTimeout()
