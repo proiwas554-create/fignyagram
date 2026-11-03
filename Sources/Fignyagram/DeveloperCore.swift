@@ -116,20 +116,22 @@ enum DuoSimulationKeys {
 /// desktop values are overridden explicitly.
 @MainActor
 enum DeviceIdentity {
-    static var model: String {
+    /// True when the binary runs on a Mac: Catalyst always, or an iOS app
+    /// installed on Apple Silicon through the Mac App Store path.
+    static var isRunningOnTrueMac: Bool {
         #if targetEnvironment(macCatalyst)
-        return "MacBook"
+        return true
         #else
-        return UIDevice.current.model
+        return ProcessInfo.processInfo.isiOSAppOnMac
         #endif
     }
 
+    static var model: String {
+        isRunningOnTrueMac ? "MacBook" : UIDevice.current.model
+    }
+
     static var deviceClass: String {
-        #if targetEnvironment(macCatalyst)
-        return "Apple Silicon (macOS)"
-        #else
-        return "iOS Device"
-        #endif
+        isRunningOnTrueMac ? "Apple Silicon (macOS Architecture)" : "iOS Core Device"
     }
 
     static var maxRefreshRate: Int {
@@ -156,6 +158,9 @@ final class DeveloperMonitor: ObservableObject {
     @Published private(set) var cpuPercent: Double = 0
     @Published private(set) var threadCount: Int = 0
     @Published private(set) var lastUpdate: Date = .distantPast
+
+    /// True Mac detection through the system inspector (not UIKit idioms).
+    var isRunningOnTrueMac: Bool { DeviceIdentity.isRunningOnTrueMac }
 
     /// Human-readable host description (desktop-aware).
     var deviceModel: String { DeviceIdentity.model }

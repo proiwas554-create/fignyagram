@@ -35,7 +35,19 @@ enum FrameRateController {
     static func register(_ link: CADisplayLink) {
         links.removeAll { $0.link == nil }
         links.append(WeakLink(link: link))
-        if #available(iOS 16.0, *) { link.preferredFrameRateRange = range }
+        applyRange(to: link)
+    }
+
+    /// Catalyst inherits an iPad-like 60 Hz cap from UIKit. On a real Mac the
+    /// display link is pushed to the desktop cadence (ProMotion up to 120 Hz),
+    /// unless the user explicitly pinned a fixed FPS.
+    static func applyRange(to link: CADisplayLink) {
+        guard #available(iOS 15.0, *) else { return }
+        if DeveloperMonitor.shared.isRunningOnTrueMac && !isEnabled {
+            link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 120, preferred: 120)
+        } else {
+            link.preferredFrameRateRange = range
+        }
     }
 
     /// A long-lived display link keeps the requested cadence applied to
@@ -45,18 +57,18 @@ enum FrameRateController {
         guard #available(iOS 16.0, *) else { return }
         guard governor == nil else { refreshActiveLinks(); return }
         let link = CADisplayLink(target: GovernorTarget.shared, selector: #selector(GovernorTarget.tick))
-        if #available(iOS 15.0, *) { link.preferredFrameRateRange = range }
+        applyRange(to: link)
         link.add(to: .main, forMode: .common)
         governor = link
     }
 
     static func refreshActiveLinks() {
-        if let governor, #available(iOS 15.0, *) {
-            governor.preferredFrameRateRange = range
+        if let governor {
+            applyRange(to: governor)
         }
         links.removeAll { $0.link == nil }
-        if #available(iOS 16.0, *) {
-            for item in links { item.link?.preferredFrameRateRange = range }
+        for item in links {
+            if let link = item.link { applyRange(to: link) }
         }
     }
 }

@@ -63,6 +63,10 @@ struct MainNavigationView: View {
         if duoSimulationActive {
             return duoOrientation == DuoSimulationOrientation.portrait.rawValue
         }
+        // A real Mac is always a desktop app, even in a tall narrow window:
+        // UIKit would otherwise report a phone/tablet-like trait collection and
+        // collapse the shell back into the compact tab bar.
+        if DeveloperMonitor.shared.isRunningOnTrueMac { return false }
         if size.width < size.height { return true }
         return sizeClass == .compact
     }
