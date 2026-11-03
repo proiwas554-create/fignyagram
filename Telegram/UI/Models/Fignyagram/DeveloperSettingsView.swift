@@ -19,6 +19,8 @@ struct DeveloperSettingsView: View {
     @State private var showStorageStats = false
     @State private var storageStats = ""
 
+    @State private var lowPowerModeEnabled = ProcessInfo.processInfo.isLowPowerModeEnabled
+
     @AppStorage(DuoSimulationKeys.active) private var duoSimulationActive = false
     @AppStorage(DuoSimulationKeys.orientation) private var duoOrientation = DuoSimulationOrientation.portrait.rawValue
     @AppStorage(DuoSimulationKeys.foldWidth) private var duoFoldWidth = 10.0
@@ -31,6 +33,7 @@ struct DeveloperSettingsView: View {
                 consoleSection
                 tdlibSection
                 terminalSection
+                deviceSection
                 buildSection
                 loadSection
                 testsSection
@@ -43,7 +46,11 @@ struct DeveloperSettingsView: View {
                     Button("Закрыть") { dismiss() }
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .NSProcessInfoPowerStateDidChange)) { _ in
+                lowPowerModeEnabled = ProcessInfo.processInfo.isLowPowerModeEnabled
+            }
             .onAppear {
+                lowPowerModeEnabled = ProcessInfo.processInfo.isLowPowerModeEnabled
                 monitor.start()
                 cache.refresh()
             }
@@ -177,17 +184,39 @@ struct DeveloperSettingsView: View {
         }
     }
 
-    // MARK: - Сборка
+    // MARK: - Устройство
 
-    @ViewBuilder
-    private var buildSection: some View {
+    private var deviceSection: some View {
         Section {
-            row("Модель", monitor.deviceModel)
+            HStack {
+                Text("Модель")
+                Spacer()
+                #if targetEnvironment(macCatalyst)
+                Text("MacBook (Catalyst Architecture)")
+                    .foregroundColor(.secondary)
+                #else
+                Text(UIDevice.current.model)
+                    .foregroundColor(.secondary)
+                #endif
+            }
+
             row("Класс", monitor.deviceClass)
             row("Частота экрана", "\(monitor.maxRefreshRate) Гц", mono: true)
+            row("Режим энергосбережения", lowPowerModeEnabled ? "Включён" : "Выключен")
+
+            if lowPowerModeEnabled {
+                Text("Частота заблокирована операционной системой на 60 Гц, так как включен режим энергосбережения macOS.")
+                    .font(.appFootnote)
+                    .foregroundColor(.orange)
+            }
         } header: {
             Text("УСТРОЙСТВО")
         }
+    }
+
+    // MARK: - Сборка
+
+    private var buildSection: some View {
         Section {
             row("Версия", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
             row("iOS", UIDevice.current.systemVersion)

@@ -136,9 +136,10 @@ enum DeviceIdentity {
 
     static var maxRefreshRate: Int {
         #if targetEnvironment(macCatalyst)
-        // Catalyst clamps -[UIScreen maximumFramesPerSecond] to 60; the host
-        // display runs at 120 Hz (ProMotion / 120 Hz desktop panels).
-        return 120
+        // Catalyst clamps -[UIScreen maximumFramesPerSecond] to 60, and macOS
+        // itself throttles the whole system to 60 Hz while Low Power Mode is on.
+        // Report what the host actually allows instead of a fantasy number.
+        return ProcessInfo.processInfo.isLowPowerModeEnabled ? 60 : 120
         #else
         return UIScreen.main.maximumFramesPerSecond
         #endif
