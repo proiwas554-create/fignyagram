@@ -30,7 +30,7 @@ final class GPUOptimization {
     /// kept: an idle 120 Hz link forced ProMotion into a fixed cadence and
     /// lowered measured FPS. CoreAnimation owns the cadence now.
     func start() {
-        if DevicePerformance.isLowMemory || UIScreen.main.maximumFramesPerSecond <= 60 {
+        if DevicePerformance.isLowMemory || DeviceIdentity.maxRefreshRate <= 60 {
             ImageCache.applyLegacyDeviceTuning()
         }
     }

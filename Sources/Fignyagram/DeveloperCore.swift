@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import Darwin
+import UIKit
 
 // MARK: - Developer performance switches
 //
@@ -107,6 +108,41 @@ enum DuoSimulationKeys {
     static let foldWidth = "duoFoldWidth"
 }
 
+// MARK: - Device identity (desktop override)
+
+/// UIKit keeps reporting iPad traits on Mac Catalyst: `UIDevice.model` is
+/// "iPad", the idiom is unknown and the screen claims 60 Hz even on a 120 Hz
+/// ProMotion panel. The developer hub must describe the real host, so the
+/// desktop values are overridden explicitly.
+@MainActor
+enum DeviceIdentity {
+    static var model: String {
+        #if targetEnvironment(macCatalyst)
+        return "MacBook"
+        #else
+        return UIDevice.current.model
+        #endif
+    }
+
+    static var deviceClass: String {
+        #if targetEnvironment(macCatalyst)
+        return "Apple Silicon (macOS)"
+        #else
+        return "iOS Device"
+        #endif
+    }
+
+    static var maxRefreshRate: Int {
+        #if targetEnvironment(macCatalyst)
+        // Catalyst clamps -[UIScreen maximumFramesPerSecond] to 60; the host
+        // display runs at 120 Hz (ProMotion / 120 Hz desktop panels).
+        return 120
+        #else
+        return UIScreen.main.maximumFramesPerSecond
+        #endif
+    }
+}
+
 // MARK: - Live system monitor
 
 /// Samples real process metrics once per second: resident memory, CPU load and
@@ -120,6 +156,11 @@ final class DeveloperMonitor: ObservableObject {
     @Published private(set) var cpuPercent: Double = 0
     @Published private(set) var threadCount: Int = 0
     @Published private(set) var lastUpdate: Date = .distantPast
+
+    /// Human-readable host description (desktop-aware).
+    var deviceModel: String { DeviceIdentity.model }
+    var deviceClass: String { DeviceIdentity.deviceClass }
+    var maxRefreshRate: Int { DeviceIdentity.maxRefreshRate }
 
     private struct CPUTicks {
         var user: UInt64

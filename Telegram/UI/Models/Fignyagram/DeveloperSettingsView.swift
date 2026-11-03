@@ -179,7 +179,15 @@ struct DeveloperSettingsView: View {
 
     // MARK: - Сборка
 
+    @ViewBuilder
     private var buildSection: some View {
+        Section {
+            row("Модель", monitor.deviceModel)
+            row("Класс", monitor.deviceClass)
+            row("Частота экрана", "\(monitor.maxRefreshRate) Гц", mono: true)
+        } header: {
+            Text("УСТРОЙСТВО")
+        }
         Section {
             row("Версия", Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—")
             row("iOS", UIDevice.current.systemVersion)
