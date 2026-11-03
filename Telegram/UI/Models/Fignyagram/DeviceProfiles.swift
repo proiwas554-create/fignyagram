@@ -6,6 +6,7 @@ enum DeviceTier: String {
     case older
     case modern
     case pro
+    case desktop
     case unknown
 
     var title: String {
@@ -14,6 +15,7 @@ enum DeviceTier: String {
         case .older: return "Среднее устройство"
         case .modern: return "Современное устройство"
         case .pro: return "Флагман"
+        case .desktop: return "Десктоп (macOS)"
         case .unknown: return "Неизвестное устройство"
         }
     }
@@ -24,6 +26,7 @@ enum DeviceTier: String {
         case .older: return 120
         case .modern: return 160
         case .pro: return 200
+        case .desktop: return 200
         case .unknown: return 120
         }
     }
@@ -34,6 +37,7 @@ enum DeviceTier: String {
         case .older: return 60
         case .modern: return 80
         case .pro: return 100
+        case .desktop: return 100
         case .unknown: return 60
         }
     }
@@ -44,6 +48,7 @@ enum DeviceTier: String {
         case .older: return 1000
         case .modern: return 1280
         case .pro: return 1440
+        case .desktop: return 1440
         case .unknown: return 1000
         }
     }
@@ -54,6 +59,7 @@ enum DeviceTier: String {
         case .older: return 40
         case .modern: return 56
         case .pro: return 64
+        case .desktop: return 64
         case .unknown: return 40
         }
     }
@@ -64,6 +70,7 @@ enum DeviceTier: String {
         case .older: return 2
         case .modern: return 3
         case .pro: return 3
+        case .desktop: return 3
         case .unknown: return 2
         }
     }
@@ -72,7 +79,7 @@ enum DeviceTier: String {
         switch self {
         case .legacy: return .battery
         case .older: return .balanced
-        case .modern, .pro: return .performance
+        case .modern, .pro, .desktop: return .performance
         case .unknown: return .balanced
         }
     }
@@ -151,6 +158,16 @@ enum DeviceProfiles {
     ]
 
     static func detect() -> DeviceProfile {
+        #if targetEnvironment(macCatalyst)
+        // Catalyst reports iPad-like utsname/UIKit values; the host is a Mac.
+        return DeviceProfile(
+            identifier: "arm64 (Apple Silicon)",
+            marketingName: "MacBook (Apple Silicon)",
+            tier: .desktop,
+            memoryGB: Double(ProcessInfo.processInfo.physicalMemory) / 1_073_741_824,
+            supportsProMotion: true
+        )
+        #else
         var system = utsname()
         uname(&system)
         let raw = withUnsafePointer(to: &system.machine) {
@@ -179,6 +196,7 @@ enum DeviceProfiles {
             memoryGB: memory,
             supportsProMotion: proMotionIdentifiers.contains(raw)
         )
+        #endif
     }
 
     private static func fallbackName(_ identifier: String) -> String {
