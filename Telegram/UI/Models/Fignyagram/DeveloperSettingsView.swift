@@ -190,13 +190,32 @@ struct DeveloperSettingsView: View {
     // MARK: - Спецификация железа (macOS)
 
     #if targetEnvironment(macCatalyst)
+    /// Replaces the closed UIKit performance HUD on macOS: Catalyst would keep
+    /// reporting iPad hardware there, so the desktop spec is printed by us.
     private var hardwareSpecSection: some View {
         Section {
-            row("Модель", "MacBook (Apple Silicon)")
-            row("Частота", "120 Гц (ProMotion Unlocked)", mono: true)
-            row("Архитектура", "Apple Silicon (macOS)")
+            HStack {
+                Text("Модель")
+                Spacer()
+                Text("MacBook (Apple Silicon)")
+                    .foregroundColor(.secondary)
+            }
+
+            HStack {
+                Text("Максимальная частота интерфейса")
+                Spacer()
+                Text("120 Гц (ProMotion Unlocked)")
+                    .foregroundColor(.green)
+            }
+
+            HStack {
+                Text("Архитектура приложения")
+                Spacer()
+                Text("Mac Catalyst Десктоп")
+                    .foregroundColor(.secondary)
+            }
         } header: {
-            Text("СПЕЦИФИКАЦИЯ ЖЕЛЕЗА")
+            Text("СПЕЦИФИКАЦИЯ ЖЕЛЕЗА И РАНТАЙМА")
         } footer: {
             if lowPowerModeEnabled {
                 Text("Частота заблокирована операционной системой на 60 Гц, так как включен режим энергосбережения macOS.")
@@ -211,17 +230,14 @@ struct DeveloperSettingsView: View {
 
     private var deviceSection: some View {
         Section {
+            #if !targetEnvironment(macCatalyst)
             HStack {
                 Text("Модель")
                 Spacer()
-                #if targetEnvironment(macCatalyst)
-                Text("MacBook (Catalyst Architecture)")
-                    .foregroundColor(.secondary)
-                #else
                 Text(UIDevice.current.model)
                     .foregroundColor(.secondary)
-                #endif
             }
+            #endif
 
             row("Класс", monitor.deviceClass)
             row("Частота экрана", "\(monitor.maxRefreshRate) Гц", mono: true)
