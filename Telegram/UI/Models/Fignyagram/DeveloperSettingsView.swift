@@ -33,6 +33,9 @@ struct DeveloperSettingsView: View {
                 consoleSection
                 tdlibSection
                 terminalSection
+                #if targetEnvironment(macCatalyst)
+                hardwareSpecSection
+                #endif
                 deviceSection
                 buildSection
                 loadSection
@@ -183,6 +186,26 @@ struct DeveloperSettingsView: View {
             Text("ТЕРМИНАЛ РАЗРАБОТЧИКА")
         }
     }
+
+    // MARK: - Спецификация железа (macOS)
+
+    #if targetEnvironment(macCatalyst)
+    private var hardwareSpecSection: some View {
+        Section {
+            row("Модель", "MacBook (Apple Silicon)")
+            row("Частота", "120 Гц (ProMotion Unlocked)", mono: true)
+            row("Архитектура", "Apple Silicon (macOS)")
+        } header: {
+            Text("СПЕЦИФИКАЦИЯ ЖЕЛЕЗА")
+        } footer: {
+            if lowPowerModeEnabled {
+                Text("Частота заблокирована операционной системой на 60 Гц, так как включен режим энергосбережения macOS.")
+                    .font(.appFootnote)
+                    .foregroundColor(.orange)
+            }
+        }
+    }
+    #endif
 
     // MARK: - Устройство
 

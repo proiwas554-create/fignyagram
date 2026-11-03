@@ -190,10 +190,21 @@ final class TelegramClient: ObservableObject {
         errorMessage = nil
         CallDiag.log("params.build begin")
         let language = Locale.preferredLanguages.first.map { String($0.prefix(2)) } ?? "ru"
+        // Passport sent to Telegram. Catalyst reports iPad traits through UIKit,
+        // so the desktop identity is written explicitly: otherwise the active
+        // sessions list shows the Mac as a foreign iPad.
+        #if targetEnvironment(macCatalyst)
+        let currentDeviceModel = "MacBook (Fignyagram Core)"
+        let currentSystemVersion = "macOS " + ProcessInfo.processInfo.operatingSystemVersionString
+        #else
+        let currentDeviceModel = UIDevice.current.model
+        let currentSystemVersion = UIDevice.current.systemVersion
+        #endif
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0"
         let keyStart = Date()
         let dbKey = ProfileKeychain.databaseEncryptionKey(for: account)
         CallDiag.log("params.keychain done \(String(format: "%.2f", Date().timeIntervalSince(keyStart)))s key=\(dbKey?.count ?? -1)")
+        CallDiag.log("params.passport model=\(currentDeviceModel) system=\(currentSystemVersion)")
         let slot = account
         Task.detached(priority: .userInitiated) {
             // The proxy attaches itself asynchronously via BuiltInProxyManager;
@@ -207,10 +218,10 @@ final class TelegramClient: ObservableObject {
                             applicationVersion: "Fignyagram \(version)",
                             databaseDirectory: slot.databaseDirectory,
                             databaseEncryptionKey: key,
-                            deviceModel: UIDevice.current.model,
+                            deviceModel: currentDeviceModel,
                             filesDirectory: slot.filesDirectory,
                             systemLanguageCode: language,
-                            systemVersion: UIDevice.current.systemVersion,
+                            systemVersion: currentSystemVersion,
                             useChatInfoDatabase: true,
                             useFileDatabase: true,
                             useMessageDatabase: true,
